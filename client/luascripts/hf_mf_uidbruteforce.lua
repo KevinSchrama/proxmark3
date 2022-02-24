@@ -84,8 +84,8 @@ end
 local function main(args)
 
     local timeout = 0
-    local start_id = 0
-    local end_id = 0xFFFFFFFFFFFFFF
+    local start_id = 0x00000000
+    local end_id = 0xFFFFFFFF
     local mftype = 'mfc'
     local uid_format = '%14x'
 
