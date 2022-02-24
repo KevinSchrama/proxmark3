@@ -241,6 +241,8 @@ local function main(args)
             print('Using 0 for the facility code as -f was not supplied')
             facility = 0
         end
+    elseif rfidtag == '14a' then
+        facilitymessage = ''              -- Remove FC from status message
     else                                  -- If FC is not required
         facility = ''                     -- Clear FC
         facilitymessage = ''              -- Remove FC from status message
@@ -287,8 +289,9 @@ local function main(args)
         -- If rfid tag is set to HID, convert card to HEX using the stolen code above
         if rfidtag == 'hid' then cardnum = cardHex(cardnum, facility) end
 
+        print(consolecommand..' '..facility..' -u '..cardnum)
         -- send command to proxmark
-        core.console(consolecommand..' '..facility..' '..cardnum)
+        core.console(consolecommand..' '..facility..' -u '..cardnum)
 
         if timeout == 'pause' then
             print('Press enter to continue ...')
