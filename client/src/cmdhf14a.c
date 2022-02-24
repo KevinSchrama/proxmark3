@@ -737,9 +737,15 @@ int CmdHF14ASim(const char *Cmd) {
     PrintAndLogEx(INFO, "Press pm3-button to abort simulation");
     bool keypress = kbd_enter_pressed();
     bool timepassed = 0;
+    int addr = 0;
     while (!keypress && !timepassed) {
 
-        timepassed = 1;
+        if(addr >= 0){
+            timepassed = 1;
+        }else{
+            addr++;
+        }
+        
 
         if (WaitForResponseTimeout(CMD_HF_MIFARE_SIMULATE, &resp, 1500) == 0) continue;
         if (resp.status != PM3_SUCCESS) break;
