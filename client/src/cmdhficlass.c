@@ -897,10 +897,8 @@ static int CmdHFiClassSim(const char *Cmd) {
             }
     
             if (keypress || timepassed) {
-                if (timepassed) {
-                    // inform device to break the sim loop since client has exited
-                    SendCommandNG(CMD_BREAK_LOOP, NULL, 0);
-                }
+                // inform device to break the sim loop since client has exited
+                SendCommandNG(CMD_BREAK_LOOP, NULL, 0);
             }
             
             break;
