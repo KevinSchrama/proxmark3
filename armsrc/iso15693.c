@@ -1133,6 +1133,9 @@ int GetIso15693CommandFromReader(uint8_t *received, size_t max_len, uint32_t *eo
 
     uint32_t dma_start_time = GetCountSspClk() & 0xfffffff8;
 
+
+    uint8_t flip = 0;
+    uint16_t checker = 0;
     for (;;) {
         volatile uint16_t behindBy = ((uint8_t *)AT91C_BASE_PDC_SSC->PDC_RPR - upTo) & (DMA_BUFFER_SIZE - 1);
         if (behindBy == 0) continue;
@@ -1168,11 +1171,32 @@ int GetIso15693CommandFromReader(uint8_t *received, size_t max_len, uint32_t *eo
             break;
         }
 
+        if (flip == 3) {
+            if (data_available()){
+                dr->byteCount = -1;
+                break;
+            }
+
+            flip = 0;
+        }
+
+        if (checker >= 3000) {
+            if (BUTTON_PRESS()){
+                dr->byteCount = -1;
+                break;
+            }
+
+            flip++;
+            checker = 0;
+        }
+        ++checker;
+
+        /*
         if (BUTTON_PRESS()) {
             dr->byteCount = -1;
             break;
-        }
-
+        }*/
+        
         WDT_HIT();
     }
 

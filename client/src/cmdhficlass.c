@@ -18,6 +18,7 @@
 
 #include "cmdhficlass.h"
 #include <ctype.h>
+#include <unistd.h>
 #include "cliparser.h"
 #include "cmdparser.h"    // command_t
 #include "commonutil.h"  // ARRAYLEN
@@ -867,6 +868,7 @@ static int CmdHFiClassSim(const char *Cmd) {
             break;
         }
         case ICLASS_SIM_MODE_CSN:
+            PrintAndLogEx(INFO, "Sim mode CSN");
         case ICLASS_SIM_MODE_CSN_DEFAULT:
         case ICLASS_SIM_MODE_FULL:
         default: {
@@ -878,6 +880,29 @@ static int CmdHFiClassSim(const char *Cmd) {
 
             if (sim_type == ICLASS_SIM_MODE_FULL)
                 PrintAndLogEx(HINT, "Try `" _YELLOW_("hf iclass esave -h") "` to save the emulator memory to file");
+            
+            bool keypress = kbd_enter_pressed();
+            bool timepassed = 0;
+            int addr = 0;
+            while (!keypress && !timepassed) {
+
+                if(addr >= 50){
+                    timepassed = 1;
+                }else{
+                    addr++;
+                }
+
+                keypress = kbd_enter_pressed();
+                usleep(1000);
+            }
+    
+            if (keypress || timepassed) {
+                if (timepassed) {
+                    // inform device to break the sim loop since client has exited
+                    SendCommandNG(CMD_BREAK_LOOP, NULL, 0);
+                }
+            }
+            
             break;
         }
     }

@@ -3,6 +3,8 @@ local ansicolors  = require('ansicolors')
 
 local function main(args)
     local uid = 1
+    core.console('hf iclass sim -t 0 --csn E012FFF902B93314')
+    os.execute('sleep 1')
     for type = 1, 9, 1 do
 
         print(type)
