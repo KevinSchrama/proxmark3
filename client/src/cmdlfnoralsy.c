@@ -267,14 +267,7 @@ static int CmdNoralsySim(const char *Cmd) {
     SendCommandNG(CMD_LF_ASK_SIMULATE, (uint8_t *)payload,  sizeof(lf_asksim_t) + sizeof(bs));
     free(payload);
 
-    PacketResponseNG resp;
-    WaitForResponse(CMD_LF_ASK_SIMULATE, &resp);
-
-    PrintAndLogEx(INFO, "Done");
-    if (resp.status != PM3_EOPABORTED)
-        return resp.status;
-
-    return PM3_SUCCESS;
+    return lfsim_wait_check(CMD_LF_ASK_SIMULATE);
 }
 
 static command_t CommandTable[] = {
