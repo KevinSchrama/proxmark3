@@ -873,14 +873,14 @@ static int CmdHFiClassSim(const char *Cmd) {
         case ICLASS_SIM_MODE_FULL:
         default: {
             PrintAndLogEx(INFO, "Starting iCLASS simulation");
-            PrintAndLogEx(INFO, "press " _YELLOW_("`button`") " to cancel");
+            PrintAndLogEx(INFO, "press " _YELLOW_("`button`") " to cancel or run \"hf simstop\"");
             uint8_t numberOfCSNs = 0;
             clearCommandBuffer();
             SendCommandMIX(CMD_HF_ICLASS_SIMULATE, sim_type, numberOfCSNs, 1, csn, 8);
 
             if (sim_type == ICLASS_SIM_MODE_FULL)
                 PrintAndLogEx(HINT, "Try `" _YELLOW_("hf iclass esave -h") "` to save the emulator memory to file");
-            
+/*
             bool keypress = kbd_enter_pressed();
             bool timepassed = 0;
             int addr = 0;
@@ -900,7 +900,7 @@ static int CmdHFiClassSim(const char *Cmd) {
                 // inform device to break the sim loop since client has exited
                 SendCommandNG(CMD_BREAK_LOOP, NULL, 0);
             }
-            
+*/
             break;
         }
     }

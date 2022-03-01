@@ -55,6 +55,12 @@
 
 static int CmdHelp(const char *Cmd);
 
+int CmdHFstopSim(const char *Cmd){
+    SendCommandNG(CMD_BREAK_LOOP, NULL, 0);
+    PrintAndLogEx(INFO, "Simulation HF stopped");
+    return PM3_SUCCESS;
+}
+
 int CmdHFSearch(const char *Cmd) {
 
     CLIParserContext *ctx;
@@ -440,6 +446,7 @@ static command_t CommandTable[] = {
     {"plot",        CmdHFPlot,        IfPm3Hfplot,     "Plot signal"},
     {"tune",        CmdHFTune,        IfPm3Present,    "Continuously measure HF antenna tuning"},
     {"search",      CmdHFSearch,      AlwaysAvailable, "Search for known HF tags"},
+    {"simstop",     CmdHFstopSim,     AlwaysAvailable, "Stop all HF simulation"},
     {"sniff",       CmdHFSniff,       IfPm3Hfsniff,    "Generic HF Sniff"},
     {NULL, NULL, NULL, NULL}
 };

@@ -732,9 +732,10 @@ int CmdHF14ASim(const char *Cmd) {
 
     clearCommandBuffer();
     SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
-    PacketResponseNG resp;
+    //PacketResponseNG resp;
 
     PrintAndLogEx(INFO, "Press pm3-button to abort simulation");
+
     bool keypress = kbd_enter_pressed();
     bool timepassed = 0;
     int addr = 0;
@@ -769,6 +770,7 @@ int CmdHF14ASim(const char *Cmd) {
             showSectorTable(k_sector, k_sectorsCount);
         }
     }
+
     
     PrintAndLogEx(INFO, "Done");
     return PM3_SUCCESS;
