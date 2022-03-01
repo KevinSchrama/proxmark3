@@ -75,7 +75,10 @@ static int CmdHelp(const char *Cmd);
 // if key event, send break loop cmd to Pm3
 int lfsim_wait_check(uint32_t cmd) {
     PrintAndLogEx(NORMAL, "");
+    PrintAndLogEx(INFO, "Press pm3-button or run \"lf simstop\" to abort simulation");
+/*
     PrintAndLogEx(INFO, "Press " _GREEN_("<Enter>") " or pm3-button to abort simulation");
+    
 
     for (;;) {
         if (kbd_enter_pressed()) {
@@ -93,6 +96,14 @@ int lfsim_wait_check(uint32_t cmd) {
         }
     }
     PrintAndLogEx(INFO, "Done");
+*/
+
+    return PM3_SUCCESS;
+}
+
+int CmdLFstopSim(const char *Cmd){
+    SendCommandNG(CMD_BREAK_LOOP, NULL, 0);
+    PrintAndLogEx(INFO, "Simulation stopped");
     return PM3_SUCCESS;
 }
 
@@ -1840,6 +1851,7 @@ static command_t CommandTable[] = {
     {"simask",      CmdLFaskSim,        IfPm3Lf,         "Simulate " _YELLOW_("ASK") " tag"},
     {"simfsk",      CmdLFfskSim,        IfPm3Lf,         "Simulate " _YELLOW_("FSK") " tag"},
     {"simpsk",      CmdLFpskSim,        IfPm3Lf,         "Simulate " _YELLOW_("PSK") " tag"},
+    {"simstop",     CmdLFstopSim,       IfPm3Lf,         "Stop all simulation"},
 //    {"simnrz",      CmdLFnrzSim,        IfPm3Lf,         "Simulate " _YELLOW_("NRZ") " tag"},
     {"simbidir",    CmdLFSimBidir,      IfPm3Lf,         "Simulate LF tag (with bidirectional data transmission between reader and tag)"},
     {"sniff",       CmdLFSniff,         IfPm3Lf,         "Sniff LF traffic between reader and tag"},

@@ -32,6 +32,7 @@ int CmdLFCommandRead(const char *Cmd);
 int CmdFlexdemod(const char *Cmd);
 int CmdLFRead(const char *Cmd);
 int CmdLFSim(const char *Cmd);
+int CmdLFstopSim(const char *Cmd);
 int CmdLFaskSim(const char *Cmd);
 int CmdLFfskSim(const char *Cmd);
 int CmdLFpskSim(const char *Cmd);
