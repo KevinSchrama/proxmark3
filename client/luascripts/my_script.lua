@@ -8,6 +8,7 @@ local function main(args)
 
     core.console('lf hid sim -r 2006ec0c86')
     os.execute('sleep 0.5')
+    -- core.console('lf stopsim -s hid')
 
     core.console('lf em 410x sim --id 0F0368568B')
     os.execute('sleep 0.5')
