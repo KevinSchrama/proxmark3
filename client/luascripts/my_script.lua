@@ -2,39 +2,53 @@ local getopt = require('getopt')
 local ansicolors  = require('ansicolors')
 
 local function main(args)
-    local waittime = 0.5
+    local waittime = 1
+    local lfwaittime = 1
 ---[[
     print('Start simulation of LF cards\n')
 
-    core.console('lf hid sim -r 2006ec0c86')
-    os.execute('sleep '..waittime)
+    core.console('lf hid sim -r 3006ec0c86')                    --1006ec0c86
+    os.execute('sleep '..lfwaittime)
     core.console('lf simstop')
+    
+    os.execute('sleep '..lfwaittime)
 
-    core.console('lf em 410x sim --id 0F0368568B')
-    os.execute('sleep '..waittime)
+    core.console('lf em 410x sim --id 0F0368568B')              --0F0368568B
+    os.execute('sleep '..lfwaittime)
     core.console('lf simstop')
+    
+    os.execute('sleep '..lfwaittime)
 
-    core.console('lf awid sim --fmt 26 --fc 234 --cn 1337')
-    os.execute('sleep '..waittime)
+    core.console('lf awid sim --fmt 26 --fc 234 --cn 1337')     --6d40a73
+    os.execute('sleep 2')
     core.console('lf simstop')
+    
+    os.execute('sleep '..lfwaittime)
 
-    core.console('lf io sim --vn 1 --fc 101 --cn 1338')
-    os.execute('sleep '..waittime)
-    core.console('lf simstop')
+    --core.console('lf io sim --vn 1 --fc 101 --cn 1338')
+    --os.execute('sleep '..lfwaittime)
+    --core.console('lf simstop')
+    
+    --os.execute('sleep '..lfwaittime)
 
-    core.console('lf noralsy sim --cn 1339')
-    os.execute('sleep '..waittime)
+    core.console('lf noralsy sim --cn 1338')                    --fefe
+    os.execute('sleep 2')
     core.console('lf simstop')
+    
+    os.execute('sleep '..lfwaittime)
 
-    core.console('lf paradox sim -r 0f55555695596a6a9999a59a')
-    os.execute('sleep '..waittime)
+    core.console('lf paradox sim -r 0f55555695596a6a9999a59a')  --218277aacb
+    os.execute('sleep '..lfwaittime)
     core.console('lf simstop')
+    
+    os.execute('sleep '..lfwaittime)
 --]]
 ---[[
     print('Start simulation of HF cards\n')
 
+    os.execute('sleep 1')
     core.console('hf iclass sim -t 0 --csn 4B6576696EB93314')
-    os.execute('sleep '..waittime)
+    os.execute('sleep 1')
     core.console('hf simstop')
 
     for type = 1, 9, 1 do
