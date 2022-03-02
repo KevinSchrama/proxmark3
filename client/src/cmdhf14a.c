@@ -776,6 +776,29 @@ int CmdHF14ASim(const char *Cmd) {
     return PM3_SUCCESS;
 }
 
+int CmdHF14ASimFast(const char *Cmd) {
+
+    int uid_len = 7;
+    uint8_t uid[10] = {17,34,51,68,85,102,119};
+
+    struct {
+        uint8_t tagtype;
+        uint16_t flags;
+        uint8_t uid[10];
+        uint8_t exitAfter;
+    } PACKED payload;
+
+    payload.tagtype = 1;
+    payload.flags = 4;
+    payload.exitAfter = 0;
+    memcpy(payload.uid, uid, uid_len);
+
+    clearCommandBuffer();
+    SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
+
+    return PM3_SUCCESS;
+}
+
 int CmdHF14ASniff(const char *Cmd) {
     CLIParserContext *ctx;
     CLIParserInit(&ctx, "hf 14a sniff",
@@ -2708,6 +2731,7 @@ static command_t CommandTable[] = {
     {"ndefread",    CmdHF14ANdefRead,     IfPm3Iso14443a,  "Read an NDEF file from ISO 14443-A Type 4 tag"},
     {"cuids",       CmdHF14ACUIDs,        IfPm3Iso14443a,  "Collect n>0 ISO14443-a UIDs in one go"},
     {"sim",         CmdHF14ASim,          IfPm3Iso14443a,  "Simulate ISO 14443-a tag"},
+    {"simfast",     CmdHF14ASimFast,      IfPm3Iso14443a,  "Simulate ISO 14443-a tag fast with uid 11223344556677"},
     {"sniff",       CmdHF14ASniff,        IfPm3Iso14443a,  "sniff ISO 14443-a traffic"},
     {"apdu",        CmdHF14AAPDU,         IfPm3Iso14443a,  "Send ISO 14443-4 APDU to tag"},
     {"chaining",    CmdHF14AChaining,     IfPm3Iso14443a,  "Control ISO 14443-4 input chaining"},
