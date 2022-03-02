@@ -2,8 +2,8 @@ local getopt = require('getopt')
 local ansicolors  = require('ansicolors')
 
 local function main(args)
-    local waittime = 2
-
+    local waittime = 0.5
+---[[
     print('Start simulation of LF cards\n')
 
     core.console('lf hid sim -r 2006ec0c86')
@@ -29,7 +29,8 @@ local function main(args)
     core.console('lf paradox sim -r 0f55555695596a6a9999a59a')
     os.execute('sleep '..waittime)
     core.console('lf simstop')
-
+--]]
+---[[
     print('Start simulation of HF cards\n')
 
     core.console('hf iclass sim -t 0 --csn 4B6576696EB93314')
@@ -39,13 +40,14 @@ local function main(args)
     for type = 1, 9, 1 do
 
         if type ~= 3 and type ~= 4 and type ~= 5 then
+        os.execute('sleep 0.5')
         -- send command to proxmark
         core.console('hf 14a sim -t '..type..' -u 4B6576696E000'..type)
         os.execute('sleep '..waittime)
         core.console('hf simstop')
         end
     end
-
+--]]
 end
 
 main(args)

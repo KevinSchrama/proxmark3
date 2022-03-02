@@ -706,13 +706,13 @@ int CmdHF14ASim(const char *Cmd) {
         flags |= FLAG_NR_AR_ATTACK;
     }
 
-    bool setEmulatorMem = arg_get_lit(ctx, 5);
-    bool verbose = arg_get_lit(ctx, 6);
+    //bool setEmulatorMem = arg_get_lit(ctx, 5);
+    //bool verbose = arg_get_lit(ctx, 6);
 
     CLIParserFree(ctx);
 
-    sector_t *k_sector = NULL;
-    uint8_t k_sectorsCount = 40;
+    //sector_t *k_sector = NULL;
+    //uint8_t k_sectorsCount = 40;
 
     if (useUIDfromEML) {
         flags |= FLAG_UID_IN_EMUL;
@@ -735,7 +735,7 @@ int CmdHF14ASim(const char *Cmd) {
     //PacketResponseNG resp;
 
     PrintAndLogEx(INFO, "Press pm3-button to abort simulation");
-
+/*  
     bool keypress = kbd_enter_pressed();
     bool timepassed = 0;
     int addr = 0;
@@ -752,7 +752,7 @@ int CmdHF14ASim(const char *Cmd) {
         if (resp.status != PM3_SUCCESS) break;
 
         if ((flags & FLAG_NR_AR_ATTACK) != FLAG_NR_AR_ATTACK) break;
-        
+
         nonces_t *data = (nonces_t *)resp.data.asBytes;
         readerAttack(k_sector, k_sectorsCount, data[0], setEmulatorMem, verbose);
 
@@ -769,7 +769,7 @@ int CmdHF14ASim(const char *Cmd) {
         if (resp.status == PM3_EOPABORTED && ((flags & FLAG_NR_AR_ATTACK) == FLAG_NR_AR_ATTACK)) {
             showSectorTable(k_sector, k_sectorsCount);
         }
-    }
+    }*/
 
     
     PrintAndLogEx(INFO, "Done");
