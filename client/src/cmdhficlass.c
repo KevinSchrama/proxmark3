@@ -907,6 +907,13 @@ static int CmdHFiClassSim(const char *Cmd) {
     return PM3_SUCCESS;
 }
 
+static int CmdHFiClassSimFast(const char *Cmd) {
+    uint8_t csn[8] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0xB9, 0x33, 0x14};
+    clearCommandBuffer();
+    SendCommandMIX(CMD_HF_ICLASS_SIMULATE, ICLASS_SIM_MODE_CSN, 0, 1, csn, 8);
+    return PM3_SUCCESS;
+}
+
 static int CmdHFiClassInfo(const char *Cmd) {
     CLIParserContext *ctx;
     CLIParserInit(&ctx, "hf iclass info",
@@ -4020,6 +4027,7 @@ static command_t CommandTable[] = {
     {"lookup",      CmdHFiClassLookUp,          AlwaysAvailable, "Uses authentication trace to check for key in dictionary file"},
     {"-----------", CmdHelp,                    AlwaysAvailable, "--------------------- " _CYAN_("simulation") " ---------------------"},
     {"sim",         CmdHFiClassSim,             IfPm3Iclass,     "Simulate iCLASS tag"},
+    {"simfast",     CmdHFiClassSimFast,         IfPm3Iclass,     "Quick simulate of iCLASS tag"},
     {"eload",       CmdHFiClassELoad,           IfPm3Iclass,     "Load Picopass / iCLASS dump file into emulator memory"},
     {"esave",       CmdHFiClassESave,           IfPm3Iclass,     "Save emulator memory to file"},
     {"eview",       CmdHFiClassEView,           IfPm3Iclass,     "View emulator memory"},
