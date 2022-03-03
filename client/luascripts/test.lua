@@ -29,7 +29,7 @@ local function main(args)
         core.console('lf paradox sim -r 0f55555695596a6a9999a59a')  --218277aacb
         os.execute('sleep 1')
     elseif typecard == '5' then
-        core.console('hf iclass sim -t 0 --csn 4B6576696EB93314')
+        core.console('hf iclass simfast')                           --4B6576696EB93314
         os.execute('sleep 2')
     elseif typecard == '6' then
         core.console('hf 14a sim -t 1 -u 4B6576696E0006')
