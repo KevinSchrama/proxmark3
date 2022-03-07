@@ -12,6 +12,16 @@
 
 #define WAIT_TIME 1000
 
+static pthread_t spider_thread;
+
+void* spiderThread(void* p){
+    
+}
+
+int initSpider(){
+    pthread_create(&spider_thread, NULL, spiderThread, &)
+}
+
 void StopSim(void){
     SendCommandNG(CMD_BREAK_LOOP, NULL, 0);
     msleep(500);
