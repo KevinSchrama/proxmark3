@@ -36,7 +36,7 @@
 #include "fileutils.h"
 #include "flash.h"
 #include "preferences.h"
-#include "comms.h"
+#include "quickcmd.h"
 
 //#define LIBPM3
 
@@ -1031,7 +1031,7 @@ int main(int argc, char *argv[]) {
         PrintAndLogEx(INFO, "Running in " _YELLOW_("OFFLINE") " mode. Check " _YELLOW_("\"%s -h\"") " if it's not what you want.\n", exec_name);
 
     // ascii art only in interactive client
-    if (!script_cmds_file && !script_cmd && g_session.stdinOnTTY && g_session.stdoutOnTTY && !flash_mode)
+    if (!script_cmds_file && !script_cmd && g_session.stdinOnTTY && g_session.stdoutOnTTY && !flash_mode && stayInCommandLoop)
         showBanner();
 
     // Save settings if not loaded from settings json file.
@@ -1055,9 +1055,12 @@ int main(int argc, char *argv[]) {
     }
     */
 
-#ifdef HAVE_GUI
+
+    if(stayInCommandLoop){
+#ifndef HAVE_GUI
 
 #  if defined(_WIN32)
+    PrintAndLogEx(INFO, "TO GUI!");
     InitGraphics(argc, argv, script_cmds_file, script_cmd, stayInCommandLoop);
     MainGraphics();
 #  else
@@ -1074,6 +1077,26 @@ int main(int argc, char *argv[]) {
 #else
     main_loop(script_cmds_file, script_cmd, stayInCommandLoop);
 #endif
+    }else{  
+        SimiClass();
+        StopSim();
+
+        for(uint8_t i = 1; i <= 9; i++){
+            if((i < 3) || (i > 5)){
+                Sim14A(i);
+                StopSim();
+            }
+        }
+
+        SimHID();
+        StopSim();
+
+        if (g_session.pm3_present) {
+            clearCommandBuffer();
+            SendCommandNG(CMD_QUIT_SESSION, NULL, 0);
+            msleep(100); // Make sure command is sent before killing client
+        }
+    }
 
     // Clean up the port
     if (g_session.pm3_present) {

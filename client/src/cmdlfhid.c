@@ -291,6 +291,7 @@ static int CmdHIDSim(const char *Cmd) {
         packed.Top = top;
         packed.Mid = mid;
         packed.Bot = bot;
+        PrintAndLogEx(INFO, "Top: %d, mid: %d, bot: %d", top, mid, bot);
     } else {
         if (HIDPack(format_idx, &card, &packed, true) == false) {
             PrintAndLogEx(WARNING, "The card data could not be encoded in the selected format.");
