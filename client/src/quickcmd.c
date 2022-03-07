@@ -10,6 +10,8 @@
 #include "util_posix.h" //msleep
 #include "pm3_cmd.h"
 
+#define WAIT_TIME 1000
+
 void StopSim(void){
     SendCommandNG(CMD_BREAK_LOOP, NULL, 0);
     msleep(500);
@@ -34,7 +36,7 @@ void Sim14A(uint8_t i){
 
     clearCommandBuffer();
     SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
-    msleep(1000);
+    msleep(WAIT_TIME);
 }
 
 void SimiClass(void){
@@ -42,7 +44,7 @@ void SimiClass(void){
     PrintAndLogEx(SUCCESS, "TESTING iClass sim with UID %s", sprint_hex(csn, 8));
     clearCommandBuffer();
     SendCommandMIX(CMD_HF_ICLASS_SIMULATE, 0, 0, 1, csn, 8); //Simulate iClass
-    msleep(1000);
+    msleep(WAIT_TIME);
 }
 
 void SimHID(void){
@@ -55,5 +57,41 @@ void SimHID(void){
 
     clearCommandBuffer();
     SendCommandNG(CMD_LF_HID_SIMULATE, (uint8_t *)&payload,  sizeof(payload));
-    msleep(1000);
+    msleep(WAIT_TIME);
+}
+
+void chooseSim(int sim){
+    switch(sim){
+        case 0:
+            SimHID();
+            break;
+        case 1:
+            Sim14A(sim);
+            break;
+        case 2:
+            Sim14A(sim);
+            break;
+        case 3:
+            SimiClass();
+            break;
+        case 4:
+            break;
+        case 5:
+            break;
+        case 6:
+            Sim14A(sim);
+            break;
+        case 7:
+            Sim14A(sim);
+            break;
+        case 8:
+            Sim14A(sim);
+            break;
+        case 9:
+            Sim14A(sim);
+            break;
+        default:
+            PrintAndLogEx(ERR, "Not a valid sim number!");
+            break;
+    }
 }

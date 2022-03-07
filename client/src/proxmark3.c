@@ -1077,19 +1077,12 @@ int main(int argc, char *argv[]) {
 #else
     main_loop(script_cmds_file, script_cmd, stayInCommandLoop);
 #endif
-    }else{  
-        SimiClass();
-        StopSim();
-
-        for(uint8_t i = 1; i <= 9; i++){
-            if((i < 3) || (i > 5)){
-                Sim14A(i);
+    }else{ 
+        
+        for(uint8_t i = 0; i <= 9; i++){
+                chooseSim(i);
                 StopSim();
-            }
         }
-
-        SimHID();
-        StopSim();
 
         if (g_session.pm3_present) {
             clearCommandBuffer();

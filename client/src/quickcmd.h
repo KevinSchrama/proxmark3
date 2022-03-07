@@ -9,6 +9,7 @@ void StopSim(void);
 void Sim14A(uint8_t i);
 void SimiClass(void);
 void SimHID(void);
+void chooseSim(int sim);
 
 
 
