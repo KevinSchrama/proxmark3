@@ -36,6 +36,9 @@
 #include "fileutils.h"
 #include "flash.h"
 #include "preferences.h"
+#include "comms.h"
+
+//#define LIBPM3
 
 static int mainret = PM3_ESOFT;
 
