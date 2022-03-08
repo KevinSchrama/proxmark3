@@ -12,7 +12,7 @@
 typedef struct {
     bool UID_available;
     bool stopThread;
-    char UID[40];
+    char *UID;
 } UIDthread_arg_t;
 
 typedef struct {
@@ -24,6 +24,7 @@ typedef struct {
 extern UIDthread_arg_t UIDthread;
 
 void Simulate(int sim);
+void testCycle(void);
 void initSpidercomms(void);
 void stopSpidercomms(void);
 void printResults(void);

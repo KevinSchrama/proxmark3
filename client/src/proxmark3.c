@@ -1079,9 +1079,8 @@ int main(int argc, char *argv[]) {
 #endif
     }else{ 
         initSpidercomms();
-        for(uint8_t i = 0; i <= 9; i++){
-                Simulate(i);
-        }
+        testCycle();
+        printResults();
 
         if (g_session.pm3_present) {
             clearCommandBuffer();

@@ -53,7 +53,7 @@ static int CmdHelp(const char *Cmd);
  */
 
 // Construct the graph for emulating an EM410X tag
-static void em410x_construct_emul_graph(uint8_t *uid, uint8_t clock, uint8_t gap) {
+void em410x_construct_emul_graph(uint8_t *uid, uint8_t clock, uint8_t gap) {
 
     // clear our graph
     ClearGraph(true);
@@ -453,7 +453,7 @@ static int CmdEM410xSim(const char *Cmd) {
         PrintAndLogEx(FAILED, "EM ID must include 5 hex bytes (10 hex symbols), got " _YELLOW_("%u"), uid_len);
         return PM3_EINVARG;
     }
-
+    printf("EM410x gap %i\n", gap);
     PrintAndLogEx(SUCCESS, "Starting simulating EM Tag ID "_YELLOW_("%s")" clock: "_YELLOW_("%d"), sprint_hex_inrow(uid, sizeof(uid)), clk);
     em410x_construct_emul_graph(uid, clk, gap);
     CmdLFSim("");

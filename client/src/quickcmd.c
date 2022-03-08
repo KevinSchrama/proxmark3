@@ -14,8 +14,12 @@
 #include "ui.h" //PrintAndLogEx
 #include "util_posix.h" //msleep
 #include "pm3_cmd.h"
+#include "cmdlf.h"
+#include "cmdlfem410x.h"
+#include "cmdlfnoralsy.h"
 
-#define WAIT_TIME 0
+// Wait time for UID in ms
+#define WAIT_TIME 5000
 
 #define COUNTOF(x)  (int) ( ( sizeof(x) / sizeof((x)[0]) ) )
 
@@ -34,6 +38,9 @@ void checkUID(int index);
 void Sim14A(uint8_t i);
 void SimiClass(void);
 void SimHID(void);
+void SimEM410x(void);
+void SimParadox(void);
+void SimNoralsy(void);
 
 void* spiderThread(void* p);
 
@@ -71,8 +78,8 @@ void* spiderThread(void* p){
             if(ev.code == KEY_ENTER){
                 bufint = strtoull(buf,NULL,10);
                 ulltohexstring(args->UID, bufint);
-                memset(buf, '\0', 40);
-                printf("UID: %s\n", args->UID);
+                memset(buf, 0, 40);
+                //printf("UID: %s\n", args->UID);
                 args->UID_available = true;
             }
         }
@@ -86,8 +93,10 @@ void* spiderThread(void* p){
 void initSpidercomms(void){
     UIDthread.UID_available = false;
     UIDthread.stopThread = false;
+    UIDthread.UID = malloc(40);
     memset(UIDthread.UID, 0, 40);
     pthread_create(&spider_thread, NULL, spiderThread, &UIDthread);
+    msleep(100);
 }
 
 void stopSpidercomms(void){
@@ -98,27 +107,33 @@ void stopSpidercomms(void){
 
 void checkUID(int index){
     int i = 0;
-    while(!UIDthread.UID_available && i < 500){
-        msleep(10);
+    while(!UIDthread.UID_available && i < WAIT_TIME){
+        msleep(1);
         i++;
     }
     if(UIDthread.UID_available){
         if(strcmp(cardtypes_t.cardUID[index], UIDthread.UID) == 0){
             cardtypes_t.detected[index] = 1;
+            PrintAndLogEx(SUCCESS, "UID detected: %s", UIDthread.UID);
+        }else{
+            PrintAndLogEx(ERR, "UID not detected: %s", UIDthread.UID);
         }
+        UIDthread.UID_available = false;
     }
     cardtypes_t.num_tries[index]++;
 }
 
 void stopSim(void){
+    clearCommandBuffer();
     SendCommandNG(CMD_BREAK_LOOP, NULL, 0);
-    msleep(100);
+    msleep(500);
 }
 
 void Sim14A(uint8_t i){
     int uid_len = 7;
-    uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, i};
-    PrintAndLogEx(SUCCESS, "TESTING ISO 14443A sim with UID %s", sprint_hex(uid, uid_len));
+    uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, i%10};
+    if(i != 0)
+        PrintAndLogEx(INFO, "TESTING ISO 14443A sim with UID %s", sprint_hex(uid, uid_len));
 
     struct {
         uint8_t tagtype;
@@ -127,22 +142,24 @@ void Sim14A(uint8_t i){
         uint8_t exitAfter;
     } PACKED payload;
 
-    payload.tagtype = i;
+    if(i != 0){
+        payload.tagtype = i%10;
+    }else{
+        payload.tagtype = 1;
+    }
     payload.flags = 4;
     payload.exitAfter = 0;
     memcpy(payload.uid, uid, uid_len);
 
     clearCommandBuffer();
     SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
-    msleep(WAIT_TIME);
 }
 
 void SimiClass(void){
     uint8_t csn[8] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0xB9, 0x33, 0x14};
-    PrintAndLogEx(SUCCESS, "TESTING iClass sim with UID %s", sprint_hex(csn, 8));
+    PrintAndLogEx(INFO, "TESTING iClass sim with UID %s", sprint_hex(csn, 8));
     clearCommandBuffer();
     SendCommandMIX(CMD_HF_ICLASS_SIMULATE, 0, 0, 1, csn, 8); //Simulate iClass
-    msleep(WAIT_TIME);
 }
 
 void SimHID(void){
@@ -151,50 +168,117 @@ void SimHID(void){
     payload.hi = 0x30;
     payload.lo = 0x06ec0c86;
     payload.longFMT = (0x30 > 0xFFF);
-    PrintAndLogEx(SUCCESS, "TESTING HID sim with UID 10 06 EC 0C 86");
+    PrintAndLogEx(INFO, "TESTING HID sim with UID 10 06 EC 0C 86");
 
     clearCommandBuffer();
     SendCommandNG(CMD_LF_HID_SIMULATE, (uint8_t *)&payload,  sizeof(payload));
-    msleep(WAIT_TIME);
+}
+
+void SimEM410x(void){
+    int clock = 64;
+    int uid_len = 5;
+    int gap = 20;
+    uint8_t uid[] = {0x0F, 0x03, 0x68, 0x56, 0x8B};
+
+    PrintAndLogEx(INFO, "TESTING EM410x sim with UID %s", sprint_hex(uid, uid_len));
+
+    em410x_construct_emul_graph(uid, clock, gap);
+    CmdLFSim("");
+}
+
+void SimParadox(void){
+    uint8_t raw[] = {0x0f, 0x55, 0x55, 0x56, 0x95, 0x59, 0x6a, 0x6a, 0x99, 0x99, 0xa5, 0x9a};
+
+    uint8_t bs[sizeof(raw) * 8];
+    bytes_to_bytebits(raw, sizeof(raw), bs); 
+
+    uint8_t clk = 50, high = 10, low = 8;
+
+    lf_fsksim_t *payload = calloc(1, sizeof(lf_fsksim_t) + sizeof(bs));
+    payload->fchigh = high;
+    payload->fclow =  low;
+    payload->separator = 0;
+    payload->clock = clk;
+    memcpy(payload->data, bs, sizeof(bs));
+
+    clearCommandBuffer();
+    SendCommandNG(CMD_LF_FSK_SIMULATE, (uint8_t *)payload,  sizeof(lf_fsksim_t) + sizeof(bs));
+    free(payload);
+}
+
+void SimNoralsy(void){
+    uint32_t id = 1337;
+    uint16_t year = 2000;
+
+    uint8_t bs[96];
+    memset(bs, 0, sizeof(bs));
+
+    if (getnoralsyBits(id, year, bs) != PM3_SUCCESS) {
+        PrintAndLogEx(ERR, "Error with tag bitstream generation.");
+    }
+
+    lf_asksim_t *payload = calloc(1, sizeof(lf_asksim_t) + sizeof(bs));
+    payload->encoding = 1;
+    payload->invert = 0;
+    payload->separator = 1;
+    payload->clock = 32;
+    memcpy(payload->data, bs, sizeof(bs));
+
+    clearCommandBuffer();
+    SendCommandNG(CMD_LF_ASK_SIMULATE, (uint8_t *)payload,  sizeof(lf_asksim_t) + sizeof(bs));
+    free(payload);
+}
+
+void testCycle(void){
+    for(uint8_t i = 0; i <= NUMCARDS; i++){
+        Simulate(i);
+    }
+    for(uint8_t i = 0; i <= NUMCARDS; i++){
+        if(cardtypes_t.detected[i])
+            continue;
+        Simulate(i);
+    }
 }
 
 void Simulate(int sim){
     switch(sim){
         case 0:
-            SimHID();
+            Sim14A(0); //buffer simulation
+            stopSim();
+            return;
             break;
         case 1:
-            Sim14A(sim);
+            Sim14A(1);
             break;
         case 2:
-            Sim14A(sim);
+            Sim14A(2);
             break;
         case 3:
-            SimiClass();
+            Sim14A(6);
             break;
         case 4:
-            //noralsy
-            return;
+            Sim14A(7);
             break;
         case 5:
-            //paradox
-            return;
+            Sim14A(8);
             break;
         case 6:
-            Sim14A(sim);
+            Sim14A(9);
             break;
         case 7:
-            Sim14A(sim);
+            SimiClass();
             break;
         case 8:
-            Sim14A(sim);
+            SimParadox();
             break;
         case 9:
-            Sim14A(sim);
+            SimHID();
             break;
         case 10:
-            //EM410x
-            return;
+            SimEM410x();
+            break;
+        case 11:
+            SimNoralsy();
             break;
         default:
             PrintAndLogEx(ERR, "Not a valid sim number!");
@@ -205,24 +289,29 @@ void Simulate(int sim){
 }
 
 void printResults(void){
-    PrintAndLogEx(INFO, "============================================\n");
-    PrintAndLogEx(INFO, "UID's detected:\n");
-    PrintAndLogEx(INFO, "Num ---     Card UID     --- Number of tries\n");
-    for (int i = 0; i < COUNTOF(cardtypes_t.cardUID); i++){
+    PrintAndLogEx(INFO, "============================================");
+    PrintAndLogEx(INFO, "UID's detected:");
+    PrintAndLogEx(INFO, "Num ---     Card UID     --- Number of tries");
+    for (int i = 1; i <= NUMCARDS; i++){
         if(cardtypes_t.detected[i]){
-            PrintAndLogEx(SUCCESS, "%3i --- %16s --- %i\n", i, cardtypes_t.cardUID[i], cardtypes_t.num_tries[i]);
+            PrintAndLogEx(SUCCESS, "%3i --- %16s --- %i", i, cardtypes_t.cardUID[i], cardtypes_t.num_tries[i]);
         }
     }
-    PrintAndLogEx(INFO, "============================================\n");
-    PrintAndLogEx(INFO, "============================================\n");
-    PrintAndLogEx(INFO, "Missing UID's:\n");
-    PrintAndLogEx(INFO, "Num --- Card UID\n");
-    for (int i = 0; i < COUNTOF(cardtypes_t.cardUID); i++){
+    PrintAndLogEx(INFO, "============================================");
+    PrintAndLogEx(INFO, "============================================");
+    PrintAndLogEx(INFO, "Missing UID's:");
+    PrintAndLogEx(INFO, "Num --- Card UID");
+    int count = 0;
+    for (int i = 1; i <= NUMCARDS; i++){
         if(!cardtypes_t.detected[i]){
-            PrintAndLogEx(SUCCESS, "%3i --- %16s\n", i, cardtypes_t.cardUID[i]);
+            PrintAndLogEx(INFO, _RED_("%3i --- %16s"), i, cardtypes_t.cardUID[i]);
+            count++;
         }
     }
-    PrintAndLogEx(INFO, "============================================\n");
+    if(count == 0){
+        PrintAndLogEx(SUCCESS, _GREEN_("Nothing missed, test succeeded!"));
+    }
+    PrintAndLogEx(INFO, "============================================");
 }
 
 static void setupKeyCodes(void){
@@ -270,15 +359,16 @@ static void setupCardTypes(void){
         cardtypes_t.detected[i] = 0;
         cardtypes_t.num_tries[i] = 0;
     }
-    cardtypes_t.cardUID[0] = "1006ec0c86";          //hid
-    cardtypes_t.cardUID[1] = "4b6576696e0001";      //ISO14443A - 1
-    cardtypes_t.cardUID[2] = "4b6576696e0002";      //ISO14443A - 2
-    cardtypes_t.cardUID[3] = "4b6576696eb93314";    //iClass
-    cardtypes_t.cardUID[4] = "fefe";                //noralsy
-    cardtypes_t.cardUID[5] = "218277aacb";          //paradox
-    cardtypes_t.cardUID[6] = "4b6576696e0006";      //ISO14443A - 6
-    cardtypes_t.cardUID[7] = "4b6576696e0007";      //ISO14443A - 7
-    cardtypes_t.cardUID[8] = "4b6576696e0008";      //ISO14443A - 8
-    cardtypes_t.cardUID[9] = "4b6576696e0009";      //ISO14443A - 9
-    cardtypes_t.cardUID[10] = "f0368568b";          //em410x
+    cardtypes_t.cardUID[0] = 0;
+    cardtypes_t.cardUID[1] = "4B6576696E0001";      //ISO14443A - 1
+    cardtypes_t.cardUID[2] = "4B6576696E0002";      //ISO14443A - 2
+    cardtypes_t.cardUID[3] = "4B6576696E0006";      //ISO14443A - 6
+    cardtypes_t.cardUID[4] = "4B6576696E0007";      //ISO14443A - 7
+    cardtypes_t.cardUID[5] = "4B6576696E0008";      //ISO14443A - 8
+    cardtypes_t.cardUID[6] = "4B6576696E0009";      //ISO14443A - 9
+    cardtypes_t.cardUID[7] = "4B6576696EB93314";    //iClass
+    cardtypes_t.cardUID[8] = "218277AACB";          //paradox
+    cardtypes_t.cardUID[9] = "1006EC0C86";          //hid
+    cardtypes_t.cardUID[10] = "F0368568B";          //em410x
+    cardtypes_t.cardUID[11] = "FEFE";               //noralsy
 }

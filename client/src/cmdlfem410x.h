@@ -29,4 +29,6 @@ void printEM410x(uint32_t hi, uint64_t id, bool verbose, int type);
 int AskEm410xDecode(bool verbose, uint32_t *hi, uint64_t *lo);
 int AskEm410xDemod(int clk, int invert, int maxErr, size_t maxLen, bool amplify, uint32_t *hi, uint64_t *lo, bool verbose);
 
+void em410x_construct_emul_graph(uint8_t *uid, uint8_t clock, uint8_t gap);
+
 #endif
