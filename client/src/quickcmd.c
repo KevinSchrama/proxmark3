@@ -173,8 +173,12 @@ void Simulate(int sim){
             SimiClass();
             break;
         case 4:
+            //noralsy
+            return;
             break;
         case 5:
+            //paradox
+            return;
             break;
         case 6:
             Sim14A(sim);
@@ -187,6 +191,10 @@ void Simulate(int sim){
             break;
         case 9:
             Sim14A(sim);
+            break;
+        case 10:
+            //EM410x
+            return;
             break;
         default:
             PrintAndLogEx(ERR, "Not a valid sim number!");
@@ -257,20 +265,20 @@ void ulltohexstring(char *UID, unsigned long long int quo){
 }
 
 static void setupCardTypes(void){
-    for (int i = 0; i < COUNTOF(cardtypes_t.cardUID); i++){
+    for (int i = 0; i <= NUMCARDS; i++){
         cardtypes_t.cardUID[i] = 0;
         cardtypes_t.detected[i] = 0;
         cardtypes_t.num_tries[i] = 0;
     }
-    cardtypes_t.cardUID[1] = "1006ec0c86";
-    cardtypes_t.cardUID[2] = "f0368568b";
-    cardtypes_t.cardUID[3] = "fefe";
-    cardtypes_t.cardUID[4] = "218277aacb";
-    cardtypes_t.cardUID[5] = "4b6576696eb93314";
-    cardtypes_t.cardUID[6] = "4b6576696e0006";
-    cardtypes_t.cardUID[7] = "4b6576696e0007";
-    cardtypes_t.cardUID[8] = "4b6576696e0008";
-    cardtypes_t.cardUID[9] = "4b6576696e0009";
-    cardtypes_t.cardUID[10] = "4b6576696e000a";
-    cardtypes_t.cardUID[11] = "4b6576696e000b";
+    cardtypes_t.cardUID[0] = "1006ec0c86";          //hid
+    cardtypes_t.cardUID[1] = "4b6576696e0001";      //ISO14443A - 1
+    cardtypes_t.cardUID[2] = "4b6576696e0002";      //ISO14443A - 2
+    cardtypes_t.cardUID[3] = "4b6576696eb93314";    //iClass
+    cardtypes_t.cardUID[4] = "fefe";                //noralsy
+    cardtypes_t.cardUID[5] = "218277aacb";          //paradox
+    cardtypes_t.cardUID[6] = "4b6576696e0006";      //ISO14443A - 6
+    cardtypes_t.cardUID[7] = "4b6576696e0007";      //ISO14443A - 7
+    cardtypes_t.cardUID[8] = "4b6576696e0008";      //ISO14443A - 8
+    cardtypes_t.cardUID[9] = "4b6576696e0009";      //ISO14443A - 9
+    cardtypes_t.cardUID[10] = "f0368568b";          //em410x
 }
