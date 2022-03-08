@@ -261,6 +261,9 @@ ifneq ($(SKIPPTHREAD),1)
     LDLIBS += -lpthread
 endif
 
+## Libevdev
+LDLIBS += -levdev
+
 ## Python3 (optional)
 ifneq ($(SKIPPYTHON),1)
     PYTHONINCLUDES = $(shell $(PKG_CONFIG_ENV) pkg-config --cflags python3 2>/dev/null)

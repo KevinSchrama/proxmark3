@@ -1078,10 +1078,9 @@ int main(int argc, char *argv[]) {
     main_loop(script_cmds_file, script_cmd, stayInCommandLoop);
 #endif
     }else{ 
-        
+        initSpidercomms();
         for(uint8_t i = 0; i <= 9; i++){
-                chooseSim(i);
-                StopSim();
+                Simulate(i);
         }
 
         if (g_session.pm3_present) {
@@ -1089,6 +1088,8 @@ int main(int argc, char *argv[]) {
             SendCommandNG(CMD_QUIT_SESSION, NULL, 0);
             msleep(100); // Make sure command is sent before killing client
         }
+        stopSpidercomms();
+
     }
 
     // Clean up the port

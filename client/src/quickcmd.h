@@ -5,11 +5,27 @@
 
 #include <stdint.h>
 
-void StopSim(void);
-void Sim14A(uint8_t i);
-void SimiClass(void);
-void SimHID(void);
-void chooseSim(int sim);
+#define NUMCARDS 11
+
+typedef struct {
+    bool UID_available;
+    bool stopThread;
+    char UID[40];
+} UIDthread_arg_t;
+
+struct cardtypes_s {
+    const char *cardUID[(NUMCARDS+1)] = {0};
+    int num_tries[(NUMCARDS+1)] = {0};
+    bool detected[(NUMCARDS+1)] = {0};
+} cardtypes_t;
+
+extern UIDthread_arg_t UIDthread;
+
+void Simulate(int sim);
+void initSpidercomms(void);
+void stopSpidercomms(void);
+void printResults(void);
+
 
 
 
