@@ -4,6 +4,8 @@
 #define __QUICKCMD_H
 
 #include <stdint.h>
+#include <stdio.h>
+#include "util.h"
 
 #define NUMCARDS 11
 
@@ -13,11 +15,11 @@ typedef struct {
     char UID[40];
 } UIDthread_arg_t;
 
-struct cardtypes_s {
-    const char *cardUID[(NUMCARDS+1)] = {0};
-    int num_tries[(NUMCARDS+1)] = {0};
-    bool detected[(NUMCARDS+1)] = {0};
-} cardtypes_t;
+typedef struct {
+    const char *cardUID[(NUMCARDS+1)];
+    int num_tries[(NUMCARDS+1)];
+    bool detected[(NUMCARDS+1)];
+} cardtypes_s;
 
 extern UIDthread_arg_t UIDthread;
 

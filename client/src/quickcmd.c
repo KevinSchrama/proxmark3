@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <err.h>
+#include <errno.h>
 #include <libevdev-1.0/libevdev/libevdev.h>
 #include "comms.h" //SendCommand
 #include "util.h" //sprint_hex
@@ -14,18 +17,25 @@
 
 #define WAIT_TIME 0
 
+#define COUNTOF(x)  (int) ( ( sizeof(x) / sizeof((x)[0]) ) )
+
 UIDthread_arg_t UIDthread;
 static pthread_t spider_thread;
+static const char *keycodes[64 * 1024] = { 0 }; // hack
+cardtypes_s cardtypes_t;
 
 static void setupCardTypes(void);
 static void setupKeyCodes(void);
 void ulltohexstring(char *UID, unsigned long long int quo);
 
-void StopSim(void);
+void stopSim(void);
+void checkUID(int index);
 
 void Sim14A(uint8_t i);
 void SimiClass(void);
 void SimHID(void);
+
+void* spiderThread(void* p);
 
 
 void* spiderThread(void* p){
@@ -62,38 +72,37 @@ void* spiderThread(void* p){
                 bufint = strtoull(buf,NULL,10);
                 ulltohexstring(args->UID, bufint);
                 memset(buf, '\0', 40);
-                printf("UID: %s\n", args.UID);
+                printf("UID: %s\n", args->UID);
                 args->UID_available = true;
             }
         }
     } while ((err == 1 || err == 0 || err == -EAGAIN) && !args->stopThread);
 
     close(fd);
-    fd = NULL;
     pthread_exit(NULL);
     return NULL;
 }
 
 void initSpidercomms(void){
-    UIDthread->UID_available = false;
-    UIDthread->stopThread = false;
-    UIDthread->UID = {0};
+    UIDthread.UID_available = false;
+    UIDthread.stopThread = false;
+    memset(UIDthread.UID, 0, 40);
     pthread_create(&spider_thread, NULL, spiderThread, &UIDthread);
 }
 
 void stopSpidercomms(void){
     UIDthread.stopThread = true;
     pthread_join(spider_thread, NULL);
-    memset(&communication_thread, 0, sizeof(pthread_t));
+    memset(&spider_thread, 0, sizeof(pthread_t));
 }
 
 void checkUID(int index){
     int i = 0;
-    while(!UIDthread->UID_available && i < 500){
+    while(!UIDthread.UID_available && i < 500){
         msleep(10);
         i++;
     }
-    if(UIDthread->UID_available){
+    if(UIDthread.UID_available){
         if(strcmp(cardtypes_t.cardUID[index], UIDthread.UID) == 0){
             cardtypes_t.detected[index] = 1;
         }
@@ -101,7 +110,7 @@ void checkUID(int index){
     cardtypes_t.num_tries[index]++;
 }
 
-void StopSim(void){
+void stopSim(void){
     SendCommandNG(CMD_BREAK_LOOP, NULL, 0);
     msleep(100);
 }
