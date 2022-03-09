@@ -9,6 +9,8 @@
 #include <err.h>
 #include <errno.h>
 #include <libevdev-1.0/libevdev/libevdev.h>
+#include <time.h>
+
 #include "comms.h" //SendCommand
 #include "util.h" //sprint_hex
 #include "ui.h" //PrintAndLogEx
@@ -23,7 +25,7 @@
 
 #define COUNTOF(x)  (int) ( ( sizeof(x) / sizeof((x)[0]) ) )
 
-UIDthread_arg_t UIDthread;
+UIDthread_arg_t thread_args;
 static pthread_t spider_thread;
 static const char *keycodes[64 * 1024] = { 0 }; // hack
 cardtypes_s cardtypes_t;
@@ -44,6 +46,8 @@ void SimNoralsy(void);
 
 void* spiderThread(void* p);
 
+time_t time_begin;
+time_t time_end;
 
 void* spiderThread(void* p){
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
@@ -91,34 +95,34 @@ void* spiderThread(void* p){
 }
 
 void initSpidercomms(void){
-    UIDthread.UID_available = false;
-    UIDthread.stopThread = false;
-    UIDthread.UID = malloc(40);
-    memset(UIDthread.UID, 0, 40);
-    pthread_create(&spider_thread, NULL, spiderThread, &UIDthread);
+    thread_args.UID_available = false;
+    thread_args.stopThread = false;
+    thread_args.UID = malloc(40);
+    memset(thread_args.UID, 0, 40);
+    pthread_create(&spider_thread, NULL, spiderThread, &thread_args);
     msleep(100);
 }
 
 void stopSpidercomms(void){
-    UIDthread.stopThread = true;
+    thread_args.stopThread = true;
     pthread_join(spider_thread, NULL);
     memset(&spider_thread, 0, sizeof(pthread_t));
 }
 
 void checkUID(int index){
     int i = 0;
-    while(!UIDthread.UID_available && i < WAIT_TIME){
+    while(!thread_args.UID_available && i < WAIT_TIME){
         msleep(1);
         i++;
     }
-    if(UIDthread.UID_available){
-        if(strcmp(cardtypes_t.cardUID[index], UIDthread.UID) == 0){
+    if(thread_args.UID_available){
+        if(strcmp(cardtypes_t.cardUID[index], thread_args.UID) == 0){
             cardtypes_t.detected[index] = 1;
-            PrintAndLogEx(SUCCESS, "UID detected: %s", UIDthread.UID);
+            PrintAndLogEx(SUCCESS, "UID detected: %s", thread_args.UID);
         }else{
-            PrintAndLogEx(ERR, "UID not detected: %s", UIDthread.UID);
+            PrintAndLogEx(ERR, "UID not detected: %s", thread_args.UID);
         }
-        UIDthread.UID_available = false;
+        thread_args.UID_available = false;
     }
     cardtypes_t.num_tries[index]++;
 }
@@ -230,6 +234,7 @@ void SimNoralsy(void){
 }
 
 void testCycle(void){
+    time_begin = time(NULL);
     for(uint8_t i = 0; i <= NUMCARDS; i++){
         Simulate(i);
     }
@@ -238,6 +243,7 @@ void testCycle(void){
             continue;
         Simulate(i);
     }
+    time_end = time(NULL);
 }
 
 void Simulate(int sim){
@@ -292,9 +298,11 @@ void printResults(void){
     PrintAndLogEx(INFO, "============================================");
     PrintAndLogEx(INFO, "UID's detected:");
     PrintAndLogEx(INFO, "Num ---     Card UID     --- Number of tries");
+    int detect_count = 0;
     for (int i = 1; i <= NUMCARDS; i++){
         if(cardtypes_t.detected[i]){
             PrintAndLogEx(SUCCESS, "%3i --- %16s --- %i", i, cardtypes_t.cardUID[i], cardtypes_t.num_tries[i]);
+            detect_count++;
         }
     }
     PrintAndLogEx(INFO, "============================================");
@@ -312,6 +320,17 @@ void printResults(void){
         PrintAndLogEx(SUCCESS, _GREEN_("Nothing missed, test succeeded!"));
     }
     PrintAndLogEx(INFO, "============================================");
+    PrintAndLogEx(INFO, "Testing took %d seconds.", (time_end - time_begin));
+    PrintAndLogEx(INFO, "============================================");
+
+    FILE *ptr;
+    ptr = fopen("/home/pi/proxmark3/client/testlog.txt", "a");
+    if(ptr == NULL){
+        PrintAndLogEx(ERR, "Couldn't open logfile");
+        return;
+    }
+    fprintf(ptr, "%d,%d,%ld\n", detect_count, count, (time_end-time_begin));
+    fclose(ptr);
 }
 
 static void setupKeyCodes(void){

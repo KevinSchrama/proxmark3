@@ -21,7 +21,7 @@ typedef struct {
     bool detected[(NUMCARDS+1)];
 } cardtypes_s;
 
-extern UIDthread_arg_t UIDthread;
+extern UIDthread_arg_t thread_args;
 
 void Simulate(int sim);
 void testCycle(void);

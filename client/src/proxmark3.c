@@ -1060,7 +1060,6 @@ int main(int argc, char *argv[]) {
 #ifndef HAVE_GUI
 
 #  if defined(_WIN32)
-    PrintAndLogEx(INFO, "TO GUI!");
     InitGraphics(argc, argv, script_cmds_file, script_cmd, stayInCommandLoop);
     MainGraphics();
 #  else
