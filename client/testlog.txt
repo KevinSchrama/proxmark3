@@ -5,3 +5,7 @@ Count detected,Count not detected,Time of test
 10,1,26
 11,0,17
 11,0,16
+11,0,19
+11,0,18
+11,0,23
+11,0,33
