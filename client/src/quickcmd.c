@@ -6,7 +6,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
+
+#ifdef _WIN32
+#else
 #include <err.h>
+#endif
+
 #include <errno.h>
 #include <libevdev-1.0/libevdev/libevdev.h>
 #include <time.h>
@@ -62,7 +67,7 @@ void* spiderThread(void* p){
     unsigned long long int bufint = 0;
 
     char *eventDevice = malloc(25);
-    sprintf(eventDevice, "/dev/input/%c", getDevice());
+    sprintf(eventDevice, "/dev/input/event%c", getDevice());
 
     const int fd = open(eventDevice, O_RDONLY | O_NONBLOCK);
 # if defined(_WIN32)
