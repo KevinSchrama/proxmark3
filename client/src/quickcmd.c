@@ -1,3 +1,4 @@
+#if defined(__linux__)
 #include "quickcmd.h"
 
 #include <string.h>
@@ -425,3 +426,5 @@ char getDevice(void){
     fclose(fp);
     return '0';
 }
+
+#endif
