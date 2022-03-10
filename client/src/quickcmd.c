@@ -10,10 +10,10 @@
 #ifdef _WIN32
 #else
 #include <err.h>
+#include <libevdev-1.0/libevdev/libevdev.h>
 #endif
 
 #include <errno.h>
-#include <libevdev-1.0/libevdev/libevdev.h>
 #include <time.h>
 
 #include "comms.h" //SendCommand
