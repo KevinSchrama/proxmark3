@@ -32,7 +32,7 @@ cardtypes_s cardtypes_t;
 
 static void setupCardTypes(void);
 static void setupKeyCodes(void);
-void ulltohexstring(char *UID, unsigned long long int quo);
+void ulltohexstring(char *Des, unsigned long long int Src);
 
 void stopSim(void);
 void checkUID(int index);
@@ -352,23 +352,23 @@ static void setupKeyCodes(void){
     keycodes[KEY_ENTER] = "\0";
 }
 
-void ulltohexstring(char *UID, unsigned long long int quo){
+void ulltohexstring(char *Des, unsigned long long int Src){
     int temp, i = 0;
     char hex[40] = {0};
-    while(quo != 0){
-        temp = quo % 16;
+    while(Src != 0){
+        temp = Src % 16;
         if(temp < 10){
             temp = temp + 48;
         }else{
             temp = temp + 55;
         }
         hex[i++] = temp;
-        quo = quo / 16;
+        Src = Src / 16;
     }
     size_t l = strlen(hex);
-    UID[l] = '\0';
+    Des[l] = '\0';
     for(int j = 0; j < l; j++){
-        UID[j] = hex[l - 1 - j];
+        Des[j] = hex[l - 1 - j];
     }
 }
 
