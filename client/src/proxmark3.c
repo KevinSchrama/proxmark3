@@ -1080,9 +1080,6 @@ int main(int argc, char *argv[]) {
     main_loop(script_cmds_file, script_cmd, stayInCommandLoop);
 #endif
     }else{ 
-        #if defined(_WIN32)
-        main_loop(script_cmds_file, script_cmd, stayInCommandLoop);
-        #else
         initSpidercomms();
         testCycle();
         printResults();
@@ -1093,7 +1090,6 @@ int main(int argc, char *argv[]) {
             msleep(100); // Make sure command is sent before killing client
         }
         stopSpidercomms();
-        #endif
     }
 
     // Clean up the port
