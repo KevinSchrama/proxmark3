@@ -6,12 +6,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
-
-#ifdef _WIN32
-#else
 #include <err.h>
 #include <libevdev-1.0/libevdev/libevdev.h>
-#endif
 
 #include <errno.h>
 #include <time.h>
@@ -70,27 +66,13 @@ void* spiderThread(void* p){
     sprintf(eventDevice, "/dev/input/event%c", getDevice());
 
     const int fd = open(eventDevice, O_RDONLY | O_NONBLOCK);
-# if defined(_WIN32)
-    if (fd < 0){
-        printf("ERROR: cannot open device %s [%s]", eventDevice, strerror(errno));
-        exit(1);
-    }
-# else
     if (fd < 0) errx(EXIT_FAILURE, "ERROR: cannot open device %s [%s]", eventDevice, strerror(errno));
-# endif
 
     struct libevdev *dev;
     struct input_event ev;
 
     int err = libevdev_new_from_fd(fd, &dev);
-# if defined(_WIN32)
-    if (err < 0){
-        printf("ERROR: cannot associate event device [%s]", strerror(-err));
-        exit(1);
-    }
-# else
     if (err < 0) errx(EXIT_FAILURE, "ERROR: cannot associate event device [%s]", strerror(-err));
-# endif
     
 
     printf("Device %s is open and associated w/ libevent\n", eventDevice);

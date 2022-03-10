@@ -36,7 +36,10 @@
 #include "fileutils.h"
 #include "flash.h"
 #include "preferences.h"
+
+#if defined(__linux__)
 #include "quickcmd.h"
+#endif
 
 //#define LIBPM3
 
