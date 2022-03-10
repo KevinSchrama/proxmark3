@@ -37,6 +37,8 @@ void ulltohexstring(char *Des, unsigned long long int Src);
 void stopSim(void);
 void checkUID(int index);
 
+char getDevice(void);
+
 void Sim14A(uint8_t i);
 void SimiClass(void);
 void SimHID(void);
@@ -59,7 +61,8 @@ void* spiderThread(void* p){
     
     unsigned long long int bufint = 0;
 
-    const char *eventDevice = "/dev/input/event0";
+    char *eventDevice = malloc(25);
+    sprintf(eventDevice, "/dev/input/event%c", getDevice());
 
     const int fd = open(eventDevice, O_RDONLY | O_NONBLOCK);
     if (fd < 0) errx(EXIT_FAILURE, "ERROR: cannot open device %s [%s]", eventDevice, strerror(errno));
@@ -390,4 +393,33 @@ static void setupCardTypes(void){
     cardtypes_t.cardUID[9] = "1006EC0C86";          //hid
     cardtypes_t.cardUID[10] = "F0368568B";          //em410x
     cardtypes_t.cardUID[11] = "FEFE";               //noralsy
+}
+
+char getDevice(void){
+    FILE *fp;
+    int searchEvent = 0;
+    fp = fopen("/proc/bus/input/devices", "r");
+    if(fp == NULL)
+        return '0';
+    char buf[512];
+    while(!feof(fp)){
+        fgets(buf, 512, fp);
+        if(strstr(buf, "Spider") != NULL && searchEvent == 0){
+            searchEvent = 1;
+        }
+        if(searchEvent != 0){
+            if(buf[0] == 'H'){
+                for(int i = 0; i < sizeof(buf); i++){
+                    if(buf[i] == 'e' && buf[i+1] == 'v' && buf[i+2] == 'e' && buf[i+3] == 'n' && buf[i+4] == 't'){
+                        return buf[i+5];
+                    }else if(buf[i+4] == '\n'){
+                        return '0';
+                    }
+                }
+                return '0';
+            }
+        }
+    }
+    fclose(fp);
+    return '0';
 }
