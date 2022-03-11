@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "util.h"
 
-#define NUMCARDS 11
+#define NUMCARDS 12
 
 typedef struct {
     bool UID_available;

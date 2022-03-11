@@ -46,6 +46,7 @@ void SimHID(void);
 void SimEM410x(void);
 void SimParadox(void);
 void SimNoralsy(void);
+void SimAwid(void);
 
 void* spiderThread(void* p);
 
@@ -238,6 +239,20 @@ void SimNoralsy(void){
     free(payload);
 }
 
+void SimAwid(void){
+    uint8_t bs[] = {0,0,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,0,0,0,1,1,1,1,1,0,1,1,1,0,1,0,0,0,1,0,1,0,0,1,0,0,0,1,1,1,0,0,0,1,0,1,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1};
+    lf_fsksim_t *payload = calloc(1, sizeof(lf_fsksim_t) + sizeof(bs));
+    payload->fchigh = 10;
+    payload->fclow =  8;
+    payload->separator = 1;
+    payload->clock = 50;
+    memcpy(payload->data, bs, sizeof(bs));
+
+    clearCommandBuffer();
+    SendCommandNG(CMD_LF_FSK_SIMULATE, (uint8_t *)payload,  sizeof(lf_fsksim_t) + sizeof(bs));
+    free(payload);
+}
+
 void testCycle(void){
     time_begin = time(NULL);
     for(uint8_t i = 0; i <= NUMCARDS; i++){
@@ -290,6 +305,9 @@ void Simulate(int sim){
             break;
         case 11:
             SimNoralsy();
+            break;
+        case 12:
+            SimAwid();
             break;
         default:
             PrintAndLogEx(ERR, "Not a valid sim number!");
@@ -395,6 +413,7 @@ static void setupCardTypes(void){
     cardtypes_t.cardUID[9] = "1006EC0C86";          //hid
     cardtypes_t.cardUID[10] = "F0368568B";          //em410x
     cardtypes_t.cardUID[11] = "FEFE";               //noralsy
+    cardtypes_t.cardUID[12] = "4F60A73";            //awid
 }
 
 char getDevice(void){
