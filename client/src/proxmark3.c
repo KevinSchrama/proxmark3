@@ -1064,7 +1064,7 @@ int main(int argc, char *argv[]) {
     */
 
 
-    if(stayInCommandLoop){
+    if(stayInCommandLoop || (!g_session.pm3_present)){
 #ifndef HAVE_GUI
 
 #  if defined(_WIN32)

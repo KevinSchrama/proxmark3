@@ -22,7 +22,7 @@
 #include "cmdlfnoralsy.h"
 
 // Wait time for UID in ms
-#define WAIT_TIME 5000
+#define WAIT_TIME 3000
 
 #define COUNTOF(x)  (int) ( ( sizeof(x) / sizeof((x)[0]) ) )
 
@@ -301,6 +301,8 @@ void Simulate(int sim){
 
 void printResults(void){
     PrintAndLogEx(INFO, "============================================");
+    PrintAndLogEx(INFO, "Testing took %d seconds.", (time_end - time_begin));
+    PrintAndLogEx(INFO, "============================================");
     PrintAndLogEx(INFO, "UID's detected:");
     PrintAndLogEx(INFO, "Num ---     Card UID     --- Number of tries");
     int detect_count = 0;
@@ -324,8 +326,6 @@ void printResults(void){
     if(count == 0){
         PrintAndLogEx(SUCCESS, _GREEN_("Nothing missed, test succeeded!"));
     }
-    PrintAndLogEx(INFO, "============================================");
-    PrintAndLogEx(INFO, "Testing took %d seconds.", (time_end - time_begin));
     PrintAndLogEx(INFO, "============================================");
 
     FILE *ptr;

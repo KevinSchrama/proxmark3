@@ -11,5 +11,5 @@ Count detected,Count not detected,Time of test
 11,0,33
 11,0,15
 11,0,17
-11,0,25
-11,0,20
+11,0,17
+11,0,23
