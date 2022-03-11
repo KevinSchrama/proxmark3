@@ -425,3 +425,28 @@ char getDevice(void){
     fclose(fp);
     return '0';
 }
+
+char *FindProxmark(void){
+    FILE *fp;
+    char *buf = malloc(20);
+    char *pwd = malloc(50);
+    for(int i = 0; i <= 9 ; i++){
+        sprintf(pwd, "/sys/class/tty/ttyACM%d/../../../manufacturer", i);
+        fp = fopen(pwd, "r");
+        if(fp == NULL){
+            continue;
+        }
+        fgets(buf, 20, fp);
+        if(strcmp(buf, "proxmark.org\n") == 0){
+            fclose(fp);
+            sprintf(buf, "/dev/ttyACM%d", i);
+            return buf;
+        }
+        printf("Correct file not found\n");
+        fclose(fp);
+    }
+    printf("ERROR: No compatible device found\n");
+    if(fp != NULL)
+        fclose(fp);
+    return NULL;
+}

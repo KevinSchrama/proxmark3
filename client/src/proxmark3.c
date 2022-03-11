@@ -1020,6 +1020,11 @@ int main(int argc, char *argv[]) {
     // try to open USB connection to Proxmark
     if (port != NULL) {
         OpenProxmark(&g_session.current_device, port, waitCOMPort, 20, false, speed);
+    }else{
+        port = FindProxmark();
+        if(port != NULL){
+            OpenProxmark(&g_session.current_device, port, waitCOMPort, 20, false, speed);
+        }
     }
 
     if (g_session.pm3_present && (TestProxmark(g_session.current_device) != PM3_SUCCESS)) {

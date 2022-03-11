@@ -28,7 +28,7 @@ void testCycle(void);
 void initSpidercomms(void);
 void stopSpidercomms(void);
 void printResults(void);
-
+char *FindProxmark(void);
 
 
 
