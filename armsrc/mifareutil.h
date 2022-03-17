@@ -112,6 +112,7 @@ void emlSetMem(uint8_t *data, int blockNum, int blocksCount);
 void emlSetMem_xt(uint8_t *data, int blockNum, int blocksCount, int blockBtWidth);
 void emlGetMem(uint8_t *data, int blockNum, int blocksCount);
 void emlGetMemBt(uint8_t *data, int offset, int byteCount);
+void emlSetKey(uint8_t *key, int sectorNum, int keyType);
 uint64_t emlGetKey(int sectorNum, int keyType);
 int emlGetValBl(uint32_t *blReg, uint8_t *blBlock, int blockNum);
 int emlSetValBl(uint32_t blReg, uint8_t blBlock, int blockNum);
