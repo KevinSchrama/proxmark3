@@ -1677,7 +1677,7 @@ void Mifaresim(uint16_t flags, uint8_t exitAfterNReads, uint8_t *datain, uint16_
                     break;
                 }
                 
-                Dbprintf("[MFEMUL_WORK] receivedCmd: %02x %02x %02x %02x, length: %d", receivedCmd_dec[0], receivedCmd_dec[1], receivedCmd_dec[2], receivedCmd_dec[3], receivedCmd_len);
+                if (g_dbglevel >= DBG_DEBUG) Dbprintf("[MFEMUL_WORK] receivedCmd: %02x %02x %02x %02x, length: %d", receivedCmd_dec[0], receivedCmd_dec[1], receivedCmd_dec[2], receivedCmd_dec[3], receivedCmd_len);
                 if (receivedCmd_len == 4 && (receivedCmd_dec[0] == MIFARE_AUTH_KEYA || receivedCmd_dec[0] == MIFARE_AUTH_KEYB)) {
 
                     // Reader asks for AUTH: 6X XX
@@ -2026,7 +2026,7 @@ void Mifaresim(uint16_t flags, uint8_t exitAfterNReads, uint8_t *datain, uint16_
                         Dbprintf("MFEMUL_AUTH1: receivedCmd_len != 8 (%d) => cardSTATE_TO_IDLE())", receivedCmd_len);
                     break;
                 }
-                Dbprintf("[MFEMUL_AUTH1] receivedCmd: %02x %02x %02x %02x %02x %02x %02x %02x", receivedCmd[0], receivedCmd[1], receivedCmd[2], receivedCmd[3], 
+                if (g_dbglevel >= DBG_DEBUG) Dbprintf("[MFEMUL_AUTH1] receivedCmd: %02x %02x %02x %02x %02x %02x %02x %02x", receivedCmd[0], receivedCmd[1], receivedCmd[2], receivedCmd[3], 
                 receivedCmd[4], receivedCmd[5], receivedCmd[6], receivedCmd[7]);
 
                 nr = bytes_to_num(receivedCmd, 4);
