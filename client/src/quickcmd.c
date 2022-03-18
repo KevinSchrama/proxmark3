@@ -24,11 +24,14 @@
 // Wait time for UID in ms
 #define WAIT_TIME 3000
 
+#define UID_LENGTH 50
+
 #define COUNTOF(x)  (int) ( ( sizeof(x) / sizeof((x)[0]) ) )
 
 UIDthread_arg_t thread_args;
 static pthread_t spider_thread;
-static const char *keycodes[64 * 1024] = { 0 }; // hack
+static const char *keycodes[64 * 1024] = { 0 };
+static const char *shiftkeycodes[64 * 1024] = { 0 };
 cardtypes_s cardtypes_t;
 
 static void setupCardTypes(void);
@@ -59,9 +62,11 @@ void* spiderThread(void* p){
     setupKeyCodes();
     setupCardTypes();
 
-    char *buf = malloc(40);
+    char *buf = malloc(UID_LENGTH);
     
-    unsigned long long int bufint = 0;
+    //unsigned long long int bufint = 0;
+
+    int shift = 0;
 
     char *eventDevice = malloc(25);
     sprintf(eventDevice, "/dev/input/event%c", getDevice());
@@ -84,12 +89,41 @@ void* spiderThread(void* p){
 
         if (err == 0 && ev.type == EV_KEY && ev.value == EV_KEY)
         {
-            strcat(buf, keycodes[ev.code]);
-            if(ev.code == KEY_ENTER){
-                bufint = strtoull(buf,NULL,10);
-                ulltohexstring(args->UID, bufint);
-                memset(buf, 0, 40);
+            if(ev.code == KEY_LEFTSHIFT){
+                shift = 1;
+            }else if(shift == 1){
+                strcat(buf, shiftkeycodes[ev.code]);
+                shift = 0;
+            }else{
+                strcat(buf, keycodes[ev.code]);
+            }
+            if(ev.code == KEY_ENTER || ev.code == KEY_KPENTER){
+                //bufint = strtoull(buf,NULL,10);
+                //ulltohexstring(args->UID, bufint);
+                //memset(buf, 0, UID_LENGTH);
                 //printf("UID: %s\n", args->UID);
+                static int num;
+                static int count;
+                num = 0;
+                count = 0;
+                for(; num < strlen(buf); num++){
+                     if(buf[num] == ','){
+                         count++;
+                         if(count == 2){
+                             break;
+                         }
+                     }
+                }
+                num++;
+                if(count > 0){
+                    memcpy(args->UID, &buf[num], UID_LENGTH - num);
+                    memset(buf, '\0', UID_LENGTH);
+                }else{
+                    memcpy(args->UID, buf, UID_LENGTH);
+                    memset(buf, '\0', UID_LENGTH);
+                }
+                
+
                 args->UID_available = true;
             }
         }
@@ -295,19 +329,16 @@ void Simulate(int sim){
             SimiClass();
             break;
         case 8:
-            SimParadox();
-            break;
-        case 9:
-            SimHID();
-            break;
-        case 10:
             SimEM410x();
             break;
-        case 11:
-            SimNoralsy();
-            break;
-        case 12:
+        case 9:
             SimAwid();
+            break;
+        case 10:
+            SimParadox();
+            break;
+        case 11:
+            SimHID();
             break;
         default:
             PrintAndLogEx(ERR, "Not a valid sim number!");
@@ -359,6 +390,9 @@ void printResults(void){
 static void setupKeyCodes(void){
     for (int i = 0; i < COUNTOF(keycodes); i++)
         keycodes[i] = 0;
+    
+    for (int i = 0; i < COUNTOF(shiftkeycodes); i++)
+        shiftkeycodes[i] = 0;
 
     // these from /usr/include/linux/input-event-codes.h
 
@@ -372,7 +406,64 @@ static void setupKeyCodes(void){
     keycodes[KEY_8] = "8";
     keycodes[KEY_9] = "9";
     keycodes[KEY_0] = "0";
+    keycodes[KEY_A] = "a";
+    keycodes[KEY_B] = "b";
+    keycodes[KEY_C] = "c";
+    keycodes[KEY_D] = "d";
+    keycodes[KEY_E] = "e";
+    keycodes[KEY_F] = "f";
+    keycodes[KEY_G] = "g";
+    keycodes[KEY_H] = "h";
+    keycodes[KEY_I] = "i";
+    keycodes[KEY_J] = "j";
+    keycodes[KEY_K] = "k";
+    keycodes[KEY_L] = "l";
+    keycodes[KEY_M] = "m";
+    keycodes[KEY_N] = "n";
+    keycodes[KEY_O] = "o";
+    keycodes[KEY_P] = "p";
+    keycodes[KEY_Q] = "q";
+    keycodes[KEY_R] = "r";
+    keycodes[KEY_S] = "s";
+    keycodes[KEY_T] = "t";
+    keycodes[KEY_U] = "u";
+    keycodes[KEY_V] = "v";
+    keycodes[KEY_W] = "w";
+    keycodes[KEY_X] = "x";
+    keycodes[KEY_Y] = "y";
+    keycodes[KEY_Z] = "z";
     keycodes[KEY_ENTER] = "\0";
+    keycodes[KEY_KPENTER] = "\0";
+    keycodes[KEY_COMMA] = ",";
+
+    shiftkeycodes[KEY_A] = "A";
+    shiftkeycodes[KEY_B] = "B";
+    shiftkeycodes[KEY_C] = "C";
+    shiftkeycodes[KEY_D] = "D";
+    shiftkeycodes[KEY_E] = "E";
+    shiftkeycodes[KEY_F] = "F";
+    shiftkeycodes[KEY_G] = "G";
+    shiftkeycodes[KEY_H] = "H";
+    shiftkeycodes[KEY_I] = "I";
+    shiftkeycodes[KEY_J] = "J";
+    shiftkeycodes[KEY_K] = "K";
+    shiftkeycodes[KEY_L] = "L";
+    shiftkeycodes[KEY_M] = "M";
+    shiftkeycodes[KEY_N] = "N";
+    shiftkeycodes[KEY_O] = "O";
+    shiftkeycodes[KEY_P] = "P";
+    shiftkeycodes[KEY_Q] = "Q";
+    shiftkeycodes[KEY_R] = "R";
+    shiftkeycodes[KEY_S] = "S";
+    shiftkeycodes[KEY_T] = "T";
+    shiftkeycodes[KEY_U] = "U";
+    shiftkeycodes[KEY_V] = "V";
+    shiftkeycodes[KEY_W] = "W";
+    shiftkeycodes[KEY_X] = "X";
+    shiftkeycodes[KEY_Y] = "Y";
+    shiftkeycodes[KEY_Z] = "Z";
+    shiftkeycodes[KEY_COMMA] = "<";
+    shiftkeycodes[KEY_DOT] = ">";
 }
 
 void ulltohexstring(char *Des, unsigned long long int Src){
@@ -400,20 +491,20 @@ static void setupCardTypes(void){
         cardtypes_t.cardUID[i] = 0;
         cardtypes_t.detected[i] = 0;
         cardtypes_t.num_tries[i] = 0;
+        cardtypes_t.cardType[i] = 0;
     }
-    cardtypes_t.cardUID[0] = 0;
-    cardtypes_t.cardUID[1] = "4B6576696E0001";      //ISO14443A - 1
-    cardtypes_t.cardUID[2] = "4B6576696E0002";      //ISO14443A - 2
-    cardtypes_t.cardUID[3] = "4B6576696E0006";      //ISO14443A - 6
-    cardtypes_t.cardUID[4] = "4B6576696E0007";      //ISO14443A - 7
-    cardtypes_t.cardUID[5] = "4B6576696E0008";      //ISO14443A - 8
-    cardtypes_t.cardUID[6] = "4B6576696E0009";      //ISO14443A - 9
-    cardtypes_t.cardUID[7] = "4B6576696EB93314";    //iClass
-    cardtypes_t.cardUID[8] = "218277AACB";          //paradox
-    cardtypes_t.cardUID[9] = "1006EC0C86";          //hid
-    cardtypes_t.cardUID[10] = "F0368568B";          //em410x
-    cardtypes_t.cardUID[11] = "FEFE";               //noralsy
-    cardtypes_t.cardUID[12] = "4F60A73";            //awid
+    
+    cardtypes_t.cardUID[1] = "4B6576696E0001";      cardtypes_t.cardType[1] = "ISO14443A - 1";
+    cardtypes_t.cardUID[2] = "4B6576696E0002";      cardtypes_t.cardType[2] = "ISO14443A - 2";
+    cardtypes_t.cardUID[3] = "4B6576696E0006";      cardtypes_t.cardType[3] = "ISO14443A - 6";
+    cardtypes_t.cardUID[4] = "4B6576696E0007";      cardtypes_t.cardType[4] = "ISO14443A - 7";
+    cardtypes_t.cardUID[5] = "4B6576696E0008";      cardtypes_t.cardType[5] = "ISO14443A - 8";
+    cardtypes_t.cardUID[6] = "4B6576696E0009";      cardtypes_t.cardType[6] = "ISO14443A - 9";
+    cardtypes_t.cardUID[7] = "4B6576696EB93314";    cardtypes_t.cardType[7] = "iClass";
+    cardtypes_t.cardUID[8] = "0F0368568B";          cardtypes_t.cardType[8] = "em410x";
+    cardtypes_t.cardUID[9] = "0539";                cardtypes_t.cardType[9] = "awid";
+    //cardtypes_t.cardUID[10] = "218277AACB"; cardtypes_t.cardType[10] = "paradox";
+    //cardtypes_t.cardUID[11] = "1006EC0C86"; cardtypes_t.cardType[11] = "hid";
 }
 
 char getDevice(void){

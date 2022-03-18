@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "util.h"
 
-#define NUMCARDS 12
+#define NUMCARDS 9
 
 typedef struct {
     bool UID_available;
@@ -17,6 +17,7 @@ typedef struct {
 
 typedef struct {
     const char *cardUID[(NUMCARDS+1)];
+    const char *cardType[(NUMCARDS+1)];
     int num_tries[(NUMCARDS+1)];
     bool detected[(NUMCARDS+1)];
 } cardtypes_s;
