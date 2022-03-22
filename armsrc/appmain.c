@@ -1533,8 +1533,7 @@ static void PacketReceived(PacketCommandNG *packet) {
                 uint8_t sak;
             } PACKED;
             struct p *payload = (struct p *) packet->data.asBytes;
-            //Mifare1ksim(payload->flags, payload->exitAfter, payload->uid, payload->atqa, payload->sak);
-            Mifaresim(payload->flags, payload->exitAfter, payload->uid, payload->atqa, payload->sak);
+            Mifare1ksim(payload->flags, payload->exitAfter, payload->uid, payload->atqa, payload->sak);
             break;
         }
         case CMD_HF_MIFARE_EML_MEMCLR: {
