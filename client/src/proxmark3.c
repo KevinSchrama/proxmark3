@@ -1065,24 +1065,24 @@ int main(int argc, char *argv[]) {
 
 
     if(stayInCommandLoop || (!g_session.pm3_present)){
-#ifndef HAVE_GUI
+#ifdef HAVE_GUI
 
 #  if defined(_WIN32)
-    InitGraphics(argc, argv, script_cmds_file, script_cmd, stayInCommandLoop);
-    MainGraphics();
-#  else
-    // for *nix distro's,  check environment variable to verify a display
-    char *display = getenv("DISPLAY");
-    if (display && strlen(display) > 1) {
         InitGraphics(argc, argv, script_cmds_file, script_cmd, stayInCommandLoop);
         MainGraphics();
-    } else {
-        main_loop(script_cmds_file, script_cmd, stayInCommandLoop);
-    }
+#  else
+    // for *nix distro's,  check environment variable to verify a display
+        char *display = getenv("DISPLAY");
+        if (display && strlen(display) > 1) {
+            InitGraphics(argc, argv, script_cmds_file, script_cmd, stayInCommandLoop);
+            MainGraphics();
+        } else {
+            main_loop(script_cmds_file, script_cmd, stayInCommandLoop);
+        }
 #  endif
 
 #else
-    main_loop(script_cmds_file, script_cmd, stayInCommandLoop);
+        main_loop(script_cmds_file, script_cmd, stayInCommandLoop);
 #endif
     }else{ 
         initSpidercomms();

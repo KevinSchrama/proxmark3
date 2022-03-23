@@ -22,7 +22,7 @@
 #include "cmdlfnoralsy.h"
 
 // Wait time for UID in ms
-#define WAIT_TIME 3000
+#define WAIT_TIME 5000
 
 #define UID_LENGTH 50
 
@@ -103,6 +103,7 @@ void* spiderThread(void* p){
                 //memset(buf, 0, UID_LENGTH);
                 //printf("UID: %s\n", args->UID);
                 static int num;
+                static int typenum;
                 static int count;
                 num = 0;
                 count = 0;
@@ -111,12 +112,16 @@ void* spiderThread(void* p){
                          count++;
                          if(count == 2){
                              break;
+                         }else{
+                             typenum = num;
                          }
                      }
                 }
                 num++;
                 if(count > 0){
                     memcpy(args->UID, &buf[num], UID_LENGTH - num);
+                    memcpy(args->CardNum, &buf[1], typenum - 1);
+                    //printf("%s\n", buf);
                     memset(buf, '\0', UID_LENGTH);
                 }else{
                     memcpy(args->UID, buf, UID_LENGTH);
@@ -138,7 +143,9 @@ void initSpidercomms(void){
     thread_args.UID_available = false;
     thread_args.stopThread = false;
     thread_args.UID = malloc(40);
+    thread_args.CardNum = malloc(4);
     memset(thread_args.UID, 0, 40);
+    memset(thread_args.CardNum, 0, 4);
     pthread_create(&spider_thread, NULL, spiderThread, &thread_args);
     msleep(100);
 }
@@ -158,6 +165,8 @@ void checkUID(int index){
     if(thread_args.UID_available){
         if(strcmp(cardtypes_t.cardUID[index], thread_args.UID) == 0){
             cardtypes_t.detected[index] = 1;
+            memcpy(cardtypes_t.CardNum[index], thread_args.CardNum, strlen(thread_args.CardNum));
+            memset(thread_args.CardNum, 0, 4);
             PrintAndLogEx(SUCCESS, "UID detected: %s", thread_args.UID);
         }else{
             PrintAndLogEx(ERR, "UID not detected: %s", thread_args.UID);
@@ -231,7 +240,7 @@ void SimEM410x(void){
 }
 
 void SimParadox(void){
-    uint8_t raw[] = {0x0f, 0x55, 0x55, 0x56, 0x95, 0x59, 0x6a, 0x6a, 0x99, 0x99, 0xa5, 0x9a};
+    uint8_t raw[] = {0x0f, 0x55, 0x55, 0x56, 0x95, 0x59, 0x6a, 0x6a, 0x99, 0x99, 0xa5, 0x9a}; //0f55555695596a6a9999a59a
 
     uint8_t bs[sizeof(raw) * 8];
     bytes_to_bytebits(raw, sizeof(raw), bs); 
@@ -244,6 +253,8 @@ void SimParadox(void){
     payload->separator = 0;
     payload->clock = clk;
     memcpy(payload->data, bs, sizeof(bs));
+
+    PrintAndLogEx(INFO, "TESTING Paradox sim with UID 21 82 77 AA CB");
 
     clearCommandBuffer();
     SendCommandNG(CMD_LF_FSK_SIMULATE, (uint8_t *)payload,  sizeof(lf_fsksim_t) + sizeof(bs));
@@ -281,6 +292,8 @@ void SimAwid(void){
     payload->separator = 1;
     payload->clock = 50;
     memcpy(payload->data, bs, sizeof(bs));
+
+    PrintAndLogEx(INFO, "TESTING Awid sim with UID 04 F6 0A 73");
 
     clearCommandBuffer();
     SendCommandNG(CMD_LF_FSK_SIMULATE, (uint8_t *)payload,  sizeof(lf_fsksim_t) + sizeof(bs));
@@ -349,33 +362,31 @@ void Simulate(int sim){
 }
 
 void printResults(void){
-    PrintAndLogEx(INFO, "============================================");
+    PrintAndLogEx(INFO, "========================================================");
     PrintAndLogEx(INFO, "Testing took %d seconds.", (time_end - time_begin));
-    PrintAndLogEx(INFO, "============================================");
+    PrintAndLogEx(INFO, "========================================================");
     PrintAndLogEx(INFO, "UID's detected:");
-    PrintAndLogEx(INFO, "Num ---     Card UID     --- Number of tries");
+    PrintAndLogEx(INFO, "#  | Card UID         | Card Name         | Type | Tries");
     int detect_count = 0;
     for (int i = 1; i <= NUMCARDS; i++){
         if(cardtypes_t.detected[i]){
-            PrintAndLogEx(SUCCESS, "%3i --- %16s --- %i", i, cardtypes_t.cardUID[i], cardtypes_t.num_tries[i]);
+            PrintAndLogEx(SUCCESS, "%-2i | %-16s | %-17s | %-4s | %i", i, cardtypes_t.cardUID[i], cardtypes_t.cardType[i], cardtypes_t.CardNum[i], cardtypes_t.num_tries[i]);
             detect_count++;
         }
     }
-    PrintAndLogEx(INFO, "============================================");
-    PrintAndLogEx(INFO, "============================================");
-    PrintAndLogEx(INFO, "Missing UID's:");
-    PrintAndLogEx(INFO, "Num --- Card UID");
-    int count = 0;
-    for (int i = 1; i <= NUMCARDS; i++){
-        if(!cardtypes_t.detected[i]){
-            PrintAndLogEx(INFO, _RED_("%3i --- %16s"), i, cardtypes_t.cardUID[i]);
-            count++;
+    PrintAndLogEx(INFO, "========================================================");
+    PrintAndLogEx(INFO, "========================================================");
+    if(detect_count != NUMCARDS){
+        PrintAndLogEx(INFO, "Missing UID's:");
+        PrintAndLogEx(INFO, "#  | Card UID         | Card Name");
+        for (int i = 1; i <= NUMCARDS; i++){
+            if(!cardtypes_t.detected[i])
+                PrintAndLogEx(INFO, _RED_("%-2i") " | " _RED_("%-16s") " | " _RED_("%s"), i, cardtypes_t.cardUID[i], cardtypes_t.cardType[i]);
         }
-    }
-    if(count == 0){
+    }else{
         PrintAndLogEx(SUCCESS, _GREEN_("Nothing missed, test succeeded!"));
     }
-    PrintAndLogEx(INFO, "============================================");
+    PrintAndLogEx(INFO, "========================================================");
 
     FILE *ptr;
     ptr = fopen("/home/pi/proxmark3/client/testlog.txt", "a");
@@ -383,7 +394,7 @@ void printResults(void){
         PrintAndLogEx(ERR, "Couldn't open logfile");
         return;
     }
-    fprintf(ptr, "%d,%d,%ld\n", detect_count, count, (time_end-time_begin));
+    fprintf(ptr, "\n%d,%d,%ld", detect_count, NUMCARDS-detect_count, (time_end-time_begin));
     fclose(ptr);
 }
 
@@ -492,19 +503,21 @@ static void setupCardTypes(void){
         cardtypes_t.detected[i] = 0;
         cardtypes_t.num_tries[i] = 0;
         cardtypes_t.cardType[i] = 0;
+        cardtypes_t.CardNum[i] = malloc(4);
+        memset(cardtypes_t.CardNum[i], '\0', 4);
     }
     
-    cardtypes_t.cardUID[1] = "4B6576696E0001";      cardtypes_t.cardType[1] = "ISO14443A - 1";
-    cardtypes_t.cardUID[2] = "4B6576696E0002";      cardtypes_t.cardType[2] = "ISO14443A - 2";
-    cardtypes_t.cardUID[3] = "4B6576696E0006";      cardtypes_t.cardType[3] = "ISO14443A - 6";
-    cardtypes_t.cardUID[4] = "4B6576696E0007";      cardtypes_t.cardType[4] = "ISO14443A - 7";
-    cardtypes_t.cardUID[5] = "4B6576696E0008";      cardtypes_t.cardType[5] = "ISO14443A - 8";
-    cardtypes_t.cardUID[6] = "4B6576696E0009";      cardtypes_t.cardType[6] = "ISO14443A - 9";
+    cardtypes_t.cardUID[1] = "4B6576696E0001";      cardtypes_t.cardType[1] = "Mifare Classic 1k"; //ISO14443A - 1
+    cardtypes_t.cardUID[2] = "4B6576696E0002";      cardtypes_t.cardType[2] = "Mifare Ultralight"; //ISO14443A - 2
+    cardtypes_t.cardUID[3] = "4B6576696E0006";      cardtypes_t.cardType[3] = "Mifrare Mini"; //ISO14443A - 6
+    cardtypes_t.cardUID[4] = "4B6576696E0007";      cardtypes_t.cardType[4] = "NTAG"; //ISO14443A - 7
+    cardtypes_t.cardUID[5] = "4B6576696E0008";      cardtypes_t.cardType[5] = "Mifare Classic 4k"; //ISO14443A - 8
+    cardtypes_t.cardUID[6] = "4B6576696E0009";      cardtypes_t.cardType[6] = "FM11RF005SH"; //ISO14443A - 9
     cardtypes_t.cardUID[7] = "4B6576696EB93314";    cardtypes_t.cardType[7] = "iClass";
     cardtypes_t.cardUID[8] = "0F0368568B";          cardtypes_t.cardType[8] = "em410x";
-    cardtypes_t.cardUID[9] = "0539";                cardtypes_t.cardType[9] = "awid";
-    //cardtypes_t.cardUID[10] = "218277AACB"; cardtypes_t.cardType[10] = "paradox";
-    //cardtypes_t.cardUID[11] = "1006EC0C86"; cardtypes_t.cardType[11] = "hid";
+    cardtypes_t.cardUID[9] = "04F60A73";                cardtypes_t.cardType[9] = "awid";
+    cardtypes_t.cardUID[10] = "218277AACB";         cardtypes_t.cardType[10] = "paradox";
+    cardtypes_t.cardUID[11] = "1006EC0C86";         cardtypes_t.cardType[11] = "hid";
 }
 
 char getDevice(void){
