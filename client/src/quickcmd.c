@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <err.h>
 #include <libevdev-1.0/libevdev/libevdev.h>
+#include <gtk/gtk.h>
+#include <gtk/gtkx.h>
 
 #include <errno.h>
 #include <time.h>
@@ -52,10 +54,152 @@ void SimNoralsy(void);
 void SimAwid(void);
 
 void* spiderThread(void* p);
+//void* cardtype_test_thread(void *p);
+
+//void on_radio1_toggled (GtkWidget *radio);
+//void on_radio2_toggled (GtkWidget *radio);
+//void on_radio3_toggled (GtkWidget *radio);
+//void on_test1_HFcards_toggled (GtkWidget *check);
+//void on_test1_LFcards_toggled (GtkWidget *check);
+//void on_startbutton_clicked (GtkWidget *startbutton);
+//void destroy (GtkWidget *window);
 
 time_t time_begin;
 time_t time_end;
 
+GtkWidget *window1;
+    GtkWidget *grid1;
+        GtkWidget *fixed1;
+            GtkWidget *radio1;
+            GtkWidget *fixedoptions1;
+                GtkWidget *test1_HFcards;
+                GtkWidget *test1_card1;
+                GtkWidget *test1_card2;
+                GtkWidget *test1_card3;
+                GtkWidget *test1_card4;
+                GtkWidget *test1_card5;
+                GtkWidget *test1_card6;
+                GtkWidget *test1_card7;
+                GtkWidget *test1_LFcards;
+                GtkWidget *test1_card8;
+                GtkWidget *test1_card9;
+                GtkWidget *test1_card10;
+                GtkWidget *test1_card11;
+        GtkWidget *fixed2;
+            GtkWidget *radio2;
+            GtkWidget *fixedoptions2;
+                GtkWidget *check1;
+                GtkWidget *check2;
+                GtkWidget *check3;
+                GtkWidget *check4;
+                GtkWidget *check5;
+                GtkWidget *check6;
+                GtkWidget *check7;
+                GtkWidget *check8;
+                GtkWidget *check9;
+                GtkWidget *check10;
+        GtkWidget *fixed3;
+            GtkWidget *radio3;
+            GtkWidget *fixedoptions3;
+                GtkWidget *check11;
+                GtkWidget *check12;
+                GtkWidget *check13;
+                GtkWidget *check14;
+                GtkWidget *check15;
+                GtkWidget *check16;
+                GtkWidget *check17;
+                GtkWidget *check18;
+                GtkWidget *check19;
+                GtkWidget *check20;
+        GtkWidget *startbutton1;
+
+GtkBuilder *builder;
+
+GtkWidget *window2;
+    GtkWidget *grid2;
+        GtkWidget *label1;
+        GtkWidget *label2;
+        GtkWidget *textview1;
+        GtkWidget *textview2;
+        GtkWidget *progressbar1;
+
+GtkTextBuffer *textviewbuf1;
+GtkTextBuffer *textviewbuf2;
+
+void startgui(void){
+    gtk_init(NULL, NULL);
+
+    builder = gtk_builder_new_from_file("gui.glade");
+
+    window1 = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
+    g_signal_connect(window1, "destroy", G_CALLBACK(destroy), NULL);
+
+    gtk_builder_connect_signals(builder, NULL);
+
+    grid1 = GTK_WIDGET(gtk_builder_get_object(builder, "grid1"));
+    fixed1 = GTK_WIDGET(gtk_builder_get_object(builder, "fixed1"));
+    radio1 = GTK_WIDGET(gtk_builder_get_object(builder, "radio1"));
+    fixedoptions1 = GTK_WIDGET(gtk_builder_get_object(builder, "fixedoptions1"));
+    test1_HFcards = GTK_WIDGET(gtk_builder_get_object(builder, "test1_HFcards"));
+    test1_card1 = GTK_WIDGET(gtk_builder_get_object(builder, "test1_card1"));
+    test1_card2 = GTK_WIDGET(gtk_builder_get_object(builder, "test1_card2"));
+    test1_card3 = GTK_WIDGET(gtk_builder_get_object(builder, "test1_card3"));
+    test1_card4 = GTK_WIDGET(gtk_builder_get_object(builder, "test1_card4"));
+    test1_card5 = GTK_WIDGET(gtk_builder_get_object(builder, "test1_card5"));
+    test1_card6 = GTK_WIDGET(gtk_builder_get_object(builder, "test1_card6"));
+    test1_card7 = GTK_WIDGET(gtk_builder_get_object(builder, "test1_card7"));
+    test1_LFcards = GTK_WIDGET(gtk_builder_get_object(builder, "test1_LFcards"));
+    test1_card8 = GTK_WIDGET(gtk_builder_get_object(builder, "test1_card8"));
+    test1_card9 = GTK_WIDGET(gtk_builder_get_object(builder, "test1_card9"));
+    test1_card10 = GTK_WIDGET(gtk_builder_get_object(builder, "test1_card10"));
+    test1_card11 = GTK_WIDGET(gtk_builder_get_object(builder, "test1_card11"));
+    fixed2 = GTK_WIDGET(gtk_builder_get_object(builder, "fixed2"));
+    radio2 = GTK_WIDGET(gtk_builder_get_object(builder, "radio2"));
+    fixedoptions2 = GTK_WIDGET(gtk_builder_get_object(builder, "fixedoptions2"));
+    check1 = GTK_WIDGET(gtk_builder_get_object(builder, "check1"));
+    check2 = GTK_WIDGET(gtk_builder_get_object(builder, "check2"));
+    check3 = GTK_WIDGET(gtk_builder_get_object(builder, "check3"));
+    check4 = GTK_WIDGET(gtk_builder_get_object(builder, "check4"));
+    check5 = GTK_WIDGET(gtk_builder_get_object(builder, "check5"));
+    check6 = GTK_WIDGET(gtk_builder_get_object(builder, "check6"));
+    check7 = GTK_WIDGET(gtk_builder_get_object(builder, "check7"));
+    check8 = GTK_WIDGET(gtk_builder_get_object(builder, "check8"));
+    check9 = GTK_WIDGET(gtk_builder_get_object(builder, "check9"));
+    check10 = GTK_WIDGET(gtk_builder_get_object(builder, "check10"));
+    fixed3 = GTK_WIDGET(gtk_builder_get_object(builder, "fixed3"));
+    radio3 = GTK_WIDGET(gtk_builder_get_object(builder, "radio3"));
+    fixedoptions3 = GTK_WIDGET(gtk_builder_get_object(builder, "fixedoptions3"));
+    check11 = GTK_WIDGET(gtk_builder_get_object(builder, "check11"));
+    check12 = GTK_WIDGET(gtk_builder_get_object(builder, "check12"));
+    check13 = GTK_WIDGET(gtk_builder_get_object(builder, "check13"));
+    check14 = GTK_WIDGET(gtk_builder_get_object(builder, "check14"));
+    check15 = GTK_WIDGET(gtk_builder_get_object(builder, "check15"));
+    check16 = GTK_WIDGET(gtk_builder_get_object(builder, "check16"));
+    check17 = GTK_WIDGET(gtk_builder_get_object(builder, "check17"));
+    check18 = GTK_WIDGET(gtk_builder_get_object(builder, "check18"));
+    check19 = GTK_WIDGET(gtk_builder_get_object(builder, "check19"));
+    check20 = GTK_WIDGET(gtk_builder_get_object(builder, "check20"));
+    startbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "startbutton1"));
+
+    window2 = GTK_WIDGET(gtk_builder_get_object(builder, "window2"));
+    g_signal_connect(window2, "destroy", G_CALLBACK(destroy), NULL);
+
+    grid2 = GTK_WIDGET(gtk_builder_get_object(builder, "grid2"));
+    label1 = GTK_WIDGET(gtk_builder_get_object(builder, "label1"));
+    label2 = GTK_WIDGET(gtk_builder_get_object(builder, "label2"));
+    textview1 = GTK_WIDGET(gtk_builder_get_object(builder, "textview1"));
+    textview2 = GTK_WIDGET(gtk_builder_get_object(builder, "textview2"));
+    progressbar1 = GTK_WIDGET(gtk_builder_get_object(builder, "progressbar1"));
+
+    textviewbuf1 = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "textviewbuf1"));
+    textviewbuf2 = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "textviewbuf2"));
+
+    gtk_widget_show(window1);
+
+    gtk_main();
+}
+
+// Spider communiction thread ////////////////////////////////////////////////////////////////////////////////////
 void* spiderThread(void* p){
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
 
@@ -139,6 +283,7 @@ void* spiderThread(void* p){
     return NULL;
 }
 
+// Init spider communication thread
 void initSpidercomms(void){
     thread_args.UID_available = false;
     thread_args.stopThread = false;
@@ -150,12 +295,15 @@ void initSpidercomms(void){
     msleep(100);
 }
 
+// Stop spider communication thread
 void stopSpidercomms(void){
     thread_args.stopThread = true;
     pthread_join(spider_thread, NULL);
     memset(&spider_thread, 0, sizeof(pthread_t));
 }
+// Spider communiction thread ////////////////////////////////////////////////////////////////////////////////////
 
+// Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
 void checkUID(int index){
     int i = 0;
     while(!thread_args.UID_available && i < WAIT_TIME){
@@ -175,7 +323,9 @@ void checkUID(int index){
     }
     cardtypes_t.num_tries[index]++;
 }
+// Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Simulation functions ////////////////////////////////////////////////////////////////////////////////////////////////////////
 void stopSim(void){
     clearCommandBuffer();
     SendCommandNG(CMD_BREAK_LOOP, NULL, 0);
@@ -299,8 +449,10 @@ void SimAwid(void){
     SendCommandNG(CMD_LF_FSK_SIMULATE, (uint8_t *)payload,  sizeof(lf_fsksim_t) + sizeof(bs));
     free(payload);
 }
+// Simulation functions /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void testCycle(void){
+// 
+void* cardtype_test_thread(void *p){
     time_begin = time(NULL);
     for(uint8_t i = 0; i <= NUMCARDS; i++){
         Simulate(i);

@@ -1,0 +1,863 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.2 -->
+<interface>
+  <requires lib="gtk+" version="3.24"/>
+  <object class="GtkTextBuffer" id="textviewbuf1"/>
+  <object class="GtkTextBuffer" id="textviewbuf2"/>
+  <object class="GtkWindow" id="window2">
+    <property name="can-focus">False</property>
+    <property name="resizable">False</property>
+    <child>
+      <!-- n-columns=2 n-rows=3 -->
+      <object class="GtkGrid" id="grid2">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="row-spacing">5</property>
+        <property name="column-spacing">5</property>
+        <property name="column-homogeneous">True</property>
+        <child>
+          <object class="GtkLabel" id="label1">
+            <property name="height-request">40</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Detected cards</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label2">
+            <property name="height-request">40</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Missing cards</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkProgressBar" id="progressbar1">
+            <property name="height-request">10</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">2</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTextView" id="textview1">
+            <property name="width-request">200</property>
+            <property name="height-request">250</property>
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can-focus">True</property>
+            <property name="border-width">2</property>
+            <property name="editable">False</property>
+            <property name="cursor-visible">False</property>
+            <property name="buffer">textviewbuf1</property>
+            <property name="accepts-tab">False</property>
+            <property name="input-purpose">terminal</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTextView" id="textview2">
+            <property name="width-request">200</property>
+            <property name="height-request">250</property>
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can-focus">True</property>
+            <property name="border-width">2</property>
+            <property name="editable">False</property>
+            <property name="cursor-visible">False</property>
+            <property name="buffer">textviewbuf2</property>
+            <property name="accepts-tab">False</property>
+            <property name="input-purpose">terminal</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkWindow" id="window1">
+    <property name="can-focus">False</property>
+    <property name="resizable">False</property>
+    <property name="default-width">700</property>
+    <property name="default-height">500</property>
+    <child>
+      <!-- n-columns=10 n-rows=10 -->
+      <object class="GtkGrid" id="grid1">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="halign">baseline</property>
+        <property name="valign">baseline</property>
+        <property name="column-homogeneous">True</property>
+        <child>
+          <object class="GtkFixed" id="fixed1">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkRadioButton" id="radio1">
+                <property name="label" translatable="yes">Card Type Test</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="active">True</property>
+                <property name="draw-indicator">True</property>
+                <signal name="toggled" handler="on_radio1_toggled" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">10</property>
+                <property name="y">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFixed" id="fixedoptions1">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkCheckButton" id="test1_HFcards">
+                    <property name="label" translatable="yes">HF Cards</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <signal name="toggled" handler="on_test1_HFcards_toggled" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card1">
+                    <property name="label" translatable="yes">Card 1</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">30</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card2">
+                    <property name="label" translatable="yes">Card 2</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">60</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card3">
+                    <property name="label" translatable="yes">Card 3</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">90</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card4">
+                    <property name="label" translatable="yes">Card 4</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">120</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card5">
+                    <property name="label" translatable="yes">Card 5</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">150</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card6">
+                    <property name="label" translatable="yes">Card 6</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">180</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card7">
+                    <property name="label" translatable="yes">Card 7</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">210</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_LFcards">
+                    <property name="label" translatable="yes">LF Cards</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <signal name="toggled" handler="on_test1_LFcards_toggled" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="y">240</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card8">
+                    <property name="label" translatable="yes">Card 8</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">270</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card9">
+                    <property name="label" translatable="yes">Card 9</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">300</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card10">
+                    <property name="label" translatable="yes">Card 10</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">330</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card11">
+                    <property name="label" translatable="yes">Card 11</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">360</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="x">25</property>
+                <property name="y">40</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+            <property name="width">2</property>
+            <property name="height">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFixed" id="fixed2">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkRadioButton" id="radio2">
+                <property name="label" translatable="yes">Test 2</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="draw-indicator">True</property>
+                <property name="group">radio1</property>
+                <signal name="toggled" handler="on_radio2_toggled" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">10</property>
+                <property name="y">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFixed" id="fixedoptions2">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkCheckButton" id="check1">
+                    <property name="label" translatable="yes">Option 1</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check2">
+                    <property name="label" translatable="yes">Option 2</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">30</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check3">
+                    <property name="label" translatable="yes">Option 3</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">60</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check4">
+                    <property name="label" translatable="yes">Option 4</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">90</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check5">
+                    <property name="label" translatable="yes">Option 5</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">120</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check6">
+                    <property name="label" translatable="yes">Option 1</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">150</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check7">
+                    <property name="label" translatable="yes">Option 1</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">180</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check8">
+                    <property name="label" translatable="yes">Option 1</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">210</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check9">
+                    <property name="label" translatable="yes">Option 1</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">240</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check10">
+                    <property name="label" translatable="yes">Option 1</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">270</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="x">25</property>
+                <property name="y">40</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">4</property>
+            <property name="top-attach">1</property>
+            <property name="width">2</property>
+            <property name="height">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFixed" id="fixed3">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkRadioButton" id="radio3">
+                <property name="label" translatable="yes">Test 3</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="draw-indicator">True</property>
+                <property name="group">radio1</property>
+                <signal name="toggled" handler="on_radio3_toggled" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">10</property>
+                <property name="y">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFixed" id="fixedoptions3">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkCheckButton" id="check11">
+                    <property name="label" translatable="yes">Option 1</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check12">
+                    <property name="label" translatable="yes">Option 2</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">30</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check13">
+                    <property name="label" translatable="yes">Option 3</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">60</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check14">
+                    <property name="label" translatable="yes">Option 4</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">90</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check15">
+                    <property name="label" translatable="yes">Option 5</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">120</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check16">
+                    <property name="label" translatable="yes">Option 5</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">150</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check17">
+                    <property name="label" translatable="yes">Option 5</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">180</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check18">
+                    <property name="label" translatable="yes">Option 5</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">210</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check19">
+                    <property name="label" translatable="yes">Option 5</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">240</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="check20">
+                    <property name="label" translatable="yes">Option 5</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">270</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="x">25</property>
+                <property name="y">40</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">7</property>
+            <property name="top-attach">1</property>
+            <property name="width">2</property>
+            <property name="height">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="startbutton1">
+            <property name="label" translatable="yes">Start test</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <signal name="clicked" handler="on_startbutton1_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left-attach">4</property>
+            <property name="top-attach">8</property>
+            <property name="width">2</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
