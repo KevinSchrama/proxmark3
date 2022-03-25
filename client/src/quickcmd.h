@@ -26,11 +26,11 @@ typedef struct {
 
 extern UIDthread_arg_t thread_args;
 
-void startgui(void);
+void main_gui(void);
 void Simulate(int sim);
-void testCycle(void);
 void initSpidercomms(void);
-void stopSpidercomms(void);
+void initCardtypeTestThread(void);
+void stopThreads(void);
 void printResults(void);
 char *FindProxmark(void);
 

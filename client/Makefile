@@ -264,6 +264,13 @@ endif
 ## Libevdev
 LDLIBS += -levdev
 
+## GTK+
+GTKINCLUDES = $(shell $(PKG_CONFIG_ENV) pkg-config --cflags gtk+-3.0 2>/dev/null)
+GTKLDLIBS = $(shell $(PKG_CONFIG_ENV) pkg-config --libs gtk+-3.0 2>/dev/null)
+LDLIBS += $(GTKLDLIBS)
+LDLIBS += -export-dynamic
+PM3INCLUDES += $(GTKINCLUDES)
+
 ## Python3 (optional)
 ifneq ($(SKIPPYTHON),1)
     PYTHONINCLUDES = $(shell $(PKG_CONFIG_ENV) pkg-config --cflags python3 2>/dev/null)

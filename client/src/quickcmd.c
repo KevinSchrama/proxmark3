@@ -32,6 +32,9 @@
 
 UIDthread_arg_t thread_args;
 static pthread_t spider_thread;
+static pthread_t cardtype_test_thread;
+pthread_mutex_t lock;
+
 static const char *keycodes[64 * 1024] = { 0 };
 static const char *shiftkeycodes[64 * 1024] = { 0 };
 cardtypes_s cardtypes_t;
@@ -54,18 +57,21 @@ void SimNoralsy(void);
 void SimAwid(void);
 
 void* spiderThread(void* p);
-//void* cardtype_test_thread(void *p);
+void* cardtypeTestThread(void *p);
 
-//void on_radio1_toggled (GtkWidget *radio);
-//void on_radio2_toggled (GtkWidget *radio);
-//void on_radio3_toggled (GtkWidget *radio);
-//void on_test1_HFcards_toggled (GtkWidget *check);
-//void on_test1_LFcards_toggled (GtkWidget *check);
-//void on_startbutton_clicked (GtkWidget *startbutton);
-//void destroy (GtkWidget *window);
+void on_radio1_toggled (GtkWidget *radio);
+void on_radio2_toggled (GtkWidget *radio);
+void on_radio3_toggled (GtkWidget *radio);
+void on_test1_HFcards_toggled (GtkWidget *check);
+void on_test1_LFcards_toggled (GtkWidget *check);
+void on_startbutton1_clicked (GtkWidget *startbutton);
+void destroy (GtkWidget *window);
 
 time_t time_begin;
 time_t time_end;
+
+int testType = 1;
+uint16_t test_args = 0;
 
 GtkWidget *window1;
     GtkWidget *grid1;
@@ -126,10 +132,17 @@ GtkWidget *window2;
 GtkTextBuffer *textviewbuf1;
 GtkTextBuffer *textviewbuf2;
 
-void startgui(void){
+GtkTextIter iter1;
+
+void main_gui(void){
+    if(pthread_mutex_init(&lock, NULL) != 0){
+        printf("\n mutex init has failed\n");
+        return;
+    }
+
     gtk_init(NULL, NULL);
 
-    builder = gtk_builder_new_from_file("gui.glade");
+    builder = gtk_builder_new_from_file("/home/pi/proxmark3/client/src/gui.glade");
 
     window1 = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
     g_signal_connect(window1, "destroy", G_CALLBACK(destroy), NULL);
@@ -199,6 +212,115 @@ void startgui(void){
     gtk_main();
 }
 
+// GUI functions /////////////////////////////////////////////////////////////////////////////////////////////////
+void destroy (GtkWidget *window){
+    stopThreads();
+    gtk_main_quit();
+}
+
+void on_radio1_toggled (GtkWidget *radio){
+    testType = 1;
+    gtk_widget_set_sensitive(fixedoptions1, TRUE);
+    gtk_widget_set_sensitive(fixedoptions2, FALSE);
+    gtk_widget_set_sensitive(fixedoptions3, FALSE);
+}
+
+void on_radio2_toggled (GtkWidget *radio){
+    testType = 2;
+    gtk_widget_set_sensitive(fixedoptions2, TRUE);
+    gtk_widget_set_sensitive(fixedoptions1, FALSE);
+    gtk_widget_set_sensitive(fixedoptions3, FALSE);
+}
+
+void on_radio3_toggled (GtkWidget *radio){
+    testType = 3;
+    gtk_widget_set_sensitive(fixedoptions3, TRUE);
+    gtk_widget_set_sensitive(fixedoptions1, FALSE);
+    gtk_widget_set_sensitive(fixedoptions2, FALSE);
+}
+
+void on_test1_HFcards_toggled (GtkWidget *check){
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card1), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card2), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card3), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card4), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card5), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card6), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card7), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check))){
+        gtk_widget_set_sensitive(test1_card1, TRUE);
+        gtk_widget_set_sensitive(test1_card2, TRUE);
+        gtk_widget_set_sensitive(test1_card3, TRUE);
+        gtk_widget_set_sensitive(test1_card4, TRUE);
+        gtk_widget_set_sensitive(test1_card5, TRUE);
+        gtk_widget_set_sensitive(test1_card6, TRUE);
+        gtk_widget_set_sensitive(test1_card7, TRUE);
+    }else{
+        gtk_widget_set_sensitive(test1_card1, FALSE);
+        gtk_widget_set_sensitive(test1_card2, FALSE);
+        gtk_widget_set_sensitive(test1_card3, FALSE);
+        gtk_widget_set_sensitive(test1_card4, FALSE);
+        gtk_widget_set_sensitive(test1_card5, FALSE);
+        gtk_widget_set_sensitive(test1_card6, FALSE);
+        gtk_widget_set_sensitive(test1_card7, FALSE);
+    }
+}
+
+void on_test1_LFcards_toggled (GtkWidget *check){
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card8), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card9), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card10), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card11), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check))){
+        gtk_widget_set_sensitive(test1_card8, TRUE);
+        gtk_widget_set_sensitive(test1_card9, TRUE);
+        gtk_widget_set_sensitive(test1_card10, TRUE);
+        gtk_widget_set_sensitive(test1_card11, TRUE);
+    }else{
+        gtk_widget_set_sensitive(test1_card8, FALSE);
+        gtk_widget_set_sensitive(test1_card9, FALSE);
+        gtk_widget_set_sensitive(test1_card10, FALSE);
+        gtk_widget_set_sensitive(test1_card11, FALSE);
+    }
+}
+
+void on_startbutton1_clicked (GtkWidget *startbutton){
+    g_print("Test started\n");
+
+    switch(testType){
+        case 1:
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_HFcards))){
+                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card1))) test_args = test_args | MF_CLASSIC_1K;
+                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card2))) test_args = test_args | MF_ULTRALIGHT;
+                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card3))) test_args = test_args | MF_MINI;
+                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card4))) test_args = test_args | NTAG;
+                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card5))) test_args = test_args | MF_CLASSIC_4K;
+                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card6))) test_args = test_args | FM11RF005SH;
+                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card7))) test_args = test_args | ICLASS;
+            }
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_LFcards))){
+                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card8))) test_args = test_args | EM410X;
+                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card9))) test_args = test_args | AWID;
+                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card10))) test_args = test_args | PARADOX;
+                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card11))) test_args = test_args | HID;
+            }
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+    }
+
+    g_print("%04x\n", test_args);
+
+    initSpidercomms();
+    initCardtypeTestThread();
+
+    gtk_widget_hide(window1);
+    gtk_widget_show(window2);
+}
+// GUI functions /////////////////////////////////////////////////////////////////////////////////////////////////
+
 // Spider communiction thread ////////////////////////////////////////////////////////////////////////////////////
 void* spiderThread(void* p){
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
@@ -208,7 +330,7 @@ void* spiderThread(void* p){
 
     char *buf = malloc(UID_LENGTH);
     
-    //unsigned long long int bufint = 0;
+    int cardcount = 0;
 
     int shift = 0;
 
@@ -224,6 +346,7 @@ void* spiderThread(void* p){
     int err = libevdev_new_from_fd(fd, &dev);
     if (err < 0) errx(EXIT_FAILURE, "ERROR: cannot associate event device [%s]", strerror(-err));
     
+    gtk_text_buffer_get_start_iter(textviewbuf1, &iter1);
 
     printf("Device %s is open and associated w/ libevent\n", eventDevice);
     do {
@@ -242,10 +365,6 @@ void* spiderThread(void* p){
                 strcat(buf, keycodes[ev.code]);
             }
             if(ev.code == KEY_ENTER || ev.code == KEY_KPENTER){
-                //bufint = strtoull(buf,NULL,10);
-                //ulltohexstring(args->UID, bufint);
-                //memset(buf, 0, UID_LENGTH);
-                //printf("UID: %s\n", args->UID);
                 static int num;
                 static int typenum;
                 static int count;
@@ -263,17 +382,29 @@ void* spiderThread(void* p){
                 }
                 num++;
                 if(count > 0){
+                    pthread_mutex_lock(&lock);
                     memcpy(args->UID, &buf[num], UID_LENGTH - num);
                     memcpy(args->CardNum, &buf[1], typenum - 1);
-                    //printf("%s\n", buf);
+                    strcat(buf, "\r\n");
+                    gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)&buf[num], -1);
+                    //gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)"\r\n", -1);
+                    pthread_mutex_unlock(&lock);
                     memset(buf, '\0', UID_LENGTH);
                 }else{
+                    pthread_mutex_lock(&lock);
                     memcpy(args->UID, buf, UID_LENGTH);
+                    strcat(buf, "\r\n");
+                    gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)&buf[num], -1);
+                    //gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)"\r\n", -1);
+                    pthread_mutex_unlock(&lock);
                     memset(buf, '\0', UID_LENGTH);
                 }
                 
-
+                cardcount++;
+                gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressbar1), (gdouble)((double)cardcount/(double)NUMCARDS));
+                pthread_mutex_lock(&lock);
                 args->UID_available = true;
+                pthread_mutex_unlock(&lock);
             }
         }
     } while ((err == 1 || err == 0 || err == -EAGAIN) && !args->stopThread);
@@ -294,14 +425,58 @@ void initSpidercomms(void){
     pthread_create(&spider_thread, NULL, spiderThread, &thread_args);
     msleep(100);
 }
+// Spider communiction thread ////////////////////////////////////////////////////////////////////////////////////
 
-// Stop spider communication thread
-void stopSpidercomms(void){
+// Test thread for card types ///////////////////////////////////////////////////////////////////////////////////////////////
+void* cardtypeTestThread(void *p){
+    UIDthread_arg_t *args = (UIDthread_arg_t *)p;
+    uint16_t tests = 1;
+    time_begin = time(NULL);
+    for(uint8_t i = 0; i <= NUMCARDS; i++){
+        if(tests & test_args || i == 0) Simulate(i);
+        if (i != 0) tests = tests << 1;
+        if(args->stopThread) return NULL;
+    }
+    tests = 1;
+    for(uint8_t i = 0; i <= NUMCARDS; i++){
+        if(!cardtypes_t.detected[i] && (tests & test_args || i == 0)) Simulate(i);
+        if (i != 0) tests = tests << 1;
+        if(args->stopThread) return NULL;
+    }
+    time_end = time(NULL);
+
+    printResults();
+
+    //////////////////////////////////////////////////////////////////////////////
+    // Toevoegen switchen van scherm na simuleren
+    //////////////////////////////////////////////////////////////////////////////
+
+    pthread_exit(NULL);
+    return NULL;
+}
+
+void initCardtypeTestThread(void){
+    thread_args.UID_available = false;
+    thread_args.stopThread = false;
+    thread_args.UID = malloc(40);
+    thread_args.CardNum = malloc(4);
+    memset(thread_args.UID, 0, 40);
+    memset(thread_args.CardNum, 0, 4);
+    pthread_create(&cardtype_test_thread, NULL, cardtypeTestThread, &thread_args);
+    msleep(100);
+}
+// Test thread for card types ///////////////////////////////////////////////////////////////////////////////////////////////
+
+// Stop threads
+void stopThreads(void){
+    pthread_mutex_lock(&lock);
     thread_args.stopThread = true;
+    pthread_mutex_unlock(&lock);
     pthread_join(spider_thread, NULL);
     memset(&spider_thread, 0, sizeof(pthread_t));
+    pthread_join(cardtype_test_thread, NULL);
+    memset(&cardtype_test_thread, 0, sizeof(pthread_t));
 }
-// Spider communiction thread ////////////////////////////////////////////////////////////////////////////////////
 
 // Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
 void checkUID(int index){
@@ -311,6 +486,7 @@ void checkUID(int index){
         i++;
     }
     if(thread_args.UID_available){
+        pthread_mutex_lock(&lock);
         if(strcmp(cardtypes_t.cardUID[index], thread_args.UID) == 0){
             cardtypes_t.detected[index] = 1;
             memcpy(cardtypes_t.CardNum[index], thread_args.CardNum, strlen(thread_args.CardNum));
@@ -320,6 +496,7 @@ void checkUID(int index){
             PrintAndLogEx(ERR, "UID not detected: %s", thread_args.UID);
         }
         thread_args.UID_available = false;
+        pthread_mutex_unlock(&lock);
     }
     cardtypes_t.num_tries[index]++;
 }
@@ -450,20 +627,6 @@ void SimAwid(void){
     free(payload);
 }
 // Simulation functions /////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// 
-void* cardtype_test_thread(void *p){
-    time_begin = time(NULL);
-    for(uint8_t i = 0; i <= NUMCARDS; i++){
-        Simulate(i);
-    }
-    for(uint8_t i = 0; i <= NUMCARDS; i++){
-        if(cardtypes_t.detected[i])
-            continue;
-        Simulate(i);
-    }
-    time_end = time(NULL);
-}
 
 void Simulate(int sim){
     switch(sim){

@@ -1085,16 +1085,14 @@ int main(int argc, char *argv[]) {
         main_loop(script_cmds_file, script_cmd, stayInCommandLoop);
 #endif
     }else{ 
-        initSpidercomms();
-        testCycle();
-        printResults();
+
+        main_gui();
 
         if (g_session.pm3_present) {
             clearCommandBuffer();
             SendCommandNG(CMD_QUIT_SESSION, NULL, 0);
             msleep(100); // Make sure command is sent before killing client
         }
-        stopSpidercomms();
     }
 
     // Clean up the port
