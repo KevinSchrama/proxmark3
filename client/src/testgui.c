@@ -1,4 +1,4 @@
-#include "quickcmd.h"
+#include "testgui.h"
 
 #include <string.h>
 #include <ctype.h>
@@ -118,6 +118,10 @@ GtkWidget *window1;
                 GtkWidget *check19;
                 GtkWidget *check20;
         GtkWidget *startbutton1;
+        GtkWidget *fill1;
+        GtkWidget *fill2;
+        GtkWidget *fill3;
+        GtkWidget *fill4;
 
 GtkBuilder *builder;
 
@@ -193,6 +197,10 @@ void main_gui(void){
     check19 = GTK_WIDGET(gtk_builder_get_object(builder, "check19"));
     check20 = GTK_WIDGET(gtk_builder_get_object(builder, "check20"));
     startbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "startbutton1"));
+    fill1 = GTK_WIDGET(gtk_builder_get_object(builder, "fill1"));
+    fill2 = GTK_WIDGET(gtk_builder_get_object(builder, "fill2"));
+    fill3 = GTK_WIDGET(gtk_builder_get_object(builder, "fill3"));
+    fill4 = GTK_WIDGET(gtk_builder_get_object(builder, "fill4"));
 
     window2 = GTK_WIDGET(gtk_builder_get_object(builder, "window2"));
     g_signal_connect(window2, "destroy", G_CALLBACK(destroy), NULL);
@@ -214,6 +222,7 @@ void main_gui(void){
 
 // GUI functions /////////////////////////////////////////////////////////////////////////////////////////////////
 void destroy (GtkWidget *window){
+    stopSim();
     stopThreads();
     gtk_main_quit();
 }
@@ -383,19 +392,17 @@ void* spiderThread(void* p){
                 num++;
                 if(count > 0){
                     pthread_mutex_lock(&lock);
-                    memcpy(args->UID, &buf[num], UID_LENGTH - num);
-                    memcpy(args->CardNum, &buf[1], typenum - 1);
+                    memcpy(args->cardUID, &buf[num], UID_LENGTH - num);
+                    memcpy(args->cardType, &buf[1], typenum - 1);
                     strcat(buf, "\r\n");
                     gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)&buf[num], -1);
-                    //gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)"\r\n", -1);
                     pthread_mutex_unlock(&lock);
                     memset(buf, '\0', UID_LENGTH);
                 }else{
                     pthread_mutex_lock(&lock);
-                    memcpy(args->UID, buf, UID_LENGTH);
+                    memcpy(args->cardUID, buf, UID_LENGTH);
                     strcat(buf, "\r\n");
                     gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)&buf[num], -1);
-                    //gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)"\r\n", -1);
                     pthread_mutex_unlock(&lock);
                     memset(buf, '\0', UID_LENGTH);
                 }
@@ -418,10 +425,10 @@ void* spiderThread(void* p){
 void initSpidercomms(void){
     thread_args.UID_available = false;
     thread_args.stopThread = false;
-    thread_args.UID = malloc(40);
-    thread_args.CardNum = malloc(4);
-    memset(thread_args.UID, 0, 40);
-    memset(thread_args.CardNum, 0, 4);
+    thread_args.cardUID = malloc(40);
+    thread_args.cardType = malloc(4);
+    memset(thread_args.cardUID, 0, 40);
+    memset(thread_args.cardType, 0, 4);
     pthread_create(&spider_thread, NULL, spiderThread, &thread_args);
     msleep(100);
 }
@@ -458,10 +465,10 @@ void* cardtypeTestThread(void *p){
 void initCardtypeTestThread(void){
     thread_args.UID_available = false;
     thread_args.stopThread = false;
-    thread_args.UID = malloc(40);
-    thread_args.CardNum = malloc(4);
-    memset(thread_args.UID, 0, 40);
-    memset(thread_args.CardNum, 0, 4);
+    thread_args.cardUID = malloc(40);
+    thread_args.cardType = malloc(4);
+    memset(thread_args.cardUID, 0, 40);
+    memset(thread_args.cardType, 0, 4);
     pthread_create(&cardtype_test_thread, NULL, cardtypeTestThread, &thread_args);
     msleep(100);
 }
@@ -487,13 +494,13 @@ void checkUID(int index){
     }
     if(thread_args.UID_available){
         pthread_mutex_lock(&lock);
-        if(strcmp(cardtypes_t.cardUID[index], thread_args.UID) == 0){
+        if(strcmp(cardtypes_t.cardUID[index], thread_args.cardUID) == 0){
             cardtypes_t.detected[index] = 1;
-            memcpy(cardtypes_t.CardNum[index], thread_args.CardNum, strlen(thread_args.CardNum));
-            memset(thread_args.CardNum, 0, 4);
-            PrintAndLogEx(SUCCESS, "UID detected: %s", thread_args.UID);
+            memcpy(cardtypes_t.cardType[index], thread_args.cardType, strlen(thread_args.cardType));
+            memset(thread_args.cardType, 0, 4);
+            PrintAndLogEx(SUCCESS, "UID detected: %s", thread_args.cardUID);
         }else{
-            PrintAndLogEx(ERR, "UID not detected: %s", thread_args.UID);
+            PrintAndLogEx(ERR, "UID not detected: %s", thread_args.cardUID);
         }
         thread_args.UID_available = false;
         pthread_mutex_unlock(&lock);
@@ -685,7 +692,7 @@ void printResults(void){
     int detect_count = 0;
     for (int i = 1; i <= NUMCARDS; i++){
         if(cardtypes_t.detected[i]){
-            PrintAndLogEx(SUCCESS, "%-2i | %-16s | %-17s | %-4s | %i", i, cardtypes_t.cardUID[i], cardtypes_t.cardType[i], cardtypes_t.CardNum[i], cardtypes_t.num_tries[i]);
+            PrintAndLogEx(SUCCESS, "%-2i | %-16s | %-17s | %-4s | %i", i, cardtypes_t.cardUID[i], cardtypes_t.cardName[i], cardtypes_t.cardType[i], cardtypes_t.num_tries[i]);
             detect_count++;
         }
     }
@@ -696,7 +703,7 @@ void printResults(void){
         PrintAndLogEx(INFO, "#  | Card UID         | Card Name");
         for (int i = 1; i <= NUMCARDS; i++){
             if(!cardtypes_t.detected[i])
-                PrintAndLogEx(INFO, _RED_("%-2i") " | " _RED_("%-16s") " | " _RED_("%s"), i, cardtypes_t.cardUID[i], cardtypes_t.cardType[i]);
+                PrintAndLogEx(INFO, _RED_("%-2i") " | " _RED_("%-16s") " | " _RED_("%s"), i, cardtypes_t.cardUID[i], cardtypes_t.cardName[i]);
         }
     }else{
         PrintAndLogEx(SUCCESS, _GREEN_("Nothing missed, test succeeded!"));
@@ -817,22 +824,22 @@ static void setupCardTypes(void){
         cardtypes_t.cardUID[i] = 0;
         cardtypes_t.detected[i] = 0;
         cardtypes_t.num_tries[i] = 0;
-        cardtypes_t.cardType[i] = 0;
-        cardtypes_t.CardNum[i] = malloc(4);
-        memset(cardtypes_t.CardNum[i], '\0', 4);
+        cardtypes_t.cardName[i] = 0;
+        cardtypes_t.cardType[i] = malloc(4);
+        memset(cardtypes_t.cardType[i], '\0', 4);
     }
     
-    cardtypes_t.cardUID[1] = "4B6576696E0001";      cardtypes_t.cardType[1] = "Mifare Classic 1k"; //ISO14443A - 1
-    cardtypes_t.cardUID[2] = "4B6576696E0002";      cardtypes_t.cardType[2] = "Mifare Ultralight"; //ISO14443A - 2
-    cardtypes_t.cardUID[3] = "4B6576696E0006";      cardtypes_t.cardType[3] = "Mifrare Mini"; //ISO14443A - 6
-    cardtypes_t.cardUID[4] = "4B6576696E0007";      cardtypes_t.cardType[4] = "NTAG"; //ISO14443A - 7
-    cardtypes_t.cardUID[5] = "4B6576696E0008";      cardtypes_t.cardType[5] = "Mifare Classic 4k"; //ISO14443A - 8
-    cardtypes_t.cardUID[6] = "4B6576696E0009";      cardtypes_t.cardType[6] = "FM11RF005SH"; //ISO14443A - 9
-    cardtypes_t.cardUID[7] = "4B6576696EB93314";    cardtypes_t.cardType[7] = "iClass";
-    cardtypes_t.cardUID[8] = "0F0368568B";          cardtypes_t.cardType[8] = "em410x";
-    cardtypes_t.cardUID[9] = "04F60A73";                cardtypes_t.cardType[9] = "awid";
-    cardtypes_t.cardUID[10] = "218277AACB";         cardtypes_t.cardType[10] = "paradox";
-    cardtypes_t.cardUID[11] = "1006EC0C86";         cardtypes_t.cardType[11] = "hid";
+    cardtypes_t.cardUID[1] = "4B6576696E0001";      cardtypes_t.cardName[1] = "Mifare Classic 1k"; //ISO14443A - 1
+    cardtypes_t.cardUID[2] = "4B6576696E0002";      cardtypes_t.cardName[2] = "Mifare Ultralight"; //ISO14443A - 2
+    cardtypes_t.cardUID[3] = "4B6576696E0006";      cardtypes_t.cardName[3] = "Mifrare Mini"; //ISO14443A - 6
+    cardtypes_t.cardUID[4] = "4B6576696E0007";      cardtypes_t.cardName[4] = "NTAG"; //ISO14443A - 7
+    cardtypes_t.cardUID[5] = "4B6576696E0008";      cardtypes_t.cardName[5] = "Mifare Classic 4k"; //ISO14443A - 8
+    cardtypes_t.cardUID[6] = "4B6576696E0009";      cardtypes_t.cardName[6] = "FM11RF005SH"; //ISO14443A - 9
+    cardtypes_t.cardUID[7] = "4B6576696EB93314";    cardtypes_t.cardName[7] = "iClass";
+    cardtypes_t.cardUID[8] = "0F0368568B";          cardtypes_t.cardName[8] = "em410x";
+    cardtypes_t.cardUID[9] = "04F60A73";                cardtypes_t.cardName[9] = "awid";
+    cardtypes_t.cardUID[10] = "218277AACB";         cardtypes_t.cardName[10] = "paradox";
+    cardtypes_t.cardUID[11] = "1006EC0C86";         cardtypes_t.cardName[11] = "hid";
 }
 
 char getDevice(void){

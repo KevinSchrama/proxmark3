@@ -12,14 +12,22 @@
 typedef struct {
     bool UID_available;
     bool stopThread;
-    char *UID;
-    char *CardNum;
+    char *cardUID;
+    char *cardType;
 } UIDthread_arg_t;
+
+/*typedef struct {
+    const char *UID;
+    const char *name;
+    char *type;
+    void (*simFunction)(void);
+    bool simulate;
+} card;*/
 
 typedef struct {
     const char *cardUID[(NUMCARDS+1)];
-    const char *cardType[(NUMCARDS+1)];
-    char *CardNum[(NUMCARDS+1)];
+    const char *cardName[(NUMCARDS+1)];
+    char *cardType[(NUMCARDS+1)];
     int num_tries[(NUMCARDS+1)];
     bool detected[(NUMCARDS+1)];
 } cardtypes_s;

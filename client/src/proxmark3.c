@@ -38,7 +38,7 @@
 #include "preferences.h"
 
 #if defined(__linux__)
-#include "quickcmd.h"
+#include "testgui.h"
 #endif
 
 //#define LIBPM3
