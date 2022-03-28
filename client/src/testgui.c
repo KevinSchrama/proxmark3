@@ -37,9 +37,7 @@ pthread_mutex_t lock;
 
 static const char *keycodes[64 * 1024] = { 0 };
 static const char *shiftkeycodes[64 * 1024] = { 0 };
-cardtypes_s cardtypes_t;
 
-static void setupCardTypes(void);
 static void setupKeyCodes(void);
 void ulltohexstring(char *Des, unsigned long long int Src);
 
@@ -48,7 +46,13 @@ void checkUID(int index);
 
 char getDevice(void);
 
-void Sim14A(uint8_t i);
+void SimBUF(void);
+void SimMfClas1k(void);
+void SimMfUltra(void);
+void SimMfMini(void);
+void SimNTAG(void);
+void SimMfClas4k(void);
+void SimFM11RF005SH(void);
 void SimiClass(void);
 void SimHID(void);
 void SimEM410x(void);
@@ -71,7 +75,8 @@ time_t time_begin;
 time_t time_end;
 
 int testType = 1;
-uint16_t test_args = 0;
+int numcards = 0;
+int cardcount = 0;
 
 GtkWidget *window1;
     GtkWidget *grid1;
@@ -118,10 +123,13 @@ GtkWidget *window1;
                 GtkWidget *check19;
                 GtkWidget *check20;
         GtkWidget *startbutton1;
+        GtkWidget *textview3;
+        GtkWidget *progressbar1;
         GtkWidget *fill1;
         GtkWidget *fill2;
         GtkWidget *fill3;
         GtkWidget *fill4;
+        GtkWidget *fill5;
 
 GtkBuilder *builder;
 
@@ -131,12 +139,38 @@ GtkWidget *window2;
         GtkWidget *label2;
         GtkWidget *textview1;
         GtkWidget *textview2;
-        GtkWidget *progressbar1;
+        GtkWidget *fill6;
+        GtkWidget *fill7;
+        GtkWidget *fill8;
 
 GtkTextBuffer *textviewbuf1;
 GtkTextBuffer *textviewbuf2;
+GtkTextBuffer *textviewbuf3;
 
 GtkTextIter iter1;
+
+card_t cards[] = {
+    {"buffer",              "Buffer simulation",    SimBUF,         0,  false, false},
+    {"4B6576696E0001",      "Mifare Classic 1k",    SimMfClas1k,    0,  false, false},
+    {"4B6576696E0002",      "Mifare Ultralight",    SimMfUltra,     0,  false, false},
+    {"4B6576696E0006",      "Mifrare Mini",         SimMfMini,      0,  false, false},
+    {"4B6576696E0007",      "NTAG",                 SimNTAG,        0,  false, false},
+    {"4B6576696E0008",      "Mifare Classic 4k",    SimMfClas4k,    0,  false, false},
+    {"4B6576696E0009",      "FM11RF005SH",          SimFM11RF005SH, 0,  false, false},
+    {"4B6576696EB93314",    "iClass",               SimiClass,      0,  false, false},
+    {"0F0368568B",          "em410x",               SimEM410x,      0,  false, false},
+    {"04F60A73",            "awid",                 SimAwid,        0,  false, false},
+    {"218277AACB",          "paradox",              SimParadox,     0,  false, false},
+    {"1006EC0C86",          "hid",                  SimHID,         0,  false, false},
+    {NULL, NULL, NULL, 0, false, false},
+    {NULL, NULL, NULL, 0, false, false},
+    {NULL, NULL, NULL, 0, false, false},
+    {NULL, NULL, NULL, 0, false, false},
+    {NULL, NULL, NULL, 0, false, false},
+    {NULL, NULL, NULL, 0, false, false},
+    {NULL, NULL, NULL, 0, false, false},
+    {NULL, NULL, NULL, 0, false, false}
+};
 
 void main_gui(void){
     if(pthread_mutex_init(&lock, NULL) != 0){
@@ -146,7 +180,7 @@ void main_gui(void){
 
     gtk_init(NULL, NULL);
 
-    builder = gtk_builder_new_from_file("/home/pi/proxmark3/client/src/gui.glade");
+    builder = gtk_builder_new_from_file("/home/pi/proxmark3/client/src/gui2.glade");
 
     window1 = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
     g_signal_connect(window1, "destroy", G_CALLBACK(destroy), NULL);
@@ -197,10 +231,13 @@ void main_gui(void){
     check19 = GTK_WIDGET(gtk_builder_get_object(builder, "check19"));
     check20 = GTK_WIDGET(gtk_builder_get_object(builder, "check20"));
     startbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "startbutton1"));
+    progressbar1 = GTK_WIDGET(gtk_builder_get_object(builder, "progressbar1"));
+    textview3 = GTK_WIDGET(gtk_builder_get_object(builder, "textview3"));
     fill1 = GTK_WIDGET(gtk_builder_get_object(builder, "fill1"));
     fill2 = GTK_WIDGET(gtk_builder_get_object(builder, "fill2"));
     fill3 = GTK_WIDGET(gtk_builder_get_object(builder, "fill3"));
     fill4 = GTK_WIDGET(gtk_builder_get_object(builder, "fill4"));
+    fill5 = GTK_WIDGET(gtk_builder_get_object(builder, "fill5"));
 
     window2 = GTK_WIDGET(gtk_builder_get_object(builder, "window2"));
     g_signal_connect(window2, "destroy", G_CALLBACK(destroy), NULL);
@@ -210,10 +247,13 @@ void main_gui(void){
     label2 = GTK_WIDGET(gtk_builder_get_object(builder, "label2"));
     textview1 = GTK_WIDGET(gtk_builder_get_object(builder, "textview1"));
     textview2 = GTK_WIDGET(gtk_builder_get_object(builder, "textview2"));
-    progressbar1 = GTK_WIDGET(gtk_builder_get_object(builder, "progressbar1"));
+    fill6 = GTK_WIDGET(gtk_builder_get_object(builder, "fill6"));
+    fill7 = GTK_WIDGET(gtk_builder_get_object(builder, "fill7"));
+    fill8 = GTK_WIDGET(gtk_builder_get_object(builder, "fill8"));
 
     textviewbuf1 = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "textviewbuf1"));
     textviewbuf2 = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "textviewbuf2"));
+    textviewbuf3 = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "textviewbuf3"));
 
     gtk_widget_show(window1);
 
@@ -294,24 +334,34 @@ void on_test1_LFcards_toggled (GtkWidget *check){
 }
 
 void on_startbutton1_clicked (GtkWidget *startbutton){
+    gtk_widget_set_sensitive(startbutton1, FALSE);
     g_print("Test started\n");
 
     switch(testType){
         case 1:
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_HFcards))){
-                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card1))) test_args = test_args | MF_CLASSIC_1K;
-                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card2))) test_args = test_args | MF_ULTRALIGHT;
-                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card3))) test_args = test_args | MF_MINI;
-                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card4))) test_args = test_args | NTAG;
-                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card5))) test_args = test_args | MF_CLASSIC_4K;
-                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card6))) test_args = test_args | FM11RF005SH;
-                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card7))) test_args = test_args | ICLASS;
+                cards[1].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card1));   //MF Classic 1k
+                cards[2].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card2));   //MF_ULTRALIGHT
+                cards[3].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card3));   //MF_MINI
+                cards[4].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card4));   //NTAG
+                cards[5].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card5));   //MF_CLASSIC_4K
+                cards[6].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card6));   //FM11RF005SH
+                cards[7].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card7));   //ICLASS
             }
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_LFcards))){
-                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card8))) test_args = test_args | EM410X;
-                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card9))) test_args = test_args | AWID;
-                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card10))) test_args = test_args | PARADOX;
-                if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card11))) test_args = test_args | HID;
+                cards[8].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card8));   //EM410X
+                cards[9].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card9));   //AWID
+                cards[10].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card10)); //PARADOX
+                cards[11].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card11)); //HID
+            }
+            int i = 0;
+            numcards = 0;
+            while(cards[i].UID){
+                if(strcmp(cards[i].UID, "buffer") != 0){
+                    if(cards[i].simulate)
+                        numcards++;
+                }
+                i++;
             }
             break;
         case 2:
@@ -320,26 +370,34 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             break;
     }
 
-    g_print("%04x\n", test_args);
-
+    initThreadArgs();
     initSpidercomms();
     initCardtypeTestThread();
-
-    gtk_widget_hide(window1);
-    gtk_widget_show(window2);
 }
 // GUI functions /////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Init thread arguments ////////////////////////////////////////////////////////////////////////////////////////
+void initThreadArgs(void){
+    thread_args.UID_available = false;
+    thread_args.stopThread = false;
+    thread_args.cardUID = malloc(50);
+    memset(thread_args.cardUID, 0, 50);
+}
+// Init thread arguments ////////////////////////////////////////////////////////////////////////////////////////
+
 // Spider communiction thread ////////////////////////////////////////////////////////////////////////////////////
+// Init spider communication thread
+void initSpidercomms(void){
+    pthread_create(&spider_thread, NULL, spiderThread, &thread_args);
+    msleep(100);
+}
+
 void* spiderThread(void* p){
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
 
     setupKeyCodes();
-    setupCardTypes();
 
     char *buf = malloc(UID_LENGTH);
-    
-    int cardcount = 0;
 
     int shift = 0;
 
@@ -355,9 +413,9 @@ void* spiderThread(void* p){
     int err = libevdev_new_from_fd(fd, &dev);
     if (err < 0) errx(EXIT_FAILURE, "ERROR: cannot associate event device [%s]", strerror(-err));
     
-    gtk_text_buffer_get_start_iter(textviewbuf1, &iter1);
+    gtk_text_buffer_get_start_iter(textviewbuf3, &iter1);
 
-    printf("Device %s is open and associated w/ libevent\n", eventDevice);
+    g_print("Device %s is open and associated w/ libevent\n", eventDevice);
     do {
         
 
@@ -375,7 +433,6 @@ void* spiderThread(void* p){
             }
             if(ev.code == KEY_ENTER || ev.code == KEY_KPENTER){
                 static int num;
-                static int typenum;
                 static int count;
                 num = 0;
                 count = 0;
@@ -384,71 +441,58 @@ void* spiderThread(void* p){
                          count++;
                          if(count == 2){
                              break;
-                         }else{
-                             typenum = num;
                          }
                      }
                 }
                 num++;
+                pthread_mutex_lock(&lock);
                 if(count > 0){
-                    pthread_mutex_lock(&lock);
                     memcpy(args->cardUID, &buf[num], UID_LENGTH - num);
-                    memcpy(args->cardType, &buf[1], typenum - 1);
                     strcat(buf, "\r\n");
-                    gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)&buf[num], -1);
-                    pthread_mutex_unlock(&lock);
+                    gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)&buf[num], -1);
                     memset(buf, '\0', UID_LENGTH);
                 }else{
-                    pthread_mutex_lock(&lock);
                     memcpy(args->cardUID, buf, UID_LENGTH);
                     strcat(buf, "\r\n");
-                    gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)&buf[num], -1);
-                    pthread_mutex_unlock(&lock);
+                    gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)&buf[num], -1);
                     memset(buf, '\0', UID_LENGTH);
                 }
-                
-                cardcount++;
-                gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressbar1), (gdouble)((double)cardcount/(double)NUMCARDS));
-                pthread_mutex_lock(&lock);
+
                 args->UID_available = true;
                 pthread_mutex_unlock(&lock);
             }
         }
     } while ((err == 1 || err == 0 || err == -EAGAIN) && !args->stopThread);
 
+    free(eventDevice);
+
     close(fd);
     pthread_exit(NULL);
     return NULL;
 }
 
-// Init spider communication thread
-void initSpidercomms(void){
-    thread_args.UID_available = false;
-    thread_args.stopThread = false;
-    thread_args.cardUID = malloc(40);
-    thread_args.cardType = malloc(4);
-    memset(thread_args.cardUID, 0, 40);
-    memset(thread_args.cardType, 0, 4);
-    pthread_create(&spider_thread, NULL, spiderThread, &thread_args);
-    msleep(100);
-}
 // Spider communiction thread ////////////////////////////////////////////////////////////////////////////////////
 
 // Test thread for card types ///////////////////////////////////////////////////////////////////////////////////////////////
+void initCardtypeTestThread(void){
+    pthread_create(&cardtype_test_thread, NULL, cardtypeTestThread, &thread_args);
+    msleep(100);
+}
+
 void* cardtypeTestThread(void *p){
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
-    uint16_t tests = 1;
     time_begin = time(NULL);
-    for(uint8_t i = 0; i <= NUMCARDS; i++){
-        if(tests & test_args || i == 0) Simulate(i);
-        if (i != 0) tests = tests << 1;
-        if(args->stopThread) return NULL;
+    int i = 0;
+    while(cards[i].UID){
+        if(i == 0 || cards[i].simulate) Simulate(i);
+        i++;
+        if(args->stopThread) {pthread_exit(NULL); return NULL;}
     }
-    tests = 1;
-    for(uint8_t i = 0; i <= NUMCARDS; i++){
-        if(!cardtypes_t.detected[i] && (tests & test_args || i == 0)) Simulate(i);
-        if (i != 0) tests = tests << 1;
-        if(args->stopThread) return NULL;
+    i = 0;
+    while(cards[i].UID){
+        if(i == 0 || (cards[i].simulate && !cards[i].detected)) Simulate(i);
+        i++;
+        if(args->stopThread) {pthread_exit(NULL); return NULL;}
     }
     time_end = time(NULL);
 
@@ -461,24 +505,11 @@ void* cardtypeTestThread(void *p){
     pthread_exit(NULL);
     return NULL;
 }
-
-void initCardtypeTestThread(void){
-    thread_args.UID_available = false;
-    thread_args.stopThread = false;
-    thread_args.cardUID = malloc(40);
-    thread_args.cardType = malloc(4);
-    memset(thread_args.cardUID, 0, 40);
-    memset(thread_args.cardType, 0, 4);
-    pthread_create(&cardtype_test_thread, NULL, cardtypeTestThread, &thread_args);
-    msleep(100);
-}
 // Test thread for card types ///////////////////////////////////////////////////////////////////////////////////////////////
 
 // Stop threads
 void stopThreads(void){
-    pthread_mutex_lock(&lock);
     thread_args.stopThread = true;
-    pthread_mutex_unlock(&lock);
     pthread_join(spider_thread, NULL);
     memset(&spider_thread, 0, sizeof(pthread_t));
     pthread_join(cardtype_test_thread, NULL);
@@ -491,23 +522,31 @@ void checkUID(int index){
     while(!thread_args.UID_available && i < WAIT_TIME){
         msleep(1);
         i++;
+        if(thread_args.stopThread) return;
     }
     if(thread_args.UID_available){
         pthread_mutex_lock(&lock);
-        if(strcmp(cardtypes_t.cardUID[index], thread_args.cardUID) == 0){
-            cardtypes_t.detected[index] = 1;
-            memcpy(cardtypes_t.cardType[index], thread_args.cardType, strlen(thread_args.cardType));
-            memset(thread_args.cardType, 0, 4);
+        if(strcmp(cards[index].UID, thread_args.cardUID) == 0){
+            cards[index].detected = 1;
             PrintAndLogEx(SUCCESS, "UID detected: %s", thread_args.cardUID);
-        }else{
-            PrintAndLogEx(ERR, "UID not detected: %s", thread_args.cardUID);
+            cardcount++;
+            //gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressbar1), (gdouble)((double)cardcount/(double)numcards));
         }
         thread_args.UID_available = false;
         pthread_mutex_unlock(&lock);
+    }else{
+        PrintAndLogEx(ERR, "Expected UID (%s) not detected!", cards[index].UID);
     }
-    cardtypes_t.num_tries[index]++;
+    cards[index].num_tries++;
 }
 // Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Simulate(int sim){
+    cards[sim].simFunction();
+    if(strcmp(cards[sim].UID, "buffer") != 0)
+        checkUID(sim);
+    stopSim();
+}
 
 // Simulation functions ////////////////////////////////////////////////////////////////////////////////////////////////////////
 void stopSim(void){
@@ -516,11 +555,9 @@ void stopSim(void){
     msleep(500);
 }
 
-void Sim14A(uint8_t i){
+void SimBUF(void){
     int uid_len = 7;
-    uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, i%10};
-    if(i != 0)
-        PrintAndLogEx(INFO, "TESTING ISO 14443A sim with UID %s", sprint_hex(uid, uid_len));
+    uint8_t uid[10] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
     struct {
         uint8_t tagtype;
@@ -529,11 +566,133 @@ void Sim14A(uint8_t i){
         uint8_t exitAfter;
     } PACKED payload;
 
-    if(i != 0){
-        payload.tagtype = i%10;
-    }else{
-        payload.tagtype = 1;
-    }
+    payload.tagtype = 1;
+    payload.flags = 4;
+    payload.exitAfter = 0;
+    memcpy(payload.uid, uid, uid_len);
+
+    clearCommandBuffer();
+    SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
+}
+
+void SimMfClas1k(void){
+    int uid_len = 7;
+    uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x01};
+    PrintAndLogEx(INFO, "TESTING ISO 14443A (Mifare Classic 1k) sim with UID %s", sprint_hex(uid, uid_len));
+
+    struct {
+        uint8_t tagtype;
+        uint16_t flags;
+        uint8_t uid[10];
+        uint8_t exitAfter;
+    } PACKED payload;
+
+    payload.tagtype = 1;
+    payload.flags = 4;
+    payload.exitAfter = 0;
+    memcpy(payload.uid, uid, uid_len);
+
+    clearCommandBuffer();
+    SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
+}
+
+void SimMfUltra(void){
+    int uid_len = 7;
+    uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x02};
+    PrintAndLogEx(INFO, "TESTING ISO 14443A (Mifare Ultralight) sim with UID %s", sprint_hex(uid, uid_len));
+
+    struct {
+        uint8_t tagtype;
+        uint16_t flags;
+        uint8_t uid[10];
+        uint8_t exitAfter;
+    } PACKED payload;
+
+    payload.tagtype = 2;
+    payload.flags = 4;
+    payload.exitAfter = 0;
+    memcpy(payload.uid, uid, uid_len);
+
+    clearCommandBuffer();
+    SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
+}
+
+void SimMfMini(void){
+    int uid_len = 7;
+    uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x06};
+    PrintAndLogEx(INFO, "TESTING ISO 14443A (Mifare Mini) sim with UID %s", sprint_hex(uid, uid_len));
+
+    struct {
+        uint8_t tagtype;
+        uint16_t flags;
+        uint8_t uid[10];
+        uint8_t exitAfter;
+    } PACKED payload;
+
+    payload.tagtype = 6;
+    payload.flags = 4;
+    payload.exitAfter = 0;
+    memcpy(payload.uid, uid, uid_len);
+
+    clearCommandBuffer();
+    SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
+}
+
+void SimNTAG(void){
+    int uid_len = 7;
+    uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x07};
+    PrintAndLogEx(INFO, "TESTING ISO 14443A (NTAG) sim with UID %s", sprint_hex(uid, uid_len));
+
+    struct {
+        uint8_t tagtype;
+        uint16_t flags;
+        uint8_t uid[10];
+        uint8_t exitAfter;
+    } PACKED payload;
+
+    payload.tagtype = 7;
+    payload.flags = 4;
+    payload.exitAfter = 0;
+    memcpy(payload.uid, uid, uid_len);
+
+    clearCommandBuffer();
+    SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
+}
+
+void SimMfClas4k(void){
+    int uid_len = 7;
+    uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x08};
+    PrintAndLogEx(INFO, "TESTING ISO 14443A (Mifare Classic 4k) sim with UID %s", sprint_hex(uid, uid_len));
+
+    struct {
+        uint8_t tagtype;
+        uint16_t flags;
+        uint8_t uid[10];
+        uint8_t exitAfter;
+    } PACKED payload;
+
+    payload.tagtype = 8;
+    payload.flags = 4;
+    payload.exitAfter = 0;
+    memcpy(payload.uid, uid, uid_len);
+
+    clearCommandBuffer();
+    SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
+}
+
+void SimFM11RF005SH(void){
+    int uid_len = 7;
+    uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x09};
+    PrintAndLogEx(INFO, "TESTING ISO 14443A (FM11RF005SH) sim with UID %s", sprint_hex(uid, uid_len));
+
+    struct {
+        uint8_t tagtype;
+        uint16_t flags;
+        uint8_t uid[10];
+        uint8_t exitAfter;
+    } PACKED payload;
+
+    payload.tagtype = 9;
     payload.flags = 4;
     payload.exitAfter = 0;
     memcpy(payload.uid, uid, uid_len);
@@ -635,75 +794,34 @@ void SimAwid(void){
 }
 // Simulation functions /////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Simulate(int sim){
-    switch(sim){
-        case 0:
-            Sim14A(0); //buffer simulation
-            stopSim();
-            return;
-            break;
-        case 1:
-            Sim14A(1);
-            break;
-        case 2:
-            Sim14A(2);
-            break;
-        case 3:
-            Sim14A(6);
-            break;
-        case 4:
-            Sim14A(7);
-            break;
-        case 5:
-            Sim14A(8);
-            break;
-        case 6:
-            Sim14A(9);
-            break;
-        case 7:
-            SimiClass();
-            break;
-        case 8:
-            SimEM410x();
-            break;
-        case 9:
-            SimAwid();
-            break;
-        case 10:
-            SimParadox();
-            break;
-        case 11:
-            SimHID();
-            break;
-        default:
-            PrintAndLogEx(ERR, "Not a valid sim number!");
-            return;
-    }
-    checkUID(sim);
-    stopSim();
-}
-
 void printResults(void){
     PrintAndLogEx(INFO, "========================================================");
     PrintAndLogEx(INFO, "Testing took %d seconds.", (time_end - time_begin));
     PrintAndLogEx(INFO, "========================================================");
     PrintAndLogEx(INFO, "UID's detected:");
-    PrintAndLogEx(INFO, "#  | Card UID         | Card Name         | Type | Tries");
+    PrintAndLogEx(INFO, "#  | Card UID         | Card Name         | Tries");
     int detect_count = 0;
-    for (int i = 1; i <= NUMCARDS; i++){
-        if(cardtypes_t.detected[i]){
-            PrintAndLogEx(SUCCESS, "%-2i | %-16s | %-17s | %-4s | %i", i, cardtypes_t.cardUID[i], cardtypes_t.cardName[i], cardtypes_t.cardType[i], cardtypes_t.num_tries[i]);
+    int not_detect_count = 0;
+    int i = 1;
+    while(cards[i].UID){
+        if(cards[i].detected){
+            PrintAndLogEx(SUCCESS, "%-2i | %-16s | %-17s | %i", i, cards[i].UID, cards[i].name, cards[i].num_tries);
             detect_count++;
+        }else if(cards[i].simulate){
+            not_detect_count++;
         }
+        i++;
     }
     PrintAndLogEx(INFO, "========================================================");
     PrintAndLogEx(INFO, "========================================================");
-    if(detect_count != NUMCARDS){
+    if(not_detect_count != 0){
         PrintAndLogEx(INFO, "Missing UID's:");
         PrintAndLogEx(INFO, "#  | Card UID         | Card Name");
-        for (int i = 1; i <= NUMCARDS; i++){
-            if(!cardtypes_t.detected[i])
-                PrintAndLogEx(INFO, _RED_("%-2i") " | " _RED_("%-16s") " | " _RED_("%s"), i, cardtypes_t.cardUID[i], cardtypes_t.cardName[i]);
+        i = 1;
+        while(cards[i].UID){
+            if(!cards[i].detected && cards[i].simulate)
+                PrintAndLogEx(INFO, _RED_("%-2i") " | " _RED_("%-16s") " | " _RED_("%s"), i, cards[i].UID, cards[i].name);
+            i++;
         }
     }else{
         PrintAndLogEx(SUCCESS, _GREEN_("Nothing missed, test succeeded!"));
@@ -716,7 +834,7 @@ void printResults(void){
         PrintAndLogEx(ERR, "Couldn't open logfile");
         return;
     }
-    fprintf(ptr, "\n%d,%d,%ld", detect_count, NUMCARDS-detect_count, (time_end-time_begin));
+    fprintf(ptr, "\n%d,%d,%ld", detect_count, not_detect_count, (time_end-time_begin));
     fclose(ptr);
 }
 
@@ -817,29 +935,6 @@ void ulltohexstring(char *Des, unsigned long long int Src){
     for(int j = 0; j < l; j++){
         Des[j] = hex[l - 1 - j];
     }
-}
-
-static void setupCardTypes(void){
-    for (int i = 0; i <= NUMCARDS; i++){
-        cardtypes_t.cardUID[i] = 0;
-        cardtypes_t.detected[i] = 0;
-        cardtypes_t.num_tries[i] = 0;
-        cardtypes_t.cardName[i] = 0;
-        cardtypes_t.cardType[i] = malloc(4);
-        memset(cardtypes_t.cardType[i], '\0', 4);
-    }
-    
-    cardtypes_t.cardUID[1] = "4B6576696E0001";      cardtypes_t.cardName[1] = "Mifare Classic 1k"; //ISO14443A - 1
-    cardtypes_t.cardUID[2] = "4B6576696E0002";      cardtypes_t.cardName[2] = "Mifare Ultralight"; //ISO14443A - 2
-    cardtypes_t.cardUID[3] = "4B6576696E0006";      cardtypes_t.cardName[3] = "Mifrare Mini"; //ISO14443A - 6
-    cardtypes_t.cardUID[4] = "4B6576696E0007";      cardtypes_t.cardName[4] = "NTAG"; //ISO14443A - 7
-    cardtypes_t.cardUID[5] = "4B6576696E0008";      cardtypes_t.cardName[5] = "Mifare Classic 4k"; //ISO14443A - 8
-    cardtypes_t.cardUID[6] = "4B6576696E0009";      cardtypes_t.cardName[6] = "FM11RF005SH"; //ISO14443A - 9
-    cardtypes_t.cardUID[7] = "4B6576696EB93314";    cardtypes_t.cardName[7] = "iClass";
-    cardtypes_t.cardUID[8] = "0F0368568B";          cardtypes_t.cardName[8] = "em410x";
-    cardtypes_t.cardUID[9] = "04F60A73";                cardtypes_t.cardName[9] = "awid";
-    cardtypes_t.cardUID[10] = "218277AACB";         cardtypes_t.cardName[10] = "paradox";
-    cardtypes_t.cardUID[11] = "1006EC0C86";         cardtypes_t.cardName[11] = "hid";
 }
 
 char getDevice(void){

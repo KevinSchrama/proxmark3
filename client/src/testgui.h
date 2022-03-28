@@ -7,35 +7,28 @@
 #include <stdio.h>
 #include "util.h"
 
-#define NUMCARDS 11
+//#define NUMCARDS 11
 
 typedef struct {
     bool UID_available;
     bool stopThread;
     char *cardUID;
-    char *cardType;
 } UIDthread_arg_t;
 
-/*typedef struct {
+typedef struct {
     const char *UID;
     const char *name;
-    char *type;
     void (*simFunction)(void);
+    int num_tries;
     bool simulate;
-} card;*/
-
-typedef struct {
-    const char *cardUID[(NUMCARDS+1)];
-    const char *cardName[(NUMCARDS+1)];
-    char *cardType[(NUMCARDS+1)];
-    int num_tries[(NUMCARDS+1)];
-    bool detected[(NUMCARDS+1)];
-} cardtypes_s;
+    bool detected;
+} card_t;
 
 extern UIDthread_arg_t thread_args;
 
 void main_gui(void);
 void Simulate(int sim);
+void initThreadArgs(void);
 void initSpidercomms(void);
 void initCardtypeTestThread(void);
 void stopThreads(void);
