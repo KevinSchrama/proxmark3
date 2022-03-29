@@ -12,7 +12,6 @@
 typedef struct {
     bool UID_available;
     bool stopThread;
-    char *cardUID;
 } UIDthread_arg_t;
 
 typedef struct {
