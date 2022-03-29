@@ -33,7 +33,8 @@
 UIDthread_arg_t thread_args;
 static pthread_t spider_thread;
 static pthread_t cardtype_test_thread;
-pthread_mutex_t lock;
+pthread_mutex_t thread_mutex;
+pthread_mutex_t gtk_mutex;
 
 static const char *keycodes[64 * 1024] = { 0 };
 static const char *shiftkeycodes[64 * 1024] = { 0 };
@@ -173,8 +174,12 @@ card_t cards[] = {
 };
 
 void main_gui(void){
-    if(pthread_mutex_init(&lock, NULL) != 0){
-        printf("\n mutex init has failed\n");
+    if(pthread_mutex_init(&thread_mutex, NULL) != 0){
+        printf("\n mutex init 'thread_mutex' has failed\n");
+        return;
+    }
+    if(pthread_mutex_init(&gtk_mutex, NULL) != 0){
+        printf("\n mutex init 'gtk_mutex' has failed\n");
         return;
     }
 
@@ -258,12 +263,16 @@ void main_gui(void){
     gtk_widget_show(window1);
 
     gtk_main();
+
+    stopThreads();
+
+    g_print("Einde programma\n");
 }
 
 // GUI functions /////////////////////////////////////////////////////////////////////////////////////////////////
 void destroy (GtkWidget *window){
+    g_print("Destroy function\n");
     stopSim();
-    stopThreads();
     gtk_main_quit();
 }
 
@@ -380,8 +389,8 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
 void initThreadArgs(void){
     thread_args.UID_available = false;
     thread_args.stopThread = false;
-    thread_args.cardUID = malloc(50);
-    memset(thread_args.cardUID, 0, 50);
+    thread_args.cardUID = malloc(UID_LENGTH);
+    memset(thread_args.cardUID, 0, UID_LENGTH);
 }
 // Init thread arguments ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -445,21 +454,26 @@ void* spiderThread(void* p){
                      }
                 }
                 num++;
-                pthread_mutex_lock(&lock);
+                pthread_mutex_lock(&thread_mutex);
                 if(count > 0){
-                    memcpy(args->cardUID, &buf[num], UID_LENGTH - num);
+                    //memcpy(args->cardUID, &buf[num], UID_LENGTH - num);
+                    strcpy(args->cardUID, &buf[num]);
                     strcat(buf, "\r\n");
+                    //pthread_mutex_lock(&gtk_mutex);
                     gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)&buf[num], -1);
+                    //pthread_mutex_unlock(&gtk_mutex);
                     memset(buf, '\0', UID_LENGTH);
                 }else{
                     memcpy(args->cardUID, buf, UID_LENGTH);
                     strcat(buf, "\r\n");
+                    //pthread_mutex_lock(&gtk_mutex);
                     gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)&buf[num], -1);
+                    //pthread_mutex_unlock(&gtk_mutex);
                     memset(buf, '\0', UID_LENGTH);
                 }
 
                 args->UID_available = true;
-                pthread_mutex_unlock(&lock);
+                pthread_mutex_unlock(&thread_mutex);
             }
         }
     } while ((err == 1 || err == 0 || err == -EAGAIN) && !args->stopThread);
@@ -509,11 +523,17 @@ void* cardtypeTestThread(void *p){
 
 // Stop threads
 void stopThreads(void){
+    g_print("Stop threads\n");
+    pthread_mutex_lock(&thread_mutex);
     thread_args.stopThread = true;
-    pthread_join(spider_thread, NULL);
-    memset(&spider_thread, 0, sizeof(pthread_t));
+    pthread_mutex_unlock(&thread_mutex);
+    g_print("Threads join\n");
     pthread_join(cardtype_test_thread, NULL);
-    memset(&cardtype_test_thread, 0, sizeof(pthread_t));
+    pthread_join(spider_thread, NULL);
+    
+    g_print("Mutex destroy\n");
+    pthread_mutex_destroy(&thread_mutex);
+    pthread_mutex_destroy(&gtk_mutex);
 }
 
 // Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -524,19 +544,21 @@ void checkUID(int index){
         i++;
         if(thread_args.stopThread) return;
     }
+    pthread_mutex_lock(&thread_mutex);
     if(thread_args.UID_available){
-        pthread_mutex_lock(&lock);
         if(strcmp(cards[index].UID, thread_args.cardUID) == 0){
             cards[index].detected = 1;
             PrintAndLogEx(SUCCESS, "UID detected: %s", thread_args.cardUID);
             cardcount++;
+            //pthread_mutex_lock(&gtk_mutex);
             //gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressbar1), (gdouble)((double)cardcount/(double)numcards));
+            //pthread_mutex_unlock(&gtk_mutex);
         }
         thread_args.UID_available = false;
-        pthread_mutex_unlock(&lock);
     }else{
         PrintAndLogEx(ERR, "Expected UID (%s) not detected!", cards[index].UID);
     }
+    pthread_mutex_unlock(&thread_mutex);
     cards[index].num_tries++;
 }
 // Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
