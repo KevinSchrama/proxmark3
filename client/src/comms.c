@@ -303,7 +303,7 @@ static void PacketResponseReceived(PacketResponseNG *packet) {
                     g_pendingPrompt = false;
                 }
                 //PrintAndLogEx(NORMAL, "[" _MAGENTA_("pm3") "] ["_BLUE_("#")"] " "%s", s);
-                PrintAndLogEx(NORMAL, "[" _BLUE_("#") "] %s", s);
+                PrintAndLogEx(DEBUG, "[" _BLUE_("#") "] %s", s);
             } else {
                 if (flag & FLAG_INPLACE)
                     PrintAndLogEx(NORMAL, "\r" NOLF);

@@ -83,6 +83,9 @@ void on_test1_LFcards_toggled(GtkWidget *check);
 void on_startbutton1_clicked(GtkWidget *startbutton);
 void on_resetbutton1_clicked(GtkWidget *resetbutton);
 void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow);
+gboolean printtobuffer(void *text);
+gboolean progressbarUpdate(void *p);
+gboolean resetTests(void *p);
 
 time_t time_begin;
 time_t time_end;
@@ -192,6 +195,11 @@ card_t cards[] = {
     {NULL, NULL, NULL, 0, false, false}
 };
 
+struct progressbar_args {
+    int cardcount_arg;
+    int numcards_args;
+};
+
 void main_gui(void){
     if(pthread_mutex_init(&thread_mutex, NULL) != 0){
         printf("\n mutex init 'thread_mutex' has failed\n");
@@ -290,6 +298,8 @@ void main_gui(void){
     cssprovider1 = gtk_css_provider_new();
     gtk_css_provider_load_from_path(cssprovider1, "/home/pi/proxmark3/client/src/guistyle.css", NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(cssprovider1), GTK_STYLE_PROVIDER_PRIORITY_USER);
+
+    g_print("Debug mode: %d\n", g_debugMode);
 
     gtk_widget_show(window1);
 
@@ -408,10 +418,10 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             }
             if(numcards == 0){
                 on_resetbutton1_clicked(resetbutton1);
-                gtk_text_buffer_insert(textviewbuf3, &iter1, "Can't run test without cards...\r\n", -1);
+                printTextviewBuffer(GUIPRINT, "Can't run test without cards...");
                 break;
             }
-            printTextviewBuffer("Simulating %d different cards", numcards);
+            printTextviewBuffer(GUIPRINT, "Simulating %d different cards", numcards);
             
             initThreadArgs();
             initSpidercomms();
@@ -440,12 +450,12 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             }
             
             if(thread_args.endurance_test_size == 0){
-                printTextviewBuffer("No valid test size received, try again...");
+                printTextviewBuffer(GUIPRINT, "No valid test size received, try again...");
                 gtk_entry_set_text (GTK_ENTRY(endtest_entry1), "");
                 on_resetbutton1_clicked(resetbutton1);
             }else{
                 numcards = thread_args.endurance_test_size;
-                printTextviewBuffer("Simulating %s for %d times", cards[thread_args.endurance_testcard].name, thread_args.endurance_test_size);
+                printTextviewBuffer(GUIPRINT, "Simulating %s for %d times", cards[thread_args.endurance_testcard].name, thread_args.endurance_test_size);
             }
             
             initThreadArgs();
@@ -455,7 +465,7 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             break;
         case 3:
             on_resetbutton1_clicked(resetbutton1);
-            printTextviewBuffer("Test 3 not yet available...");
+            printTextviewBuffer(GUIPRINT, "Test 3 not yet available...");
             break;
     }
 
@@ -562,11 +572,13 @@ void* spiderThread(void* p){
                 detected_card = checkUID(&buf[num]);
                 if(detected_card){
                     pthread_mutex_lock(&thread_mutex);
-                    printTextviewBuffer("UID detected: %s from %s", &buf[num], cards[detected_card].name);
+                    printTextviewBuffer(THREADPRINT, "UID detected: %s from %s", &buf[num], cards[detected_card].name);
                     cardcount++;
-                    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressbar1), (gdouble)((double)cardcount/(double)numcards));
+                    updateProgressbar(cardcount, numcards);
                     args->UID_available = true;
                     pthread_mutex_unlock(&thread_mutex);
+                }else{
+                    printTextviewBuffer(THREADPRINT, "Unknown card detected: %s", &buf[num]);
                 }
                 memset(buf, '\0', UID_LENGTH);
             }
@@ -620,8 +632,11 @@ void* cardtypeTestThread(void *p){
         if(args->stopThread) {pthread_exit(NULL); return NULL;}
     }
     time_end = time(NULL);
-
+    
+    printTextviewBuffer(THREADPRINT, "End of test, test took %d seconds...", time_end-time_begin);
     printResults();
+
+    g_idle_add(resetTests, NULL);
 
     pthread_exit(NULL);
     return NULL;
@@ -641,12 +656,15 @@ void* enduranceTestThead(void* p){
     Simulate(0);
     int i = 1;
     while(i <= args->endurance_test_size){
-        printTextviewBuffer("Simulation count: %d", i);
+        printTextviewBuffer(THREADPRINT, "Simulation %d of %s", i, cards[args->endurance_testcard].name);
         Simulate(args->endurance_testcard);
         i++;
         if(args->stopThread) break;
     }
     time_end = time(NULL);
+    printTextviewBuffer(THREADPRINT, "End of test, test took %d seconds...", time_end-time_begin);
+
+    g_idle_add(resetTests, NULL);
 
     pthread_exit(NULL);
     return NULL;
@@ -671,11 +689,10 @@ void stopThreads(void){
 // Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
 int checkUID(char *check_uid){
     int i = 0;
-    g_print("Check UID: %s\n", check_uid);
+    //g_print("Check UID: %s\n", check_uid);
     while(cards[i].UID){
         if(strcmp(cards[i].UID, check_uid) == 0){
             cards[i].detected = 1;
-            PrintAndLogEx(SUCCESS, "UID detected: %s", cards[i].UID);
             return i;
         }
         i++;
@@ -685,7 +702,7 @@ int checkUID(char *check_uid){
 // Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Print to textviewbuffer ///////////////////////////////////////////////////////////////////////////////////////
-void printTextviewBuffer(const char *text, ...){
+void printTextviewBuffer(int thread, const char *text, ...){
 
     char buffer[MAX_PRINT_BUFFER] = {0};
     va_list args;
@@ -694,11 +711,44 @@ void printTextviewBuffer(const char *text, ...){
     va_end(args);
     strcat(buffer, "\r\n");
 
-    pthread_mutex_lock(&gtk_mutex);
-    gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)buffer, -1);
-    pthread_mutex_unlock(&gtk_mutex);
+    if(thread){
+        g_idle_add(printtobuffer, buffer);
+    }else{
+        pthread_mutex_lock(&gtk_mutex);
+        gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)buffer, -1);
+        pthread_mutex_unlock(&gtk_mutex);
+    }
+}
+
+gboolean printtobuffer(void *text){
+    const gchar *buffer = text;
+    gtk_text_buffer_get_end_iter(textviewbuf3, &iter1);
+    gtk_text_buffer_insert(textviewbuf3, &iter1, buffer, -1);
+    return G_SOURCE_REMOVE;
 }
 // Print to textviewbuffer ///////////////////////////////////////////////////////////////////////////////////////
+
+// Update progressbar ////////////////////////////////////////////////////////////////////////////////////////////
+void updateProgressbar(int count, int number){
+    struct progressbar_args *args = g_slice_alloc(sizeof(*args));
+    args->cardcount_arg = count;
+    args->numcards_args = number;
+    g_idle_add(progressbarUpdate, args);
+}
+
+gboolean progressbarUpdate(void *p){
+    struct progressbar_args *args = p;
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressbar1), (gdouble)((double)args->cardcount_arg/(double)args->numcards_args));
+    return G_SOURCE_REMOVE;
+}
+// Update progressbar ////////////////////////////////////////////////////////////////////////////////////////////
+
+// Reset tests ///////////////////////////////////////////////////////////////////////////////////////////////////
+gboolean resetTests(void *p){
+    on_resetbutton1_clicked(resetbutton1);
+    return G_SOURCE_REMOVE;
+}
+// Reset tests ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Simulate(int sim){
     cards[sim].simFunction();

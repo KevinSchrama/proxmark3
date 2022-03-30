@@ -842,7 +842,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="check6">
-                    <property name="label" translatable="yes">Option 5</property>
+                    <property name="label" translatable="yes">Option 6</property>
                     <property name="height-request">26</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -855,7 +855,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="check7">
-                    <property name="label" translatable="yes">Option 5</property>
+                    <property name="label" translatable="yes">Option 7</property>
                     <property name="height-request">26</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -868,7 +868,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="check8">
-                    <property name="label" translatable="yes">Option 5</property>
+                    <property name="label" translatable="yes">Option 8</property>
                     <property name="height-request">26</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -881,7 +881,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="check9">
-                    <property name="label" translatable="yes">Option 5</property>
+                    <property name="label" translatable="yes">Option 9</property>
                     <property name="height-request">26</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -894,7 +894,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="check10">
-                    <property name="label" translatable="yes">Option 5</property>
+                    <property name="label" translatable="yes">Option 10</property>
                     <property name="height-request">26</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -1022,7 +1022,7 @@
         </child>
         <child>
           <object class="GtkScrolledWindow" id="scrolledwindow1">
-            <property name="width-request">400</property>
+            <property name="width-request">450</property>
             <property name="height-request">400</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -1031,12 +1031,13 @@
             <signal name="size-allocate" handler="on_scrolledwindow1_size_allocate" swapped="no"/>
             <child>
               <object class="GtkTextView" id="textview3">
-                <property name="width-request">350</property>
+                <property name="width-request">450</property>
                 <property name="height-request">400</property>
                 <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
                 <property name="editable">False</property>
+                <property name="indent">5</property>
                 <property name="cursor-visible">False</property>
                 <property name="buffer">textviewbuf3</property>
                 <property name="accepts-tab">False</property>

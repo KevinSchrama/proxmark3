@@ -13,7 +13,6 @@ button#startbutton:hover {
 
 button#startbutton:disabled {
     background-color: rgb(255, 184, 152);
-    color: black;
 }
 
 checkbutton:hover {
@@ -22,4 +21,8 @@ checkbutton:hover {
 
 radiobutton:hover {
     background-color: rgb(192, 192, 192);
+}
+
+progressbar progress {
+    background-color: rgb(100, 197, 100);
 }

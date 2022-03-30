@@ -8,6 +8,8 @@
 #include "util.h"
 
 //#define NUMCARDS 11
+#define THREADPRINT     1
+#define GUIPRINT        0
 
 typedef struct {
     bool UID_available;
@@ -32,7 +34,8 @@ void Simulate(int sim);
 void stopThreads(void);
 void printResults(void);
 char *FindProxmark(void);
-void printTextviewBuffer(const char* text, ...);
+void printTextviewBuffer(int thread, const char* text, ...);
+void updateProgressbar(int count, int number);
 
 #define MF_CLASSIC_1K       0x0001
 #define MF_ULTRALIGHT       0x0002
