@@ -12,6 +12,8 @@
 typedef struct {
     bool UID_available;
     bool stopThread;
+    int endurance_test_size;
+    int endurance_testcard;
 } UIDthread_arg_t;
 
 typedef struct {
@@ -27,12 +29,10 @@ extern UIDthread_arg_t thread_args;
 
 void main_gui(void);
 void Simulate(int sim);
-void initThreadArgs(void);
-void initSpidercomms(void);
-void initCardtypeTestThread(void);
 void stopThreads(void);
 void printResults(void);
 char *FindProxmark(void);
+void printTextviewBuffer(const char* text, ...);
 
 #define MF_CLASSIC_1K       0x0001
 #define MF_ULTRALIGHT       0x0002

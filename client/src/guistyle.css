@@ -1,0 +1,25 @@
+textview text {
+    background-color: white;
+    color: black;
+}
+
+button#startbutton {
+    background-color: rgb(172, 253, 125);
+}
+
+button#startbutton:hover {
+    background-color: rgb(152, 221, 112);
+}
+
+button#startbutton:disabled {
+    background-color: rgb(255, 184, 152);
+    color: black;
+}
+
+checkbutton:hover {
+    background-color: rgb(192, 192, 192);
+}
+
+radiobutton:hover {
+    background-color: rgb(192, 192, 192);
+}

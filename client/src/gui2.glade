@@ -730,7 +730,7 @@
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="max-length">8</property>
-                    <property name="placeholder-text" translatable="yes">Default: 10 times</property>
+                    <property name="placeholder-text" translatable="yes">Default: 10</property>
                     <property name="input-purpose">phone</property>
                   </object>
                   <packing>
@@ -922,6 +922,7 @@
         <child>
           <object class="GtkButton" id="startbutton1">
             <property name="label" translatable="yes">Start test</property>
+            <property name="name">startbutton</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
@@ -1007,6 +1008,7 @@
         <child>
           <object class="GtkButton" id="resetbutton1">
             <property name="label" translatable="yes">Reset</property>
+            <property name="name">resetbutton</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
@@ -1020,7 +1022,7 @@
         </child>
         <child>
           <object class="GtkScrolledWindow" id="scrolledwindow1">
-            <property name="width-request">350</property>
+            <property name="width-request">400</property>
             <property name="height-request">400</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>

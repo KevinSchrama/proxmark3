@@ -729,8 +729,9 @@
                     <property name="height-request">32</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="text" translatable="yes">10</property>
-                    <property name="input-purpose">digits</property>
+                    <property name="max-length">8</property>
+                    <property name="placeholder-text" translatable="yes">Default: 10</property>
+                    <property name="input-purpose">phone</property>
                   </object>
                   <packing>
                     <property name="y">330</property>
@@ -740,6 +741,40 @@
               <packing>
                 <property name="x">25</property>
                 <property name="y">40</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkScaleButton">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="focus-on-click">False</property>
+                <property name="receives-default">True</property>
+                <property name="relief">none</property>
+                <property name="orientation">vertical</property>
+                <child internal-child="plus_button">
+                  <object class="GtkButton">
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="relief">none</property>
+                  </object>
+                </child>
+                <child internal-child="minus_button">
+                  <object class="GtkButton">
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <property name="relief">none</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="x">29</property>
+                <property name="y">413</property>
               </packing>
             </child>
           </object>
@@ -921,6 +956,7 @@
         <child>
           <object class="GtkButton" id="startbutton1">
             <property name="label" translatable="yes">Start test</property>
+            <property name="name">startbutton</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
@@ -1006,6 +1042,7 @@
         <child>
           <object class="GtkButton" id="resetbutton1">
             <property name="label" translatable="yes">Reset</property>
+            <property name="name">resetbutton</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
@@ -1019,7 +1056,7 @@
         </child>
         <child>
           <object class="GtkScrolledWindow" id="scrolledwindow1">
-            <property name="width-request">350</property>
+            <property name="width-request">400</property>
             <property name="height-request">400</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>

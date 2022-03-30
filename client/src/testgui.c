@@ -13,6 +13,7 @@
 
 #include <errno.h>
 #include <time.h>
+#include <stdarg.h>
 
 #include "comms.h" //SendCommand
 #include "util.h" //sprint_hex
@@ -28,11 +29,14 @@
 
 #define UID_LENGTH 50
 
+#define MAX_PRINT_BUFFER 2048
+
 #define COUNTOF(x)  (int) ( ( sizeof(x) / sizeof((x)[0]) ) )
 
 UIDthread_arg_t thread_args;
 static pthread_t spider_thread;
 static pthread_t cardtype_test_thread;
+static pthread_t endurance_test_thread;
 pthread_mutex_t thread_mutex;
 pthread_mutex_t gtk_mutex;
 
@@ -43,10 +47,14 @@ static void setupKeyCodes(void);
 void ulltohexstring(char *Des, unsigned long long int Src);
 
 void stopSim(void);
-//void checkUID(int index);
-bool checkUID(char *check_uid);
+int checkUID(char *check_uid);
 
 char getDevice(void);
+
+void initThreadArgs(void);
+void initSpidercomms(void);
+void initCardtypeTestThread(void);
+void initEnduranceTestThread(void);
 
 void SimBUF(void);
 void SimMfClas1k(void);
@@ -63,7 +71,8 @@ void SimNoralsy(void);
 void SimAwid(void);
 
 void* spiderThread(void* p);
-void* cardtypeTestThread(void *p);
+void* cardtypeTestThread(void* p);
+void* enduranceTestThead(void* p);
 
 void destroy(GtkWidget *window);
 void on_radio1_toggled(GtkWidget *radio);
@@ -112,6 +121,7 @@ GtkWidget *window1;
                 GtkWidget *endtest_card8;
                 GtkWidget *endtest_card9;
                 GtkWidget *endtest_card10;
+                GtkWidget *endtest_card11;
                 GtkWidget *endtest_entry1;
         GtkWidget *fixed3;
             GtkWidget *radio3;
@@ -157,19 +167,21 @@ GtkAdjustment *adjustment1;
 
 GtkTextIter iter1;
 
+GtkCssProvider *cssprovider1;
+
 card_t cards[] = {
-    {"buffer",              "Buffer simulation",    SimBUF,         0,  false, false},
-    {"4B6576696E0001",      "Mifare Classic 1k",    SimMfClas1k,    0,  false, false},
-    {"4B6576696E0002",      "Mifare Ultralight",    SimMfUltra,     0,  false, false},
-    {"4B6576696E0006",      "Mifrare Mini",         SimMfMini,      0,  false, false},
-    {"4B6576696E0007",      "NTAG",                 SimNTAG,        0,  false, false},
-    {"4B6576696E0008",      "Mifare Classic 4k",    SimMfClas4k,    0,  false, false},
-    {"4B6576696E0009",      "FM11RF005SH",          SimFM11RF005SH, 0,  false, false},
-    {"4B6576696EB93314",    "iClass",               SimiClass,      0,  false, false},
-    {"0F0368568B",          "em410x",               SimEM410x,      0,  false, false},
-    {"04F60A73",            "awid",                 SimAwid,        0,  false, false},
-    {"218277AACB",          "paradox",              SimParadox,     0,  false, false},
-    {"1006EC0C86",          "hid",                  SimHID,         0,  false, false},
+    {"buffer",              "Buffer simulation",    SimBUF,         0,  false, false}, // 0
+    {"4B6576696E0001",      "Mifare Classic 1k",    SimMfClas1k,    0,  false, false}, // 1
+    {"4B6576696E0002",      "Mifare Ultralight",    SimMfUltra,     0,  false, false}, // 2
+    {"4B6576696E0006",      "Mifrare Mini",         SimMfMini,      0,  false, false}, // 3
+    {"4B6576696E0007",      "NTAG",                 SimNTAG,        0,  false, false}, // 4
+    {"4B6576696E0008",      "Mifare Classic 4k",    SimMfClas4k,    0,  false, false}, // 5
+    {"4B6576696E0009",      "FM11RF005SH",          SimFM11RF005SH, 0,  false, false}, // 6
+    {"4B6576696EB93314",    "iClass",               SimiClass,      0,  false, false}, // 7
+    {"0F0368568B",          "EM410x",               SimEM410x,      0,  false, false}, // 8
+    {"04F60A73",            "AWID",                 SimAwid,        0,  false, false}, // 9
+    {"218277AACB",          "Paradox",              SimParadox,     0,  false, false}, // 10
+    {"1006EC0C86",          "HID",                  SimHID,         0,  false, false}, // 11
     {NULL, NULL, NULL, 0, false, false},
     {NULL, NULL, NULL, 0, false, false},
     {NULL, NULL, NULL, 0, false, false},
@@ -229,6 +241,7 @@ void main_gui(void){
     endtest_card8 = GTK_WIDGET(gtk_builder_get_object(builder, "endtest_card8"));
     endtest_card9 = GTK_WIDGET(gtk_builder_get_object(builder, "endtest_card9"));
     endtest_card10 = GTK_WIDGET(gtk_builder_get_object(builder, "endtest_card10"));
+    endtest_card11 = GTK_WIDGET(gtk_builder_get_object(builder, "endtest_card11"));
     endtest_entry1 = GTK_WIDGET(gtk_builder_get_object(builder, "endtest_entry1"));
     fixed3 = GTK_WIDGET(gtk_builder_get_object(builder, "fixed3"));
     radio3 = GTK_WIDGET(gtk_builder_get_object(builder, "radio3"));
@@ -271,6 +284,12 @@ void main_gui(void){
     textviewbuf3 = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "textviewbuf3"));
 
     adjustment1 = GTK_ADJUSTMENT(gtk_builder_get_object(builder, "adjustment1"));
+    
+    gtk_text_buffer_get_end_iter(textviewbuf3, &iter1);
+
+    cssprovider1 = gtk_css_provider_new();
+    gtk_css_provider_load_from_path(cssprovider1, "/home/pi/proxmark3/client/src/guistyle.css", NULL);
+    gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(cssprovider1), GTK_STYLE_PROVIDER_PRIORITY_USER);
 
     gtk_widget_show(window1);
 
@@ -360,9 +379,6 @@ void on_test1_LFcards_toggled (GtkWidget *check){
 void on_startbutton1_clicked (GtkWidget *startbutton){
     gtk_widget_set_sensitive(startbutton1, FALSE);
     g_print("Test started\n");
-    
-    //gtk_text_buffer_set_text(textviewbuf3, "", -1);
-    gtk_text_buffer_get_end_iter(textviewbuf3, &iter1);
 
     switch(testType){
         case 1:
@@ -392,21 +408,54 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             }
             if(numcards == 0){
                 on_resetbutton1_clicked(resetbutton1);
-                gtk_text_buffer_insert(textviewbuf3, &iter1, "Can not run test without cards...\r\n", -1);
+                gtk_text_buffer_insert(textviewbuf3, &iter1, "Can't run test without cards...\r\n", -1);
                 break;
             }
+            printTextviewBuffer("Simulating %d different cards", numcards);
             
             initThreadArgs();
             initSpidercomms();
             initCardtypeTestThread();
             break;
         case 2:
-            on_resetbutton1_clicked(resetbutton1);
-            gtk_text_buffer_insert(textviewbuf3, &iter1, "Endurance test not yet available...\r\n", -1);
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card1))) thread_args.endurance_testcard = 1;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card2))) thread_args.endurance_testcard = 2;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card3))) thread_args.endurance_testcard = 3;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card4))) thread_args.endurance_testcard = 4;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card5))) thread_args.endurance_testcard = 5;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card6))) thread_args.endurance_testcard = 6;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card7))) thread_args.endurance_testcard = 7;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card8))) thread_args.endurance_testcard = 8;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card9))) thread_args.endurance_testcard = 9;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card10))) thread_args.endurance_testcard = 10;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card11))) thread_args.endurance_testcard = 11;
+
+            const char *testsize = gtk_entry_get_text(GTK_ENTRY(endtest_entry1));
+
+            if(strlen(testsize) != 0){
+                thread_args.endurance_test_size = atoi(testsize);
+                g_print("%d, %d\n", thread_args.endurance_test_size, strlen(testsize));
+            }else{
+                thread_args.endurance_test_size = 10;
+            }
+            
+            if(thread_args.endurance_test_size == 0){
+                printTextviewBuffer("No valid test size received, try again...");
+                gtk_entry_set_text (GTK_ENTRY(endtest_entry1), "");
+                on_resetbutton1_clicked(resetbutton1);
+            }else{
+                numcards = thread_args.endurance_test_size;
+                printTextviewBuffer("Simulating %s for %d times", cards[thread_args.endurance_testcard].name, thread_args.endurance_test_size);
+            }
+            
+            initThreadArgs();
+            initSpidercomms();
+            initEnduranceTestThread();
+
             break;
         case 3:
             on_resetbutton1_clicked(resetbutton1);
-            gtk_text_buffer_insert(textviewbuf3, &iter1, "Test 3 not yet available...\r\n", -1);
+            printTextviewBuffer("Test 3 not yet available...");
             break;
     }
 
@@ -465,6 +514,7 @@ void* spiderThread(void* p){
     int shift = 0;
 
     int cardcount = 0;
+    int detected_card = 0;
 
     char *eventDevice = malloc(25);
     sprintf(eventDevice, "/dev/input/event%c", getDevice());
@@ -508,15 +558,11 @@ void* spiderThread(void* p){
                      }
                 }
                 num++;
-                if(checkUID(&buf[num])){
+                if(num >= UID_LENGTH || count == 0) num = 0;
+                detected_card = checkUID(&buf[num]);
+                if(detected_card){
                     pthread_mutex_lock(&thread_mutex);
-                    if(count > 0){
-                        strcat(buf, "\r\n");
-                        gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)&buf[num], -1);
-                    }else{
-                        strcat(buf, "\r\n");
-                        gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)&buf[num], -1);
-                    }
+                    printTextviewBuffer("UID detected: %s from %s", &buf[num], cards[detected_card].name);
                     cardcount++;
                     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressbar1), (gdouble)((double)cardcount/(double)numcards));
                     args->UID_available = true;
@@ -582,6 +628,31 @@ void* cardtypeTestThread(void *p){
 }
 // Test thread for card types ///////////////////////////////////////////////////////////////////////////////////////////////
 
+// Test thread for endurance test ///////////////////////////////////////////////////////////////////////////////////////////
+void initEnduranceTestThread(void){
+    pthread_create(&endurance_test_thread, NULL, enduranceTestThead, &thread_args);
+}
+
+void* enduranceTestThead(void* p){
+    g_print("Endurance test thread started\n");
+    UIDthread_arg_t *args = (UIDthread_arg_t *)p;
+
+    time_begin = time(NULL);
+    Simulate(0);
+    int i = 1;
+    while(i <= args->endurance_test_size){
+        printTextviewBuffer("Simulation count: %d", i);
+        Simulate(args->endurance_testcard);
+        i++;
+        if(args->stopThread) break;
+    }
+    time_end = time(NULL);
+
+    pthread_exit(NULL);
+    return NULL;
+}
+// Test thread for endurance test ///////////////////////////////////////////////////////////////////////////////////////////
+
 // Stop threads
 void stopThreads(void){
     g_print("Stop threads\n");
@@ -591,25 +662,43 @@ void stopThreads(void){
     g_print("Threads join\n");
     pthread_join(cardtype_test_thread, NULL);
     g_print("Cardtype test thread stopped\n");
+    pthread_join(endurance_test_thread, NULL);
+    g_print("Endurance test thread stopped\n");
     pthread_join(spider_thread, NULL);
     g_print("Spider communication thread stopped\n");
 }
 
 // Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
-bool checkUID(char *check_uid){
+int checkUID(char *check_uid){
     int i = 0;
     g_print("Check UID: %s\n", check_uid);
     while(cards[i].UID){
         if(strcmp(cards[i].UID, check_uid) == 0){
             cards[i].detected = 1;
             PrintAndLogEx(SUCCESS, "UID detected: %s", cards[i].UID);
-            return 1;
+            return i;
         }
         i++;
     }
     return 0;
 }
 // Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Print to textviewbuffer ///////////////////////////////////////////////////////////////////////////////////////
+void printTextviewBuffer(const char *text, ...){
+
+    char buffer[MAX_PRINT_BUFFER] = {0};
+    va_list args;
+    va_start(args, text);
+    vsnprintf(buffer, sizeof(buffer), text, args);
+    va_end(args);
+    strcat(buffer, "\r\n");
+
+    pthread_mutex_lock(&gtk_mutex);
+    gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)buffer, -1);
+    pthread_mutex_unlock(&gtk_mutex);
+}
+// Print to textviewbuffer ///////////////////////////////////////////////////////////////////////////////////////
 
 void Simulate(int sim){
     cards[sim].simFunction();
@@ -622,7 +711,9 @@ void Simulate(int sim){
         }
     }
     stopSim();
+    pthread_mutex_lock(&thread_mutex);
     thread_args.UID_available = false;
+    pthread_mutex_unlock(&thread_mutex);
 }
 
 // Simulation functions ////////////////////////////////////////////////////////////////////////////////////////////////////////
