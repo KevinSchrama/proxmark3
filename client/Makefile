@@ -271,6 +271,13 @@ LDLIBS += $(GTKLDLIBS)
 LDLIBS += -export-dynamic
 PM3INCLUDES += $(GTKINCLUDES)
 
+## libusb
+LIBUSBINCLUDES = $(shell $(PKG_CONFIG_ENV) pkg-config libusb-1.0 --cflags 2>/dev/null)
+LIBUSBLIBS = $(shell $(PKG_CONFIG_ENV) pkg-config libusb-1.0 --libs 2>/dev/null)
+LDLIBS += $(LIBUSBLIBS)
+PM3INCLUDES += $(LIBUSBINCLUDES)
+
+
 ## Python3 (optional)
 ifneq ($(SKIPPYTHON),1)
     PYTHONINCLUDES = $(shell $(PKG_CONFIG_ENV) pkg-config --cflags python3 2>/dev/null)

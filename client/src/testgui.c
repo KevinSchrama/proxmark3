@@ -10,6 +10,7 @@
 #include <libevdev-1.0/libevdev/libevdev.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkx.h>
+#include <libusb.h>
 
 #include <errno.h>
 #include <time.h>
@@ -212,7 +213,7 @@ void main_gui(void){
 
     gtk_init(NULL, NULL);
 
-    builder = gtk_builder_new_from_file("/home/pi/proxmark3/client/src/gui2.glade");
+    builder = gtk_builder_new_from_file("/home/pi/proxmark3/client/src/gui.glade");
 
     window1 = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
     g_signal_connect(window1, "destroy", G_CALLBACK(destroy), NULL);
@@ -390,6 +391,7 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
     gtk_widget_set_sensitive(startbutton1, FALSE);
     g_print("Test started\n");
 
+    int rc = 0;
     switch(testType){
         case 1:
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_HFcards))){
@@ -464,8 +466,36 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
 
             break;
         case 3:
+            rc = libusb_init(NULL);
+            if(rc != 0) break;
+            libusb_device **list = NULL;
+            ssize_t count = libusb_get_device_list(NULL, &list);
+            unsigned char data[255] = {0};
+            if(count){
+                for(size_t idx = 0; idx < count; idx++){
+                    libusb_device *device = list[idx];
+                    libusb_device_handle *handle = NULL;
+                    struct libusb_device_descriptor descriptor = {0};
+                    rc = libusb_get_device_descriptor(device, &descriptor);
+                    if(rc != 0) break;
+                    if(descriptor.idVendor == 0x1da6){
+                        g_print("%d idVendor: %04x\n  iManufacturer: %04x\n", idx, descriptor.idVendor, descriptor.iManufacturer);
+                        libusb_open(device, &handle);
+                        g_print("Voor get string\n");
+                        libusb_get_string_descriptor_ascii(handle, descriptor.iManufacturer, data, sizeof(data));
+                        g_print("Voor close\n");
+                        libusb_close(handle);
+                        g_print("Na close\n");
+                        g_print("Manufacturer: %s\n", data);
+                    }
+                }
+                
+            }
+            libusb_free_device_list(list, count);
+            libusb_exit(NULL);
+
             on_resetbutton1_clicked(resetbutton1);
-            printTextviewBuffer(GUIPRINT, "Test 3 not yet available...");
+            //printTextviewBuffer(GUIPRINT, "Test 3 not yet available...");
             break;
     }
 
