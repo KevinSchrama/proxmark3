@@ -391,7 +391,7 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
     gtk_widget_set_sensitive(startbutton1, FALSE);
     g_print("Test started\n");
 
-    int rc = 0;
+    //int rc = 0;
     switch(testType){
         case 1:
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_HFcards))){
@@ -466,6 +466,7 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
 
             break;
         case 3:
+        /*
             rc = libusb_init(NULL);
             if(rc != 0) break;
             libusb_device **list = NULL;
@@ -493,9 +494,9 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             }
             libusb_free_device_list(list, count);
             libusb_exit(NULL);
-
+*/
             on_resetbutton1_clicked(resetbutton1);
-            //printTextviewBuffer(GUIPRINT, "Test 3 not yet available...");
+            printTextviewBuffer(GUIPRINT, "Test 3 not yet available...");
             break;
     }
 
