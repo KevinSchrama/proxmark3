@@ -12,11 +12,17 @@
 #define GUIPRINT        0
 
 typedef struct {
-    bool UID_available;
+    bool available;
     bool stopThread;
     int endurance_test_size;
     int endurance_testcard;
 } UIDthread_arg_t;
+
+typedef struct {
+    bool available;
+    bool stopThread;
+    bool quitProgram;
+} availability_arg_t;
 
 typedef struct {
     const char *UID;
@@ -28,6 +34,7 @@ typedef struct {
 } card_t;
 
 extern UIDthread_arg_t thread_args;
+extern availability_arg_t availability_args;
 
 void main_gui(void);
 void Simulate(int sim);
@@ -36,6 +43,7 @@ void printResults(void);
 char *FindProxmark(void);
 void printTextviewBuffer(int thread, const char* text, ...);
 void updateProgressbar(int count, int number);
+void exitProgram(void);
 
 #define MF_CLASSIC_1K       0x0001
 #define MF_ULTRALIGHT       0x0002

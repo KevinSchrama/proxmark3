@@ -8,7 +8,7 @@ button#startbutton {
 }
 
 button#startbutton:hover {
-    background-color: rgb(152, 221, 112);
+    background-color: rgb(162, 235, 121);
 }
 
 button#startbutton:disabled {
@@ -25,4 +25,17 @@ radiobutton:hover {
 
 progressbar progress {
     background-color: rgb(100, 197, 100);
+}
+
+label#spider_info_label:disabled {
+    color: black;
+    background-color: rgb(255, 174, 174);
+}
+
+label {
+    color: black;
+}
+
+label:disabled {
+    color: rgb(80, 80, 80);
 }

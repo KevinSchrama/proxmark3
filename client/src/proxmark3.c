@@ -1024,6 +1024,8 @@ int main(int argc, char *argv[]) {
         port = FindProxmark();
         if(port != NULL){
             OpenProxmark(&g_session.current_device, port, waitCOMPort, 20, false, speed);
+        }else if(!stayInCommandLoop){
+            exit(EXIT_FAILURE);
         }
     }
 
@@ -1088,13 +1090,15 @@ int main(int argc, char *argv[]) {
 
         main_gui();
 
-        if (g_session.pm3_present) {
+        if(g_debugMode) printf("Quit session cmd send\n");
+        if (g_session.pm3_present && !availability_args.quitProgram) {
             clearCommandBuffer();
             SendCommandNG(CMD_QUIT_SESSION, NULL, 0);
             msleep(100); // Make sure command is sent before killing client
         }
     }
 
+    if(g_debugMode) printf("Clean up port\n");
     // Clean up the port
     if (g_session.pm3_present) {
         CloseProxmark(g_session.current_device);

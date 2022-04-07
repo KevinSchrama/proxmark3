@@ -10,7 +10,7 @@
 #include <libevdev-1.0/libevdev/libevdev.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkx.h>
-#include <libusb.h>
+#include <libusb-1.0/libusb.h>
 
 #include <errno.h>
 #include <time.h>
@@ -34,10 +34,19 @@
 
 #define COUNTOF(x)  (int) ( ( sizeof(x) / sizeof((x)[0]) ) )
 
+#define NORMAL_MODE 0
+#define BOOTLOADER_MODE 1
+
+#define DATA_SIZE 58
+#define SETUP_SIZE 6
+
 UIDthread_arg_t thread_args;
+availability_arg_t availability_args;
 static pthread_t spider_thread;
 static pthread_t cardtype_test_thread;
 static pthread_t endurance_test_thread;
+static pthread_t config_program_thread;
+static pthread_t availability_thread;
 pthread_mutex_t thread_mutex;
 pthread_mutex_t gtk_mutex;
 
@@ -49,13 +58,17 @@ void ulltohexstring(char *Des, unsigned long long int Src);
 
 void stopSim(void);
 int checkUID(char *check_uid);
-
+int sendConfig(int config_num);
+int switchMode(int desired_mode);
 char getDevice(void);
+char* getConfig(void);
 
 void initThreadArgs(void);
 void initSpidercomms(void);
 void initCardtypeTestThread(void);
 void initEnduranceTestThread(void);
+void initConfigProgramThread(void);
+void initAvailabilityThread(void);
 
 void SimBUF(void);
 void SimMfClas1k(void);
@@ -74,25 +87,36 @@ void SimAwid(void);
 void* spiderThread(void* p);
 void* cardtypeTestThread(void* p);
 void* enduranceTestThead(void* p);
+void* configProgramThread(void* p);
+void* availabilityThread(void* p);
 
 void destroy(GtkWidget *window);
 void on_radio1_toggled(GtkWidget *radio);
 void on_radio2_toggled(GtkWidget *radio);
 void on_radio3_toggled(GtkWidget *radio);
+void on_radio4_toggled(GtkWidget *radio);
 void on_test1_HFcards_toggled(GtkWidget *check);
 void on_test1_LFcards_toggled(GtkWidget *check);
 void on_startbutton1_clicked(GtkWidget *startbutton);
 void on_resetbutton1_clicked(GtkWidget *resetbutton);
 void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow);
-gboolean printtobuffer(void *text);
+gboolean on_window2_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data);
+gboolean printtologscreen(void *text);
 gboolean progressbarUpdate(void *p);
 gboolean resetTests(void *p);
+gboolean printtoresultwindow(void *p);
+gboolean showResults(void *p);
+gboolean updateSpiderInfo(void *p);
+gboolean callDestroy(void *p);
+
+void printResultTextview(GtkTextBuffer *textviewbuffer, const char *text, ...);
 
 time_t time_begin;
 time_t time_end;
 
 int testType = 1;
 int numcards = 0;
+int config_type = 0;
 
 GtkWidget *window1;
     GtkWidget *grid1;
@@ -130,16 +154,18 @@ GtkWidget *window1;
         GtkWidget *fixed3;
             GtkWidget *radio3;
             GtkWidget *fixedoptions3;
-                GtkWidget *check1;
-                GtkWidget *check2;
-                GtkWidget *check3;
-                GtkWidget *check4;
-                GtkWidget *check5;
-                GtkWidget *check6;
-                GtkWidget *check7;
-                GtkWidget *check8;
-                GtkWidget *check9;
-                GtkWidget *check10;
+                GtkWidget *config_radio1;
+                GtkWidget *config_radio2;
+                GtkWidget *config_radio3;
+                GtkWidget *config_radio4;
+                GtkWidget *config_radio5;
+            GtkWidget *radio4;
+            GtkWidget *fixedoptions4;
+                GtkWidget *testconfig_radio1;
+                GtkWidget *testconfig_radio2;
+                GtkWidget *testconfig_radio3;
+                GtkWidget *testconfig_radio4;
+                GtkWidget *testconfig_radio5;
         GtkWidget *startbutton1;
         GtkWidget *resetbutton1;
         GtkWidget *textview3;
@@ -150,6 +176,7 @@ GtkWidget *window1;
         GtkWidget *fill3;
         GtkWidget *fill4;
         GtkWidget *fill5;
+        GtkWidget *spider_info_label;
 
 GtkBuilder *builder;
 
@@ -201,15 +228,25 @@ struct progressbar_args {
     int numcards_args;
 };
 
+struct textview_args {
+    GtkTextBuffer *textviewbuffer;
+    char text[MAX_PRINT_BUFFER];
+};
+
 void main_gui(void){
     if(pthread_mutex_init(&thread_mutex, NULL) != 0){
-        printf("\n mutex init 'thread_mutex' has failed\n");
+        if(g_debugMode) g_print("\n mutex init 'thread_mutex' has failed\n");
         return;
     }
     if(pthread_mutex_init(&gtk_mutex, NULL) != 0){
-        printf("\n mutex init 'gtk_mutex' has failed\n");
+        if(g_debugMode) g_print("\n mutex init 'gtk_mutex' has failed\n");
         return;
     }
+
+    int err = libusb_init(NULL);
+    if(err) return;
+
+    initAvailabilityThread();
 
     gtk_init(NULL, NULL);
 
@@ -255,16 +292,18 @@ void main_gui(void){
     fixed3 = GTK_WIDGET(gtk_builder_get_object(builder, "fixed3"));
     radio3 = GTK_WIDGET(gtk_builder_get_object(builder, "radio3"));
     fixedoptions3 = GTK_WIDGET(gtk_builder_get_object(builder, "fixedoptions3"));
-    check1 = GTK_WIDGET(gtk_builder_get_object(builder, "check1"));
-    check2 = GTK_WIDGET(gtk_builder_get_object(builder, "check2"));
-    check3 = GTK_WIDGET(gtk_builder_get_object(builder, "check3"));
-    check4 = GTK_WIDGET(gtk_builder_get_object(builder, "check4"));
-    check5 = GTK_WIDGET(gtk_builder_get_object(builder, "check5"));
-    check6 = GTK_WIDGET(gtk_builder_get_object(builder, "check6"));
-    check7 = GTK_WIDGET(gtk_builder_get_object(builder, "check7"));
-    check8 = GTK_WIDGET(gtk_builder_get_object(builder, "check8"));
-    check9 = GTK_WIDGET(gtk_builder_get_object(builder, "check9"));
-    check10 = GTK_WIDGET(gtk_builder_get_object(builder, "check10"));
+    config_radio1 = GTK_WIDGET(gtk_builder_get_object(builder, "config_radio1"));
+    config_radio2 = GTK_WIDGET(gtk_builder_get_object(builder, "config_radio2"));
+    config_radio3 = GTK_WIDGET(gtk_builder_get_object(builder, "config_radio3"));
+    config_radio4 = GTK_WIDGET(gtk_builder_get_object(builder, "config_radio4"));
+    config_radio5 = GTK_WIDGET(gtk_builder_get_object(builder, "config_radio5"));
+    radio4 = GTK_WIDGET(gtk_builder_get_object(builder, "radio4"));
+    fixedoptions4 = GTK_WIDGET(gtk_builder_get_object(builder, "fixedoptions4"));
+    testconfig_radio1 = GTK_WIDGET(gtk_builder_get_object(builder, "testconfig_radio1"));
+    testconfig_radio2 = GTK_WIDGET(gtk_builder_get_object(builder, "testconfig_radio2"));
+    testconfig_radio3 = GTK_WIDGET(gtk_builder_get_object(builder, "testconfig_radio3"));
+    testconfig_radio4 = GTK_WIDGET(gtk_builder_get_object(builder, "testconfig_radio4"));
+    testconfig_radio5 = GTK_WIDGET(gtk_builder_get_object(builder, "testconfig_radio5"));
     startbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "startbutton1"));
     resetbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "resetbutton1"));
     progressbar1 = GTK_WIDGET(gtk_builder_get_object(builder, "progressbar1"));
@@ -275,9 +314,9 @@ void main_gui(void){
     fill3 = GTK_WIDGET(gtk_builder_get_object(builder, "fill3"));
     fill4 = GTK_WIDGET(gtk_builder_get_object(builder, "fill4"));
     fill5 = GTK_WIDGET(gtk_builder_get_object(builder, "fill5"));
+    spider_info_label = GTK_WIDGET(gtk_builder_get_object(builder, "spider_info_label"));
 
     window2 = GTK_WIDGET(gtk_builder_get_object(builder, "window2"));
-    g_signal_connect(window2, "destroy", G_CALLBACK(destroy), NULL);
 
     grid2 = GTK_WIDGET(gtk_builder_get_object(builder, "grid2"));
     label1 = GTK_WIDGET(gtk_builder_get_object(builder, "label1"));
@@ -300,25 +339,30 @@ void main_gui(void){
     gtk_css_provider_load_from_path(cssprovider1, "/home/pi/proxmark3/client/src/guistyle.css", NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default(), GTK_STYLE_PROVIDER(cssprovider1), GTK_STYLE_PROVIDER_PRIORITY_USER);
 
-    g_print("Debug mode: %d\n", g_debugMode);
+    if(g_debugMode) g_print("Debug mode: %d\n", g_debugMode);
 
     gtk_widget_show(window1);
 
     gtk_main();
+    
+    libusb_exit(NULL);
 
-    g_print("Einde programma\n");
+    if(g_debugMode) g_print("Einde programma\n");
 }
 
 // GUI functions /////////////////////////////////////////////////////////////////////////////////////////////////
 void destroy (GtkWidget *window){
-    g_print("Destroy function\n");
+    if(g_debugMode) g_print("Destroy function\n");
     stopSim();
-    gtk_main_quit();
+    availability_args.stopThread = true;
+    pthread_join(availability_thread, NULL);
     stopThreads();
     
-    g_print("Mutex destroy\n");
+    if(g_debugMode) g_print("Mutex destroy\n");
     pthread_mutex_destroy(&thread_mutex);
     pthread_mutex_destroy(&gtk_mutex);
+    
+    gtk_main_quit();
 }
 
 void on_radio1_toggled (GtkWidget *radio){
@@ -326,6 +370,7 @@ void on_radio1_toggled (GtkWidget *radio){
     gtk_widget_set_sensitive(fixedoptions1, TRUE);
     gtk_widget_set_sensitive(fixedoptions2, FALSE);
     gtk_widget_set_sensitive(fixedoptions3, FALSE);
+    gtk_widget_set_sensitive(fixedoptions4, FALSE);
 }
 
 void on_radio2_toggled (GtkWidget *radio){
@@ -333,6 +378,7 @@ void on_radio2_toggled (GtkWidget *radio){
     gtk_widget_set_sensitive(fixedoptions2, TRUE);
     gtk_widget_set_sensitive(fixedoptions1, FALSE);
     gtk_widget_set_sensitive(fixedoptions3, FALSE);
+    gtk_widget_set_sensitive(fixedoptions4, FALSE);
 }
 
 void on_radio3_toggled (GtkWidget *radio){
@@ -340,6 +386,15 @@ void on_radio3_toggled (GtkWidget *radio){
     gtk_widget_set_sensitive(fixedoptions3, TRUE);
     gtk_widget_set_sensitive(fixedoptions1, FALSE);
     gtk_widget_set_sensitive(fixedoptions2, FALSE);
+    gtk_widget_set_sensitive(fixedoptions4, FALSE);
+}
+
+void on_radio4_toggled (GtkWidget *radio){
+    testType = 4;
+    gtk_widget_set_sensitive(fixedoptions4, TRUE);
+    gtk_widget_set_sensitive(fixedoptions1, FALSE);
+    gtk_widget_set_sensitive(fixedoptions2, FALSE);
+    gtk_widget_set_sensitive(fixedoptions3, FALSE);
 }
 
 void on_test1_HFcards_toggled (GtkWidget *check){
@@ -389,7 +444,11 @@ void on_test1_LFcards_toggled (GtkWidget *check){
 
 void on_startbutton1_clicked (GtkWidget *startbutton){
     gtk_widget_set_sensitive(startbutton1, FALSE);
-    g_print("Test started\n");
+    if(g_debugMode) g_print("Test started\n");
+
+    pthread_mutex_lock(&gtk_mutex);
+    availability_args.available = false;
+    pthread_mutex_unlock(&gtk_mutex);
 
     //int rc = 0;
     switch(testType){
@@ -424,6 +483,9 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
                 break;
             }
             printTextviewBuffer(GUIPRINT, "Simulating %d different cards", numcards);
+
+            gtk_text_buffer_set_text(textviewbuf1, "", -1);
+            gtk_text_buffer_set_text(textviewbuf2, "", -1);
             
             initThreadArgs();
             initSpidercomms();
@@ -446,7 +508,7 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
 
             if(strlen(testsize) != 0){
                 thread_args.endurance_test_size = atoi(testsize);
-                g_print("%d, %d\n", thread_args.endurance_test_size, strlen(testsize));
+                if(g_debugMode) printf("%d, %d\n", thread_args.endurance_test_size, strlen(testsize));
             }else{
                 thread_args.endurance_test_size = 10;
             }
@@ -463,48 +525,31 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             initThreadArgs();
             initSpidercomms();
             initEnduranceTestThread();
-
             break;
         case 3:
-        /*
-            rc = libusb_init(NULL);
-            if(rc != 0) break;
-            libusb_device **list = NULL;
-            ssize_t count = libusb_get_device_list(NULL, &list);
-            unsigned char data[255] = {0};
-            if(count){
-                for(size_t idx = 0; idx < count; idx++){
-                    libusb_device *device = list[idx];
-                    libusb_device_handle *handle = NULL;
-                    struct libusb_device_descriptor descriptor = {0};
-                    rc = libusb_get_device_descriptor(device, &descriptor);
-                    if(rc != 0) break;
-                    if(descriptor.idVendor == 0x1da6){
-                        g_print("%d idVendor: %04x\n  iManufacturer: %04x\n", idx, descriptor.idVendor, descriptor.iManufacturer);
-                        libusb_open(device, &handle);
-                        g_print("Voor get string\n");
-                        libusb_get_string_descriptor_ascii(handle, descriptor.iManufacturer, data, sizeof(data));
-                        g_print("Voor close\n");
-                        libusb_close(handle);
-                        g_print("Na close\n");
-                        g_print("Manufacturer: %s\n", data);
-                    }
-                }
-                
-            }
-            libusb_free_device_list(list, count);
-            libusb_exit(NULL);
-*/
-            on_resetbutton1_clicked(resetbutton1);
-            printTextviewBuffer(GUIPRINT, "Test 3 not yet available...");
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio1))) config_type = 1;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio2))) config_type = 2;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio3))) config_type = 3;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio4))) config_type = 4;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio5))) config_type = 5;
+
+            printTextviewBuffer(GUIPRINT, "Coniguring Spider with config %d", config_type);
+
+            initThreadArgs();
+            initConfigProgramThread();
             break;
+        case 4:
+            g_print("Current config: %s\n", getConfig());
+            on_resetbutton1_clicked(resetbutton1);
+            break;
+
     }
 
 }
 
 void on_resetbutton1_clicked(GtkWidget *resetbutton){
     gtk_widget_set_sensitive(resetbutton1, FALSE);
-    g_print("Reset all tests\n");
+    if(g_debugMode) printf("Reset all tests\n");
 
     stopThreads();
     stopSim();
@@ -518,11 +563,19 @@ void on_resetbutton1_clicked(GtkWidget *resetbutton){
     }
 
     thread_args.stopThread = false;
+    pthread_mutex_lock(&gtk_mutex);
+    availability_args.available = true;
+    pthread_mutex_unlock(&gtk_mutex);
 
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressbar1), 0);
 
     gtk_widget_set_sensitive(startbutton1, TRUE);
     gtk_widget_set_sensitive(resetbutton1, TRUE);
+}
+
+gboolean on_window2_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
+    gtk_widget_hide(window2);
+    return TRUE;
 }
 
 void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow){
@@ -532,7 +585,7 @@ void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow){
 
 // Init thread arguments ////////////////////////////////////////////////////////////////////////////////////////
 void initThreadArgs(void){
-    thread_args.UID_available = false;
+    thread_args.available = false;
     thread_args.stopThread = false;
 }
 // Init thread arguments ////////////////////////////////////////////////////////////////////////////////////////
@@ -544,7 +597,7 @@ void initSpidercomms(void){
 }
 
 void* spiderThread(void* p){
-    g_print("Spider communication thread started\n");
+    if(g_debugMode) printf("Spider communication thread started\n");
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
 
     setupKeyCodes();
@@ -569,7 +622,7 @@ void* spiderThread(void* p){
     int err = libevdev_new_from_fd(fd, &dev);
     if (err < 0) errx(EXIT_FAILURE, "ERROR: cannot associate event device [%s]", strerror(-err));
 
-    g_print("Device %s is open and associated w/ libevent\n", eventDevice);
+    if(g_debugMode) printf("Device %s is open and associated w/ libevent\n", eventDevice);
     free(eventDevice);
     
     do {
@@ -606,7 +659,7 @@ void* spiderThread(void* p){
                     printTextviewBuffer(THREADPRINT, "UID detected: %s from %s", &buf[num], cards[detected_card].name);
                     cardcount++;
                     updateProgressbar(cardcount, numcards);
-                    args->UID_available = true;
+                    args->available = true;
                     pthread_mutex_unlock(&thread_mutex);
                 }else{
                     printTextviewBuffer(THREADPRINT, "Unknown card detected: %s", &buf[num]);
@@ -618,16 +671,13 @@ void* spiderThread(void* p){
         pthread_mutex_lock(&thread_mutex);
         if(args->stopThread) {
             pthread_mutex_unlock(&thread_mutex);
-            g_print("Stop spider thread\n"); 
+            if(g_debugMode) printf("Stop spider thread\n"); 
             break;
         }
         pthread_mutex_unlock(&thread_mutex);
     } while (err == 1 || err == 0 || err == -EAGAIN);
-    g_print("Outside loop\n");
     close(fd);
     free(buf);
-    
-    g_print("Before exit\n");
 
     pthread_exit(NULL);
     return NULL;
@@ -641,7 +691,7 @@ void initCardtypeTestThread(void){
 }
 
 void* cardtypeTestThread(void *p){
-    g_print("Cardtype test thread started\n");
+    if(g_debugMode) printf("Cardtype test thread started\n");
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
     time_begin = time(NULL);
     int i = 0;
@@ -665,8 +715,8 @@ void* cardtypeTestThread(void *p){
     time_end = time(NULL);
     
     printTextviewBuffer(THREADPRINT, "End of test, test took %d seconds...", time_end-time_begin);
-    printResults();
 
+    g_idle_add(showResults, NULL);
     g_idle_add(resetTests, NULL);
 
     pthread_exit(NULL);
@@ -680,7 +730,7 @@ void initEnduranceTestThread(void){
 }
 
 void* enduranceTestThead(void* p){
-    g_print("Endurance test thread started\n");
+    if(g_debugMode) printf("Endurance test thread started\n");
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
 
     time_begin = time(NULL);
@@ -702,25 +752,134 @@ void* enduranceTestThead(void* p){
 }
 // Test thread for endurance test ///////////////////////////////////////////////////////////////////////////////////////////
 
-// Stop threads
+// Config programmer thread /////////////////////////////////////////////////////////////////////////////////////////////////
+void initConfigProgramThread(void){
+    pthread_create(&config_program_thread, NULL, configProgramThread, &thread_args);
+}
+
+void* configProgramThread(void* p){
+    if(g_debugMode) printf("Config program thread started\n");
+    UIDthread_arg_t *args = (UIDthread_arg_t *)p;
+    int err = 0;
+    int success = 0;
+    int tries = 0;
+
+    do{
+        err = switchMode(BOOTLOADER_MODE);
+        if(err < 0 && g_debugMode) printf("Switch error %d: %s\n", err, libusb_strerror(err));
+        tries++;
+        if(args->stopThread || tries >= 5) goto exit_config_thread;
+    }while(err != 0);
+
+    tries = 0;
+    do{
+        err = sendConfig(config_type);
+        if(err < 0 && g_debugMode) printf("Send config error %d: %s\n", err, libusb_strerror(err));
+        tries++;
+        if(args->stopThread || tries >= 5) goto exit_config_thread;
+    }while(err != 0);
+    success = 1;
+
+exit_config_thread:
+    tries = 0;
+    do{
+        err = switchMode(NORMAL_MODE);
+        if(err < 0 && g_debugMode) printf("Switch error %d: %s\n", err, libusb_strerror(err));
+        tries++;
+    }while(err != 0 && tries < 5);
+
+    if(success){
+        printTextviewBuffer(THREADPRINT, "Spider configured succesfully");
+    }else{
+        printTextviewBuffer(THREADPRINT, "Configuration failed or got interrupted");
+    }
+
+    if(g_debugMode) printf("Config succesfully uploaded\n");
+
+    g_idle_add(resetTests, NULL);
+
+    pthread_exit(NULL);
+    return NULL;
+}
+// Config programmer thread /////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Spider availability thread ///////////////////////////////////////////////////////////////////////////////////////////////
+void initAvailabilityThread(void){
+    availability_args.stopThread = false;
+    availability_args.available = true;
+    pthread_create(&availability_thread, NULL, availabilityThread, &availability_args);
+}
+
+void* availabilityThread(void* p){
+    availability_arg_t *args = (availability_arg_t *)p;
+    struct libusb_device_descriptor descriptor = {0};
+    libusb_device **list;
+    ssize_t cnt = 0;
+    bool state = false;
+    int old_state = -1;
+    int new_state = 0;
+
+    while(!args->stopThread){
+        // check if Spider is connected
+        cnt = libusb_get_device_list(NULL, &list);
+        if(cnt < 0) return 0;
+        for(int i = 0; i < cnt; i++){
+            libusb_get_device_descriptor(list[i], &descriptor);
+            if(descriptor.idVendor == 0x1da6){
+                new_state = 1;
+                break;
+            }
+            new_state = 0;
+        }
+        if(new_state != old_state){
+            old_state = new_state;
+            if(old_state){
+                state = true;
+                if(g_debugMode) printf("Spider connected!\n");
+                g_idle_add(updateSpiderInfo, &state);
+            }else{
+                state = false;
+                if(g_debugMode) printf("Spider not connected!\n");
+                g_idle_add(updateSpiderInfo, &state);
+            }
+        }
+        libusb_free_device_list(list, 1);
+
+        pthread_mutex_lock(&gtk_mutex);
+        if(args->quitProgram){
+            g_idle_add(callDestroy, NULL);
+            args->stopThread = true;
+        }
+        pthread_mutex_unlock(&gtk_mutex);
+    }
+
+    pthread_exit(NULL);
+    return NULL;
+}
+// Spider availability thread ///////////////////////////////////////////////////////////////////////////////////////////////
+
+// Stop threads /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void stopThreads(void){
-    g_print("Stop threads\n");
+    if(g_debugMode) printf("Stop threads\n");
     pthread_mutex_lock(&thread_mutex);
     thread_args.stopThread = true;
     pthread_mutex_unlock(&thread_mutex);
-    g_print("Threads join\n");
+    if(g_debugMode) printf("Threads join\n");
     pthread_join(cardtype_test_thread, NULL);
-    g_print("Cardtype test thread stopped\n");
+    if(g_debugMode) printf("Cardtype test thread stopped\n");
     pthread_join(endurance_test_thread, NULL);
-    g_print("Endurance test thread stopped\n");
+    if(g_debugMode) printf("Endurance test thread stopped\n");
+    pthread_join(config_program_thread, NULL);
+    if(g_debugMode) printf("Config program thread stopped\n");
     pthread_join(spider_thread, NULL);
-    g_print("Spider communication thread stopped\n");
+    if(g_debugMode) printf("Spider communication thread stopped\n");
 }
+// Stop threads /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
 int checkUID(char *check_uid){
     int i = 0;
-    //g_print("Check UID: %s\n", check_uid);
+    //printf("Check UID: %s\n", check_uid);
     while(cards[i].UID){
         if(strcmp(cards[i].UID, check_uid) == 0){
             cards[i].detected = 1;
@@ -732,7 +891,7 @@ int checkUID(char *check_uid){
 }
 // Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Print to textviewbuffer ///////////////////////////////////////////////////////////////////////////////////////
+// Print to textviewbuffer //////////////////////////////////////////////////////////////////////////////////////
 void printTextviewBuffer(int thread, const char *text, ...){
 
     char buffer[MAX_PRINT_BUFFER] = {0};
@@ -743,21 +902,42 @@ void printTextviewBuffer(int thread, const char *text, ...){
     strcat(buffer, "\r\n");
 
     if(thread){
-        g_idle_add(printtobuffer, buffer);
+        g_idle_add(printtologscreen, buffer);
     }else{
-        pthread_mutex_lock(&gtk_mutex);
         gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)buffer, -1);
-        pthread_mutex_unlock(&gtk_mutex);
     }
 }
 
-gboolean printtobuffer(void *text){
+gboolean printtologscreen(void *text){
     const gchar *buffer = text;
     gtk_text_buffer_get_end_iter(textviewbuf3, &iter1);
     gtk_text_buffer_insert(textviewbuf3, &iter1, buffer, -1);
     return G_SOURCE_REMOVE;
 }
 // Print to textviewbuffer ///////////////////////////////////////////////////////////////////////////////////////
+
+void printResultTextview(GtkTextBuffer *textviewbuffer, const char *text, ...){
+    struct textview_args *args = g_slice_alloc(sizeof(*args));
+    args->textviewbuffer = textviewbuffer;
+    memset(args->text, 0, MAX_PRINT_BUFFER);
+
+    va_list arguments;
+    va_start(arguments, text);
+    vsnprintf(args->text, MAX_PRINT_BUFFER - 2, text, arguments);
+    va_end(arguments);
+    strcat(args->text, "\r\n");
+
+    g_idle_add(printtoresultwindow, args);
+}
+
+gboolean printtoresultwindow(void *p){
+    struct textview_args *args = p;
+    GtkTextIter iter;
+    gtk_text_buffer_get_end_iter(args->textviewbuffer, &iter);
+    gtk_text_buffer_insert(args->textviewbuffer, &iter, args->text, -1);
+    return G_SOURCE_REMOVE;
+}
+
 
 // Update progressbar ////////////////////////////////////////////////////////////////////////////////////////////
 void updateProgressbar(int count, int number){
@@ -781,11 +961,51 @@ gboolean resetTests(void *p){
 }
 // Reset tests ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Show window with results //////////////////////////////////////////////////////////////////////////////////////
+gboolean showResults(void *p){
+    printResults();
+    gtk_widget_show(window2);
+    return G_SOURCE_REMOVE;
+}
+// Show window with results //////////////////////////////////////////////////////////////////////////////////////
+
+gboolean updateSpiderInfo(void *p){
+    bool *available = p;
+    if(*available){
+        gtk_label_set_text(GTK_LABEL(spider_info_label), "Spider connected");
+        pthread_mutex_lock(&gtk_mutex);
+        if(availability_args.available){
+            gtk_widget_set_sensitive(startbutton1, TRUE);
+        }
+        pthread_mutex_unlock(&gtk_mutex);
+        gtk_widget_set_sensitive(spider_info_label, TRUE);
+    }else{
+        gtk_label_set_text(GTK_LABEL(spider_info_label), "No Spider connected");
+        gtk_widget_set_sensitive(startbutton1, FALSE);
+        gtk_widget_set_sensitive(spider_info_label, FALSE);
+    }
+    return G_SOURCE_REMOVE;
+}
+
+// quit program functions ///////////////////////////////////////////////////////////////////////////////////////////
+void exitProgram(void){
+    pthread_mutex_lock(&gtk_mutex);
+    availability_args.quitProgram = true;
+    pthread_mutex_unlock(&gtk_mutex);
+}
+
+gboolean callDestroy(void *p){
+    printf("Exit program\n");
+    destroy(NULL);
+    return G_SOURCE_REMOVE;
+}
+// quit program functions ///////////////////////////////////////////////////////////////////////////////////////////
+
 void Simulate(int sim){
     cards[sim].simFunction();
     int i = 0;
     if(sim != 0){
-        while(!thread_args.UID_available && i < WAIT_TIME){
+        while(!thread_args.available && i < WAIT_TIME){
             msleep(1);
             i++;
             if(thread_args.stopThread) break;
@@ -793,7 +1013,7 @@ void Simulate(int sim){
     }
     stopSim();
     pthread_mutex_lock(&thread_mutex);
-    thread_args.UID_available = false;
+    thread_args.available = false;
     pthread_mutex_unlock(&thread_mutex);
 }
 
@@ -827,7 +1047,7 @@ void SimBUF(void){
 void SimMfClas1k(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x01};
-    PrintAndLogEx(INFO, "TESTING ISO 14443A (Mifare Classic 1k) sim with UID %s", sprint_hex(uid, uid_len));
+    if(g_debugMode) PrintAndLogEx(INFO, "TESTING ISO 14443A (Mifare Classic 1k) sim with UID %s", sprint_hex(uid, uid_len));
 
     struct {
         uint8_t tagtype;
@@ -848,7 +1068,7 @@ void SimMfClas1k(void){
 void SimMfUltra(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x02};
-    PrintAndLogEx(INFO, "TESTING ISO 14443A (Mifare Ultralight) sim with UID %s", sprint_hex(uid, uid_len));
+    if(g_debugMode) PrintAndLogEx(INFO, "TESTING ISO 14443A (Mifare Ultralight) sim with UID %s", sprint_hex(uid, uid_len));
 
     struct {
         uint8_t tagtype;
@@ -869,7 +1089,7 @@ void SimMfUltra(void){
 void SimMfMini(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x06};
-    PrintAndLogEx(INFO, "TESTING ISO 14443A (Mifare Mini) sim with UID %s", sprint_hex(uid, uid_len));
+    if(g_debugMode) PrintAndLogEx(INFO, "TESTING ISO 14443A (Mifare Mini) sim with UID %s", sprint_hex(uid, uid_len));
 
     struct {
         uint8_t tagtype;
@@ -890,7 +1110,7 @@ void SimMfMini(void){
 void SimNTAG(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x07};
-    PrintAndLogEx(INFO, "TESTING ISO 14443A (NTAG) sim with UID %s", sprint_hex(uid, uid_len));
+    if(g_debugMode) PrintAndLogEx(INFO, "TESTING ISO 14443A (NTAG) sim with UID %s", sprint_hex(uid, uid_len));
 
     struct {
         uint8_t tagtype;
@@ -911,7 +1131,7 @@ void SimNTAG(void){
 void SimMfClas4k(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x08};
-    PrintAndLogEx(INFO, "TESTING ISO 14443A (Mifare Classic 4k) sim with UID %s", sprint_hex(uid, uid_len));
+    if(g_debugMode) PrintAndLogEx(INFO, "TESTING ISO 14443A (Mifare Classic 4k) sim with UID %s", sprint_hex(uid, uid_len));
 
     struct {
         uint8_t tagtype;
@@ -932,7 +1152,7 @@ void SimMfClas4k(void){
 void SimFM11RF005SH(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x09};
-    PrintAndLogEx(INFO, "TESTING ISO 14443A (FM11RF005SH) sim with UID %s", sprint_hex(uid, uid_len));
+    if(g_debugMode) PrintAndLogEx(INFO, "TESTING ISO 14443A (FM11RF005SH) sim with UID %s", sprint_hex(uid, uid_len));
 
     struct {
         uint8_t tagtype;
@@ -952,7 +1172,7 @@ void SimFM11RF005SH(void){
 
 void SimiClass(void){
     uint8_t csn[8] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0xB9, 0x33, 0x14};
-    PrintAndLogEx(INFO, "TESTING iClass sim with UID %s", sprint_hex(csn, 8));
+    if(g_debugMode) PrintAndLogEx(INFO, "TESTING iClass sim with UID %s", sprint_hex(csn, 8));
     clearCommandBuffer();
     SendCommandMIX(CMD_HF_ICLASS_SIMULATE, 0, 0, 1, csn, 8); //Simulate iClass
 }
@@ -963,7 +1183,7 @@ void SimHID(void){
     payload.hi = 0x30;
     payload.lo = 0x06ec0c86;
     payload.longFMT = (0x30 > 0xFFF);
-    PrintAndLogEx(INFO, "TESTING HID sim with UID 10 06 EC 0C 86");
+    if(g_debugMode) PrintAndLogEx(INFO, "TESTING HID sim with UID 10 06 EC 0C 86");
 
     clearCommandBuffer();
     SendCommandNG(CMD_LF_HID_SIMULATE, (uint8_t *)&payload,  sizeof(payload));
@@ -975,7 +1195,7 @@ void SimEM410x(void){
     int gap = 20;
     uint8_t uid[] = {0x0F, 0x03, 0x68, 0x56, 0x8B};
 
-    PrintAndLogEx(INFO, "TESTING EM410x sim with UID %s", sprint_hex(uid, uid_len));
+    if(g_debugMode) PrintAndLogEx(INFO, "TESTING EM410x sim with UID %s", sprint_hex(uid, uid_len));
 
     em410x_construct_emul_graph(uid, clock, gap);
     CmdLFSim("");
@@ -996,7 +1216,7 @@ void SimParadox(void){
     payload->clock = clk;
     memcpy(payload->data, bs, sizeof(bs));
 
-    PrintAndLogEx(INFO, "TESTING Paradox sim with UID 21 82 77 AA CB");
+    if(g_debugMode) PrintAndLogEx(INFO, "TESTING Paradox sim with UID 21 82 77 AA CB");
 
     clearCommandBuffer();
     SendCommandNG(CMD_LF_FSK_SIMULATE, (uint8_t *)payload,  sizeof(lf_fsksim_t) + sizeof(bs));
@@ -1011,7 +1231,7 @@ void SimNoralsy(void){
     memset(bs, 0, sizeof(bs));
 
     if (getnoralsyBits(id, year, bs) != PM3_SUCCESS) {
-        PrintAndLogEx(ERR, "Error with tag bitstream generation.");
+        if(g_debugMode) PrintAndLogEx(ERR, "Error with tag bitstream generation.");
     }
 
     lf_asksim_t *payload = calloc(1, sizeof(lf_asksim_t) + sizeof(bs));
@@ -1035,7 +1255,7 @@ void SimAwid(void){
     payload->clock = 50;
     memcpy(payload->data, bs, sizeof(bs));
 
-    PrintAndLogEx(INFO, "TESTING Awid sim with UID 04 F6 0A 73");
+    if(g_debugMode) PrintAndLogEx(INFO, "TESTING Awid sim with UID 04 F6 0A 73");
 
     clearCommandBuffer();
     SendCommandNG(CMD_LF_FSK_SIMULATE, (uint8_t *)payload,  sizeof(lf_fsksim_t) + sizeof(bs));
@@ -1044,47 +1264,48 @@ void SimAwid(void){
 // Simulation functions /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void printResults(void){
-    PrintAndLogEx(INFO, "========================================================");
-    PrintAndLogEx(INFO, "Testing took %d seconds.", (time_end - time_begin));
-    PrintAndLogEx(INFO, "========================================================");
-    PrintAndLogEx(INFO, "UID's detected:");
-    PrintAndLogEx(INFO, "#  | Card UID         | Card Name         | Tries");
+    if(g_debugMode){
+        PrintAndLogEx(INFO, "========================================================");
+        PrintAndLogEx(INFO, "Testing took %d seconds.", (time_end - time_begin));
+        PrintAndLogEx(INFO, "========================================================");
+        PrintAndLogEx(INFO, "UID's detected:");
+        PrintAndLogEx(INFO, "#  | Card UID         | Card Name         | Tries");
+    }
     int detect_count = 0;
     int not_detect_count = 0;
     int i = 1;
     while(cards[i].UID){
         if(cards[i].detected){
-            PrintAndLogEx(SUCCESS, "%-2i | %-16s | %-17s | %i", i, cards[i].UID, cards[i].name, cards[i].num_tries);
+            if(g_debugMode) PrintAndLogEx(SUCCESS, "%-2i | %-16s | %-17s | %i", i, cards[i].UID, cards[i].name, cards[i].num_tries);
+            printResultTextview(textviewbuf1, "%s: %s", cards[i].name, cards[i].UID);
             detect_count++;
         }else if(cards[i].simulate){
             not_detect_count++;
         }
         i++;
     }
-    PrintAndLogEx(INFO, "========================================================");
-    PrintAndLogEx(INFO, "========================================================");
+    if(g_debugMode){
+        PrintAndLogEx(INFO, "========================================================");
+        PrintAndLogEx(INFO, "========================================================");
+    }
     if(not_detect_count != 0){
-        PrintAndLogEx(INFO, "Missing UID's:");
-        PrintAndLogEx(INFO, "#  | Card UID         | Card Name");
+        if(g_debugMode){
+            PrintAndLogEx(INFO, "Missing UID's:");
+            PrintAndLogEx(INFO, "#  | Card UID         | Card Name");
+        }
         i = 1;
         while(cards[i].UID){
-            if(!cards[i].detected && cards[i].simulate)
-                PrintAndLogEx(INFO, _RED_("%-2i") " | " _RED_("%-16s") " | " _RED_("%s"), i, cards[i].UID, cards[i].name);
+            if(!cards[i].detected && cards[i].simulate){
+                if(g_debugMode) PrintAndLogEx(INFO, _RED_("%-2i") " | " _RED_("%-16s") " | " _RED_("%s"), i, cards[i].UID, cards[i].name);
+                printResultTextview(textviewbuf2, "%s: %s", cards[i].name, cards[i].UID);
+            }
             i++;
         }
     }else{
-        PrintAndLogEx(SUCCESS, _GREEN_("Nothing missed, test succeeded!"));
+        if(g_debugMode) PrintAndLogEx(SUCCESS, _GREEN_("Nothing missed, test succeeded!"));
+        printResultTextview(textviewbuf2, "Nothing missed, test succeeded!");
     }
-    PrintAndLogEx(INFO, "========================================================");
-
-    FILE *ptr;
-    ptr = fopen("/home/pi/proxmark3/client/testlog.txt", "a");
-    if(ptr == NULL){
-        PrintAndLogEx(ERR, "Couldn't open logfile");
-        return;
-    }
-    fprintf(ptr, "\n%d,%d,%ld", detect_count, not_detect_count, (time_end-time_begin));
-    fclose(ptr);
+    if(g_debugMode) PrintAndLogEx(INFO, "========================================================");
 }
 
 static void setupKeyCodes(void){
@@ -1231,11 +1452,317 @@ char *FindProxmark(void){
             sprintf(buf, "/dev/ttyACM%d", i);
             return buf;
         }
-        printf("Correct file not found\n");
+        if(g_debugMode) printf("Correct file not found\n");
         fclose(fp);
     }
     printf("ERROR: No compatible device found\n");
     if(fp != NULL)
         fclose(fp);
     return NULL;
+}
+
+int sendConfig(int config_num){
+    int err = 0;
+    FILE *file;
+    libusb_device_handle *handle = NULL;
+    unsigned char *data = calloc(1, 64);
+    unsigned char *buf = calloc(1, 64);
+
+    handle = libusb_open_device_with_vid_pid(NULL, 0x1da6, 0x0000); // Open spider if in bootloader mode
+    while(handle == NULL){
+        handle = libusb_open_device_with_vid_pid(NULL, 0x1da6, 0x0000); // Open spider if in bootloader mode
+        if(thread_args.stopThread) return 1;
+    }
+
+    if(g_debugMode) printf("Check if kernel driver active\n");
+    if(libusb_kernel_driver_active(handle, 0) == 1){
+        if(g_debugMode) printf("Kernel driver active, detach kernel driver\n");
+        err = libusb_detach_kernel_driver(handle, 0);
+        if(err < 0) {
+            if(g_debugMode) printf("Couldn't detach kernel driver: %d, %s\n", err, libusb_strerror(err));
+            libusb_close(handle);
+            return err;
+        }
+    }
+
+    err = libusb_claim_interface(handle, 0);
+    if(err < 0){ 
+        if(g_debugMode) printf("Claim error: %s\n", libusb_strerror(err));
+        libusb_close(handle);
+        return err;
+    }
+
+    switch(config_num){
+        case 1:
+            file = fopen("/home/pi/proxmark3/client/spider-configs/Generic V2.0.readerconfig", "r");
+            break;
+        case 2:
+            file = fopen("/home/pi/proxmark3/client/spider-configs/default.readerconfig", "r");
+            break;
+        case 3:
+            file = fopen("/home/pi/proxmark3/client/spider-configs/mifare-only.readerconfig", "r");
+            break;
+        default:
+            file = fopen("/home/pi/proxmark3/client/spider-configs/test-config.readerconfig", "r");
+            break;
+    }
+
+    if(file == NULL){
+        if(g_debugMode) printf("Couldn't open logfile\n");
+        return -99;
+    }
+
+    int size = 0;
+    int count = 0;
+    int temp = 0;
+    int length = 0;
+    unsigned char *mem = calloc(1, 3000);
+
+    int transferred = 0;
+
+    while(1){
+        temp = fgetc(file);
+        if(temp == EOF){
+            mem[size] = 0;
+            break;
+        }
+        if(temp != 10 && temp != 13){
+            if(temp == ':'){
+                for(int i = 0; i < 6; i++){
+                    fgetc(file);
+                }
+                if(fgetc(file) == '0'){
+                    if(fgetc(file) == '0'){
+                        for(int i = 0; i < 32; i++){
+                            temp = fgetc(file);
+                            mem[size] = temp;
+                            size++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    for(int i = 0; i < size; i++){
+        if(i % 2 == 0){
+            if(mem[i] >= 48 && mem[i] < 58){
+                mem[count] = (mem[i] - 48) * 16;
+            }else if(mem[i] >= 65 && mem[i] < 71){
+                mem[count] = (mem[i] - 55) * 16;
+            }else if(mem[i] >= 97 && mem[i] < 103){
+                mem[count] = (mem[i] - 87) * 16;
+            }
+        }else{
+            if(mem[i] >= 48 && mem[i] < 58){
+                mem[count] += (mem[i] - 48);
+            }else if(mem[i] >= 65 && mem[i] < 71){
+                mem[count] += (mem[i] - 55);
+            }else if(mem[i] >= 97 && mem[i] < 103){
+                mem[count] += (mem[i] - 87);
+            }
+            count++;
+        }
+    }
+    mem[count] = 0;
+    size = count;
+    count = 0;
+
+
+    fclose(file);
+
+    if(g_debugMode) printf("Size of config file: %d bytes\n", size);
+
+    if(g_debugMode) {
+        int j = 0;
+        while(j < size){
+            if(j%16 == 0) printf("\n");
+            printf("%02X ", mem[j]);
+            j++;
+        }
+        printf("\n");
+    }
+
+    data[0] = 0x05;
+    data[1] = 0x00;
+    data[2] = 0x00;
+    data[3] = 0xF0;
+    data[4] = 0x00;
+
+    while(count < size){
+        if((count + DATA_SIZE) > size){
+            length = size - count;
+            memset(&data[6], 0, DATA_SIZE);
+            if(g_debugMode) printf("Short\n");
+        }else{
+            length = DATA_SIZE;
+            if(g_debugMode) printf("Normal\n");
+        }
+        memcpy(&data[6], &mem[count], length);
+        data[5] = length;
+        temp = count;
+        count += length;
+        data[2] = 0;
+        while(temp > 0xFF){
+            data[2]++;
+            temp = temp - 256;
+        }
+        data[1] = temp;
+
+        if(g_debugMode){ 
+            for(int i = 0; i < 64; i++){
+                printf("%02X ", data[i]);
+            }
+            printf("\n");
+        }
+
+        err = libusb_bulk_transfer(handle, 0x01, data, 64, &transferred, 500);
+        if(err < 0){
+            if(g_debugMode) printf("Bulk transfer error %d: %s\n", err, libusb_strerror(err));
+            libusb_close(handle);
+            return err;
+        }
+        if(g_debugMode) printf("Transferred %d bytes\n", transferred);
+
+        err = libusb_bulk_transfer(handle, 0x81, buf, 64, &transferred, 500);
+        if(err < 0){
+            if(g_debugMode) printf("Bulk read error %d: %s\n", err, libusb_strerror(err));
+            libusb_close(handle);
+            return err;
+        }
+
+        if(memcmp(buf, data, 64) == 0){
+            if(g_debugMode) printf("Send block succesful\n");
+        }
+    }
+
+    memset(data, 0, 64);
+    data[0] = 0x06;
+    err = libusb_bulk_transfer(handle, 0x01, data, 64, &transferred, 500);
+    if(err){
+        if(g_debugMode) printf("Bulk transfer error %d: %s\n", err, libusb_strerror(err));
+    }
+    memset(buf, 0, 64);
+    err = libusb_bulk_transfer(handle, 0x81, buf, 64, &transferred, 500);
+    if(err){
+        if(g_debugMode) printf("Bulk read error %d: %s\n", err, libusb_strerror(err));
+    }
+
+    if(g_debugMode) {
+        for(int i = 0; i < 7; i++){
+            printf("%02X ", buf[i]);
+        }
+        printf("\n");
+    }
+
+
+
+    err = libusb_release_interface(handle, 0);
+    if(err){
+        if(g_debugMode) printf("Release error: %s\n", libusb_strerror(err));
+    }
+
+    libusb_close(handle);
+    return 0;
+}
+
+int switchMode(int desired_mode){
+// Mode 0: Normal mode
+// Mode 1: Bootloader mode
+    int err = 0;
+    int current_mode;
+    unsigned char *data = calloc(1, 64);
+    libusb_device_handle *handle = NULL;
+    data[0] = 0x08;
+    data[1] = desired_mode;
+
+
+    handle = libusb_open_device_with_vid_pid(NULL, 0x1da6, 0x0110); // Open spider if in normale mode
+    current_mode = 0;
+    if(handle == NULL){
+        handle = libusb_open_device_with_vid_pid(NULL, 0x1da6, 0x0000); // Open spider if in bootloader mode
+        current_mode = 1;
+        if(handle == NULL){
+            if(g_debugMode) printf("Spider not connected\n");
+            libusb_close(handle);
+            return -4;
+        }
+    }
+
+    if(desired_mode == current_mode){
+        if(g_debugMode) printf("Spider already in desired mode\n");
+        libusb_close(handle);
+        return 0;
+    }
+
+    if(g_debugMode) printf("Check if kernel driver active\n");
+    if(libusb_kernel_driver_active(handle, 0) == 1){
+        if(g_debugMode) printf("Kernel driver active, detach kernel driver\n");
+        err = libusb_detach_kernel_driver(handle, 0);
+        if(err < 0) {
+            if(g_debugMode) printf("Couldn't detach kernel driver: %d, %s\n", err, libusb_strerror(err));
+            libusb_close(handle);
+            return err;
+        }
+    }
+
+    err = libusb_claim_interface(handle, 0);
+    if(err < 0){ 
+        if(g_debugMode) printf("Claim error: %s\n", libusb_strerror(err));
+        libusb_close(handle);
+        return err; 
+    }
+
+    switch(desired_mode){
+        case 0: // Spider in bootloader mode
+            if(g_debugMode) printf("Switch to normale mode\n");
+            err = libusb_bulk_transfer(handle, 0x01, data, 64, NULL, 500);
+            if(err < 0) {
+                if(g_debugMode) printf("Bulk transfer error %d: %s\n", err, libusb_strerror(err)); 
+                libusb_release_interface(handle, 0);
+                libusb_close(handle);
+                return err;
+            }
+            break;
+        case 1: // Spider in normal mode
+            if(g_debugMode) printf("Switch to bootloader mode\n");
+            err = libusb_control_transfer(handle, 0x21, 0x09, 0x0200, 0, data, 8, 500);
+            if(err < 0) {
+                if(g_debugMode) printf("Control transfer error %d: %s\n", err, libusb_strerror(err)); 
+                libusb_release_interface(handle, 0);
+                libusb_close(handle);
+                return err;
+            }
+            break;
+    }
+
+    err = libusb_release_interface(handle, 0);
+    if(err){
+        if(g_debugMode) printf("Release error: %s\n", libusb_strerror(err));
+    }
+
+    libusb_close(handle);
+    return 0;
+}
+
+char* getConfig(void){
+    libusb_device_handle *handle = NULL;
+    unsigned char *data = calloc(1, 64);
+
+    handle = libusb_open_device_with_vid_pid(NULL, 0x1da6, 0x0110); // Open spider if in normal mode
+    if(handle == NULL){
+        handle = libusb_open_device_with_vid_pid(NULL, 0x1da6, 0x0000); // Open spider if in bootloader mode
+        if(handle == NULL){
+            if(g_debugMode) printf("Spider not found\n");
+            return NULL;
+        }
+    }
+
+    libusb_get_string_descriptor_ascii(handle, 7, data, 64);
+
+    if(g_debugMode) printf("Current config: %s\n", data);
+
+    libusb_close(handle);
+
+    return (char*)data;
 }

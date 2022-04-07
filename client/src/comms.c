@@ -29,6 +29,7 @@
 #include "util.h" // g_pendingPrompt
 #include "util_posix.h" // msclock
 #include "util_darwin.h" // en/dis-ableNapp();
+#include "testgui.h"
 
 //#define COMMS_DEBUG
 //#define COMMS_DEBUG_RAW
@@ -365,6 +366,7 @@ __attribute__((force_align_arg_pointer))
                 PrintAndLogEx(WARNING, "\nCommunicating with Proxmark3 device " _RED_("failed"));
             }
             __atomic_test_and_set(&comm_thread_dead, __ATOMIC_SEQ_CST);
+            exitProgram();
             break;
         }
 

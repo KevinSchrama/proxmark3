@@ -12,6 +12,7 @@
   <object class="GtkWindow" id="window2">
     <property name="can-focus">False</property>
     <property name="resizable">False</property>
+    <signal name="delete-event" handler="on_window2_delete_event" swapped="no"/>
     <child>
       <!-- n-columns=11 n-rows=13 -->
       <object class="GtkGrid" id="grid2">
@@ -48,7 +49,7 @@
         <child>
           <object class="GtkTextView" id="textview1">
             <property name="width-request">200</property>
-            <property name="height-request">400</property>
+            <property name="height-request">300</property>
             <property name="visible">True</property>
             <property name="sensitive">False</property>
             <property name="can-focus">True</property>
@@ -69,7 +70,7 @@
         <child>
           <object class="GtkTextView" id="textview2">
             <property name="width-request">200</property>
-            <property name="height-request">400</property>
+            <property name="height-request">300</property>
             <property name="visible">True</property>
             <property name="sensitive">False</property>
             <property name="can-focus">True</property>
@@ -758,7 +759,7 @@
             <property name="can-focus">False</property>
             <child>
               <object class="GtkRadioButton" id="radio3">
-                <property name="label" translatable="yes">Test 3</property>
+                <property name="label" translatable="yes">Upload config</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>
@@ -779,136 +780,171 @@
                 <property name="sensitive">False</property>
                 <property name="can-focus">False</property>
                 <child>
-                  <object class="GtkCheckButton" id="check1">
-                    <property name="label" translatable="yes">Option 1</property>
+                  <object class="GtkRadioButton" id="config_radio1">
+                    <property name="label" translatable="yes">Generic V2.0</property>
                     <property name="height-request">26</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
+                    <property name="active">True</property>
                     <property name="draw-indicator">True</property>
                   </object>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="check2">
-                    <property name="label" translatable="yes">Option 2</property>
-                    <property name="height-request">26</property>
+                  <object class="GtkRadioButton" id="config_radio2">
+                    <property name="label" translatable="yes">Generic with full 
+and hex output</property>
+                    <property name="height-request">48</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
+                    <property name="active">True</property>
                     <property name="draw-indicator">True</property>
+                    <property name="group">config_radio1</property>
                   </object>
                   <packing>
                     <property name="y">30</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="check3">
-                    <property name="label" translatable="yes">Option 3</property>
-                    <property name="height-request">26</property>
+                  <object class="GtkRadioButton" id="config_radio3">
+                    <property name="label" translatable="yes">Mifare Classic only</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
+                    <property name="active">True</property>
                     <property name="draw-indicator">True</property>
+                    <property name="group">config_radio1</property>
                   </object>
                   <packing>
-                    <property name="y">60</property>
+                    <property name="y">82</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="check4">
-                    <property name="label" translatable="yes">Option 4</property>
-                    <property name="height-request">26</property>
+                  <object class="GtkRadioButton" id="config_radio4">
+                    <property name="label" translatable="yes">Other only</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
+                    <property name="active">True</property>
                     <property name="draw-indicator">True</property>
+                    <property name="group">config_radio1</property>
                   </object>
                   <packing>
-                    <property name="y">90</property>
+                    <property name="y">112</property>
                   </packing>
                 </child>
                 <child>
-                  <object class="GtkCheckButton" id="check5">
-                    <property name="label" translatable="yes">Option 5</property>
-                    <property name="height-request">26</property>
+                  <object class="GtkRadioButton" id="config_radio5">
+                    <property name="label" translatable="yes">Other only</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
+                    <property name="active">True</property>
                     <property name="draw-indicator">True</property>
+                    <property name="group">config_radio1</property>
                   </object>
                   <packing>
-                    <property name="y">120</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="check6">
-                    <property name="label" translatable="yes">Option 6</property>
-                    <property name="height-request">26</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">False</property>
-                    <property name="draw-indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="y">150</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="check7">
-                    <property name="label" translatable="yes">Option 7</property>
-                    <property name="height-request">26</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">False</property>
-                    <property name="draw-indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="y">180</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="check8">
-                    <property name="label" translatable="yes">Option 8</property>
-                    <property name="height-request">26</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">False</property>
-                    <property name="draw-indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="y">210</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="check9">
-                    <property name="label" translatable="yes">Option 9</property>
-                    <property name="height-request">26</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">False</property>
-                    <property name="draw-indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="y">240</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkCheckButton" id="check10">
-                    <property name="label" translatable="yes">Option 10</property>
-                    <property name="height-request">26</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">False</property>
-                    <property name="draw-indicator">True</property>
-                  </object>
-                  <packing>
-                    <property name="y">270</property>
+                    <property name="y">142</property>
                   </packing>
                 </child>
               </object>
               <packing>
                 <property name="x">25</property>
                 <property name="y">40</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkRadioButton" id="radio4">
+                <property name="label" translatable="yes">Test config</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="draw-indicator">True</property>
+                <property name="group">radio1</property>
+                <signal name="toggled" handler="on_radio4_toggled" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">10</property>
+                <property name="y">220</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFixed" id="fixedoptions4">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkRadioButton" id="testconfig_radio1">
+                    <property name="label" translatable="yes">Generic V2.0</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="testconfig_radio2">
+                    <property name="label" translatable="yes">Generic with full 
+and hex output</property>
+                    <property name="height-request">48</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">testconfig_radio1</property>
+                  </object>
+                  <packing>
+                    <property name="y">30</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="testconfig_radio3">
+                    <property name="label" translatable="yes">Mifare Classic only</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">testconfig_radio1</property>
+                  </object>
+                  <packing>
+                    <property name="y">82</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="testconfig_radio4">
+                    <property name="label" translatable="yes">Other only</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">testconfig_radio1</property>
+                  </object>
+                  <packing>
+                    <property name="y">112</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="testconfig_radio5">
+                    <property name="label" translatable="yes">Other only</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">testconfig_radio1</property>
+                  </object>
+                  <packing>
+                    <property name="y">142</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="x">25</property>
+                <property name="y">250</property>
               </packing>
             </child>
           </object>
@@ -1053,16 +1089,17 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
+          <object class="GtkLabel" id="spider_info_label">
+            <property name="name">spider_info_label</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">label</property>
+          </object>
+          <packing>
+            <property name="left-attach">3</property>
+            <property name="top-attach">11</property>
+            <property name="width">4</property>
+          </packing>
         </child>
         <child>
           <placeholder/>
