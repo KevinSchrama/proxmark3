@@ -40,6 +40,11 @@
 #define DATA_SIZE 58
 #define SETUP_SIZE 6
 
+#define GENERIC_V2_0    1
+#define GENERIC_FULL    2
+#define MIFARE_ONLY     3
+#define OTHER_CONFIG    4
+
 UIDthread_arg_t thread_args;
 availability_arg_t availability_args;
 static pthread_t spider_thread;
@@ -62,6 +67,7 @@ int sendConfig(int config_num);
 int switchMode(int desired_mode);
 char getDevice(void);
 char* getConfig(void);
+int uploadConfig(int config_num);
 
 void initThreadArgs(void);
 void initSpidercomms(void);
@@ -116,7 +122,6 @@ time_t time_end;
 
 int testType = 1;
 int numcards = 0;
-int config_type = 0;
 
 GtkWidget *window1;
     GtkWidget *grid1;
@@ -453,6 +458,12 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
     //int rc = 0;
     switch(testType){
         case 1:
+            //if(strcmp(getConfig(), "Generic V2.0 full-hex") != 0){
+            //    on_resetbutton1_clicked(resetbutton1);
+            //    printTextviewBuffer(GUIPRINT, "Can't run test with config [%s]...", getConfig());
+            //    break;
+            //}
+
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_HFcards))){
                 cards[1].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card1));   //MF Classic 1k
                 cards[2].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card2));   //MF_ULTRALIGHT
@@ -486,10 +497,12 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
 
             gtk_text_buffer_set_text(textviewbuf1, "", -1);
             gtk_text_buffer_set_text(textviewbuf2, "", -1);
+
+            thread_args.required_config = GENERIC_FULL;
             
             initThreadArgs();
-            initSpidercomms();
             initCardtypeTestThread();
+            initSpidercomms();
             break;
         case 2:
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card1))) thread_args.endurance_testcard = 1;
@@ -527,13 +540,13 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             initEnduranceTestThread();
             break;
         case 3:
-            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio1))) config_type = 1;
-            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio2))) config_type = 2;
-            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio3))) config_type = 3;
-            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio4))) config_type = 4;
-            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio5))) config_type = 5;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio1))) thread_args.required_config = GENERIC_V2_0;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio2))) thread_args.required_config = GENERIC_FULL;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio3))) thread_args.required_config = MIFARE_ONLY;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio4))) thread_args.required_config = OTHER_CONFIG;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio5))) thread_args.required_config = OTHER_CONFIG;
 
-            printTextviewBuffer(GUIPRINT, "Coniguring Spider with config %d", config_type);
+            printTextviewBuffer(GUIPRINT, "Coniguring Spider with new config");
 
             initThreadArgs();
             initConfigProgramThread();
@@ -693,6 +706,7 @@ void initCardtypeTestThread(void){
 void* cardtypeTestThread(void *p){
     if(g_debugMode) printf("Cardtype test thread started\n");
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
+    
     time_begin = time(NULL);
     int i = 0;
     while(cards[i].UID){
@@ -773,7 +787,7 @@ void* configProgramThread(void* p){
 
     tries = 0;
     do{
-        err = sendConfig(config_type);
+        err = sendConfig(args->required_config);
         if(err < 0 && g_debugMode) printf("Send config error %d: %s\n", err, libusb_strerror(err));
         tries++;
         if(args->stopThread || tries >= 5) goto exit_config_thread;
@@ -786,10 +800,10 @@ exit_config_thread:
         err = switchMode(NORMAL_MODE);
         if(err < 0 && g_debugMode) printf("Switch error %d: %s\n", err, libusb_strerror(err));
         tries++;
-    }while(err != 0 && tries < 5);
+    }while(err != 0 && tries < 10);
 
     if(success){
-        printTextviewBuffer(THREADPRINT, "Spider configured succesfully");
+        printTextviewBuffer(THREADPRINT, "Spider configured succesfully with [%s]", getConfig());
     }else{
         printTextviewBuffer(THREADPRINT, "Configuration failed or got interrupted");
     }
@@ -1493,13 +1507,13 @@ int sendConfig(int config_num){
     }
 
     switch(config_num){
-        case 1:
+        case GENERIC_V2_0:
             file = fopen("/home/pi/proxmark3/client/spider-configs/Generic V2.0.readerconfig", "r");
             break;
-        case 2:
-            file = fopen("/home/pi/proxmark3/client/spider-configs/default.readerconfig", "r");
+        case GENERIC_FULL:
+            file = fopen("/home/pi/proxmark3/client/spider-configs/Generic V2.0 full-hex.readerconfig", "r");
             break;
-        case 3:
+        case MIFARE_ONLY:
             file = fopen("/home/pi/proxmark3/client/spider-configs/mifare-only.readerconfig", "r");
             break;
         default:
@@ -1766,3 +1780,18 @@ char* getConfig(void){
 
     return (char*)data;
 }
+
+int uploadConfig(int config_num){
+    int err = 0;
+    err = switchMode(BOOTLOADER_MODE);
+    if(err) return err;
+    err = sendConfig(config_num);
+    if(err) return err;
+    err = switchMode(NORMAL_MODE);
+    return err;
+}
+
+    //if(strcmp(getConfig(), "Generic V2.0 full-hex") != 0){
+    //    while(uploadConfig(GENERIC_FULL) && !thread_args.stopThread);
+    //    msleep(100);
+    //}

@@ -16,6 +16,7 @@ typedef struct {
     bool stopThread;
     int endurance_test_size;
     int endurance_testcard;
+    int required_config;
 } UIDthread_arg_t;
 
 typedef struct {
