@@ -758,22 +758,22 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <child>
-              <object class="GtkRadioButton" id="radio3">
+              <object class="GtkRadioButton" id="radio4">
                 <property name="label" translatable="yes">Upload config</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>
                 <property name="draw-indicator">True</property>
                 <property name="group">radio1</property>
-                <signal name="toggled" handler="on_radio3_toggled" swapped="no"/>
+                <signal name="toggled" handler="on_radio4_toggled" swapped="no"/>
               </object>
               <packing>
                 <property name="x">10</property>
-                <property name="y">10</property>
+                <property name="y">184</property>
               </packing>
             </child>
             <child>
-              <object class="GtkFixed" id="fixedoptions3">
+              <object class="GtkFixed" id="fixedoptions4">
                 <property name="width-request">100</property>
                 <property name="height-request">80</property>
                 <property name="visible">True</property>
@@ -822,7 +822,9 @@ and hex output</property>
                 </child>
                 <child>
                   <object class="GtkRadioButton" id="config_radio4">
-                    <property name="label" translatable="yes">Other only</property>
+                    <property name="label" translatable="yes">Mifare Ultralight 
+only</property>
+                    <property name="height-request">48</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
@@ -836,7 +838,7 @@ and hex output</property>
                 </child>
                 <child>
                   <object class="GtkRadioButton" id="config_radio5">
-                    <property name="label" translatable="yes">Other only</property>
+                    <property name="label" translatable="yes">Mifare read block</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
@@ -845,32 +847,32 @@ and hex output</property>
                     <property name="group">config_radio1</property>
                   </object>
                   <packing>
-                    <property name="y">142</property>
+                    <property name="y">164</property>
                   </packing>
                 </child>
               </object>
               <packing>
                 <property name="x">25</property>
-                <property name="y">40</property>
+                <property name="y">214</property>
               </packing>
             </child>
             <child>
-              <object class="GtkRadioButton" id="radio4">
-                <property name="label" translatable="yes">Test config</property>
+              <object class="GtkRadioButton" id="radio3">
+                <property name="label" translatable="yes">Config specific test</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>
                 <property name="draw-indicator">True</property>
                 <property name="group">radio1</property>
-                <signal name="toggled" handler="on_radio4_toggled" swapped="no"/>
+                <signal name="toggled" handler="on_radio3_toggled" swapped="no"/>
               </object>
               <packing>
                 <property name="x">10</property>
-                <property name="y">220</property>
+                <property name="y">10</property>
               </packing>
             </child>
             <child>
-              <object class="GtkFixed" id="fixedoptions4">
+              <object class="GtkFixed" id="fixedoptions3">
                 <property name="width-request">100</property>
                 <property name="height-request">80</property>
                 <property name="visible">True</property>
@@ -878,8 +880,9 @@ and hex output</property>
                 <property name="can-focus">False</property>
                 <child>
                   <object class="GtkRadioButton" id="testconfig_radio1">
-                    <property name="label" translatable="yes">Generic V2.0</property>
-                    <property name="height-request">26</property>
+                    <property name="label" translatable="yes">Mifare Classic 
+only</property>
+                    <property name="height-request">48</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
@@ -889,8 +892,8 @@ and hex output</property>
                 </child>
                 <child>
                   <object class="GtkRadioButton" id="testconfig_radio2">
-                    <property name="label" translatable="yes">Generic with full 
-and hex output</property>
+                    <property name="label" translatable="yes">Mifare Ultralight
+only</property>
                     <property name="height-request">48</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -899,12 +902,12 @@ and hex output</property>
                     <property name="group">testconfig_radio1</property>
                   </object>
                   <packing>
-                    <property name="y">30</property>
+                    <property name="y">52</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkRadioButton" id="testconfig_radio3">
-                    <property name="label" translatable="yes">Mifare Classic only</property>
+                    <property name="label" translatable="yes">Mifare read block</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
@@ -912,39 +915,13 @@ and hex output</property>
                     <property name="group">testconfig_radio1</property>
                   </object>
                   <packing>
-                    <property name="y">82</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkRadioButton" id="testconfig_radio4">
-                    <property name="label" translatable="yes">Other only</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">False</property>
-                    <property name="draw-indicator">True</property>
-                    <property name="group">testconfig_radio1</property>
-                  </object>
-                  <packing>
-                    <property name="y">112</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkRadioButton" id="testconfig_radio5">
-                    <property name="label" translatable="yes">Other only</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">False</property>
-                    <property name="draw-indicator">True</property>
-                    <property name="group">testconfig_radio1</property>
-                  </object>
-                  <packing>
-                    <property name="y">142</property>
+                    <property name="y">104</property>
                   </packing>
                 </child>
               </object>
               <packing>
                 <property name="x">25</property>
-                <property name="y">250</property>
+                <property name="y">40</property>
               </packing>
             </child>
           </object>

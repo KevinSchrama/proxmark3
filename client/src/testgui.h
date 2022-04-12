@@ -15,7 +15,7 @@ typedef struct {
     bool available;
     bool stopThread;
     int endurance_test_size;
-    int endurance_testcard;
+    int testtype;
     int required_config;
 } UIDthread_arg_t;
 
@@ -23,6 +23,7 @@ typedef struct {
     bool available;
     bool stopThread;
     bool quitProgram;
+    bool spiderInputReady;
 } availability_arg_t;
 
 typedef struct {
@@ -33,6 +34,21 @@ typedef struct {
     bool simulate;
     bool detected;
 } card_t;
+
+typedef struct {
+    const char *name;
+    unsigned char testtype; // nog geen toepassing voor gevonden
+} config_t;
+
+// testtype:
+// | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+// config is available with the following tests:
+// bit 0: cardtype test
+// bit 1: endurance test
+// bit 2: if config is mifare only
+// bit 3: if config is mifare ultralight only
+// bit 4: if config is mifare read block from card with key
+// bit 5-7: nothing
 
 extern UIDthread_arg_t thread_args;
 extern availability_arg_t availability_args;
