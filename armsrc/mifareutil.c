@@ -609,6 +609,11 @@ int emlSetValBl(uint32_t blReg, uint8_t blBlock, int blockNum) {
     return 0;
 }
 
+void emlSetKey(uint8_t *key, int sectorNum, int keyType) {
+    uint8_t *emCARD = BigBuf_get_EM_addr();
+    memcpy(emCARD + 16 * (FirstBlockOfSector(sectorNum) + NumBlocksPerSector(sectorNum) - 1) + keyType * 10, key, 6);
+}
+
 uint64_t emlGetKey(int sectorNum, int keyType) {
     uint8_t key[6] = {0x00};
     uint8_t *emCARD = BigBuf_get_EM_addr();

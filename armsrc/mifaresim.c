@@ -218,6 +218,11 @@ static bool MifareSimInit(uint16_t flags, uint8_t *datain, uint16_t atqa, uint8_
     memcpy(rATQA, rATQA_1k, sizeof(rATQA));
     rSAK[0] = rSAK_1k;
 
+    static uint8_t blockKey[] = {0x12, 0x43, 0x56, 0x87, 0xAB, 0xDC};
+    emlSetKey(blockKey, 2, 0);
+    static uint8_t blockdata[] = {0x5A, 0x65, 0x65, 0x72, 0x47, 0x65, 0x68, 0x65, 0x69, 0x6D, 0x65, 0x43, 0x6F, 0x64, 0x65, 0x73};
+    emlSetMem(blockdata, 9, 1);
+
     //by default RATS not supported
     *rats_len = 0;
     *rats = NULL;
@@ -644,6 +649,7 @@ void Mifare1ksim(uint16_t flags, uint8_t exitAfterNReads, uint8_t *datain, uint1
             case MFEMUL_SELECT: {
                 int uid_index = -1;
                 // Extract cascade level
+                //Dbprintf("MFEMUL_SELECT receivedCmd: %02x %02x %02x %02x", receivedCmd[0], receivedCmd[1], receivedCmd[2], receivedCmd[3]);
                 if (receivedCmd_len >= 2) {
                     switch (receivedCmd[0]) {
                         case ISO14443A_CMD_ANTICOLL_OR_SELECT:
@@ -668,6 +674,7 @@ void Mifare1ksim(uint16_t flags, uint8_t exitAfterNReads, uint8_t *datain, uint1
                 if (receivedCmd_len == 2 && receivedCmd[1] == 0x20) {
                     EmSendPrecompiledCmd(&responses[uid_index]);
                     FpgaDisableTracing();
+                    //Dbprintf("[MFEMUL_SELECT] 0x20 receivedCmd: %02x %02x", receivedCmd[0], receivedCmd[1]);
 
                     if (g_dbglevel >= DBG_EXTENDED) Dbprintf("SELECT ALL - EmSendPrecompiledCmd(%02x)", &responses[uid_index]);
                     break;
@@ -681,8 +688,9 @@ void Mifare1ksim(uint16_t flags, uint8_t exitAfterNReads, uint8_t *datain, uint1
                                            (uid_len == 10 && uid_index == UIDBCC3);
                         EmSendPrecompiledCmd(&responses[cl_finished ? SAK : SAKuid]);
                         FpgaDisableTracing();
-
+                        
                         if (g_dbglevel >= DBG_EXTENDED) Dbprintf("SELECT CLx %02x%02x%02x%02x received", receivedCmd[2], receivedCmd[3], receivedCmd[4], receivedCmd[5]);
+                        //Dbprintf("[MFEMUL_SELECT] 0x70 receivedCmd: %02x %02x %02x %02x %02x %02x %02x %02x %02x", receivedCmd[0], receivedCmd[1], receivedCmd[2], receivedCmd[3], receivedCmd[4], receivedCmd[5], receivedCmd[6], receivedCmd[7], receivedCmd[8]);
                         if (cl_finished) {
                             LED_B_ON();
                             cardSTATE = MFEMUL_WORK;
@@ -753,7 +761,8 @@ void Mifare1ksim(uint16_t flags, uint8_t exitAfterNReads, uint8_t *datain, uint1
                     if (g_dbglevel >= DBG_EXTENDED) Dbprintf("[MFEMUL_WORK] All commands must have a valid CRC %02X (%d)", receivedCmd_dec, receivedCmd_len);
                     break;
                 }
-
+                
+                if (g_dbglevel >= DBG_DEBUG) Dbprintf("[MFEMUL_WORK] receivedCmd: %02x %02x %02x %02x, length: %d", receivedCmd_dec[0], receivedCmd_dec[1], receivedCmd_dec[2], receivedCmd_dec[3], receivedCmd_len);
                 if (receivedCmd_len == 4 && (receivedCmd_dec[0] == MIFARE_AUTH_KEYA || receivedCmd_dec[0] == MIFARE_AUTH_KEYB)) {
 
                     // Reader asks for AUTH: 6X XX
@@ -772,13 +781,15 @@ void Mifare1ksim(uint16_t flags, uint8_t exitAfterNReads, uint8_t *datain, uint1
                     // cardAUTHKEY: 61 => Auth use Key B
                     cardAUTHKEY = receivedCmd_dec[0] & 0x01;
 
-                    if (g_dbglevel >= DBG_EXTENDED) Dbprintf("[MFEMUL_WORK] KEY %c: %012" PRIx64, (cardAUTHKEY == 0) ? 'A' : 'B', emlGetKey(cardAUTHSC, cardAUTHKEY));
+
+                    if (g_dbglevel >= DBG_DEBUG) Dbprintf("[MFEMUL_WORK] KEY %c: %012" PRIx64, (cardAUTHKEY == 0) ? 'A' : 'B', emlGetKey(cardAUTHSC, cardAUTHKEY));
 
                     // first authentication
                     crypto1_deinit(pcs);
 
                     // Load key into crypto
                     crypto1_init(pcs, emlGetKey(cardAUTHSC, cardAUTHKEY));
+                    //crypto1_init(pcs, 0x12435687ABDC);
 
                     if (!encrypted_data) {
                         // Receive Cmd in clear txt
@@ -788,7 +799,7 @@ void Mifare1ksim(uint16_t flags, uint8_t exitAfterNReads, uint8_t *datain, uint1
                         EmSendCmd(rAUTH_NT, sizeof(rAUTH_NT));
                         FpgaDisableTracing();
 
-                        if (g_dbglevel >= DBG_EXTENDED) Dbprintf("[MFEMUL_WORK] Reader authenticating for block %d (0x%02x) with key %c - nonce: %02X - ciud: %02X", receivedCmd_dec[1], receivedCmd_dec[1], (cardAUTHKEY == 0) ? 'A' : 'B', rAUTH_NT, cuid);
+                        if (g_dbglevel >= DBG_DEBUG) Dbprintf("[MFEMUL_WORK] Reader authenticating for block %d (0x%02x) with key %c - nonce: %02X - ciud: %02X", receivedCmd_dec[1], receivedCmd_dec[1], (cardAUTHKEY == 0) ? 'A' : 'B', rAUTH_NT, cuid);
                     } else {
                         // nested authentication
                         /*
@@ -864,7 +875,7 @@ void Mifare1ksim(uint16_t flags, uint8_t exitAfterNReads, uint8_t *datain, uint1
                 // case MFEMUL_WORK => CMD READ block
                 if (receivedCmd_len == 4 && receivedCmd_dec[0] == ISO14443A_CMD_READBLOCK) {
                     blockNo = receivedCmd_dec[1];
-                    if (g_dbglevel >= DBG_EXTENDED)
+                    if (g_dbglevel >= DBG_DEBUG)
                         Dbprintf("[MFEMUL_WORK] Reader reading block %d (0x%02x)", blockNo, blockNo);
 
                     // android CVE 2021_0430
@@ -897,7 +908,7 @@ void Mifare1ksim(uint16_t flags, uint8_t exitAfterNReads, uint8_t *datain, uint1
 
                     emlGetMem(response, blockNo, 1);
 
-                    if (g_dbglevel >= DBG_EXTENDED)  {
+                    if (g_dbglevel >= DBG_DEBUG)  {
                         Dbprintf("[MFEMUL_WORK - ISO14443A_CMD_READBLOCK] Data Block[%d]: %02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x", blockNo,
                                  response[0], response[1], response[2], response[3],  response[4],  response[5],  response[6],
                                  response[7], response[8], response[9], response[10], response[11], response[12], response[13],
@@ -1096,10 +1107,12 @@ void Mifare1ksim(uint16_t flags, uint8_t exitAfterNReads, uint8_t *datain, uint1
                 if (receivedCmd_len != 8) {
                     cardSTATE_TO_IDLE();
                     LogTrace(uart->output, uart->len, uart->startTime * 16 - DELAY_AIR2ARM_AS_TAG, uart->endTime * 16 - DELAY_AIR2ARM_AS_TAG, uart->parity, true);
-                    if (g_dbglevel >= DBG_EXTENDED)
+                    if (g_dbglevel >= DBG_DEBUG)
                         Dbprintf("MFEMUL_AUTH1: receivedCmd_len != 8 (%d) => cardSTATE_TO_IDLE())", receivedCmd_len);
                     break;
                 }
+                if (g_dbglevel >= DBG_DEBUG) Dbprintf("[MFEMUL_AUTH1] receivedCmd: %02x %02x %02x %02x %02x %02x %02x %02x", receivedCmd[0], receivedCmd[1], receivedCmd[2], receivedCmd[3], 
+                receivedCmd[4], receivedCmd[5], receivedCmd[6], receivedCmd[7]);
 
                 nr = bytes_to_num(receivedCmd, 4);
                 ar = bytes_to_num(&receivedCmd[4], 4);
@@ -1171,7 +1184,7 @@ void Mifare1ksim(uint16_t flags, uint8_t exitAfterNReads, uint8_t *datain, uint1
 
                 // test if auth KO
                 if (cardRr != prng_successor(nonce, 64)) {
-                    if (g_dbglevel >= DBG_EXTENDED) {
+                    if (g_dbglevel >= DBG_DEBUG) {
                         Dbprintf("[MFEMUL_AUTH1] AUTH FAILED for sector %d with key %c. [nr=%08x  cardRr=%08x] [nt=%08x succ=%08x]"
                                  , cardAUTHSC
                                  , (cardAUTHKEY == 0) ? 'A' : 'B'
