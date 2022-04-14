@@ -41,6 +41,8 @@
 #define DATA_SIZE 58
 #define SETUP_SIZE 6
 
+/* Thread variables and arguments */
+
 UIDthread_arg_t thread_args;
 availability_arg_t availability_args;
 static pthread_t spider_thread;
@@ -52,19 +54,31 @@ static pthread_t specific_test_thread;
 pthread_mutex_t thread_mutex;
 pthread_mutex_t gtk_mutex;
 
+/* Spider input variables and functions */
+
 static const char *keycodes[64 * 1024] = { 0 };
 static const char *shiftkeycodes[64 * 1024] = { 0 };
 
 static void setupKeyCodes(void);
 void ulltohexstring(char *Des, unsigned long long int Src);
 
+/* Simulation */
+
 void stopSim(void);
 int checkUID(char *check_uid);
-int sendConfig(int config_num);
-int switchMode(int desired_mode);
+
+/* Spider functions */
+
 char getDevice(void);
 char* getConfig(void);
+
+/* Change configuration of Spider */
+
+int sendConfig(int config_num);
+int switchMode(int desired_mode);
 int uploadConfig(int config_num);
+
+/* Initiate thread functions */
 
 void initThreadArgs(void);
 void initSpidercomms(void);
@@ -73,6 +87,8 @@ void initEnduranceTestThread(void);
 void initConfigProgramThread(void);
 void initAvailabilityThread(void);
 void initSpecificTestThread(void);
+
+/* Simulation functions */
 
 void SimBUF(void);
 void SimMfClas1k(void);
@@ -88,12 +104,16 @@ void SimParadox(void);
 void SimNoralsy(void);
 void SimAwid(void);
 
+/* Threads */
+
 void* spiderThread(void* p);
 void* cardtypeTestThread(void* p);
 void* enduranceTestThead(void* p);
 void* configProgramThread(void* p);
 void* availabilityThread(void* p);
 void* specificTestThread(void* p);
+
+/* GUI functions */
 
 void destroy(GtkWidget *window);
 void on_radio1_toggled(GtkWidget *radio);
@@ -114,13 +134,21 @@ gboolean showResults(void *p);
 gboolean updateSpiderInfo(void *p);
 gboolean callDestroy(void *p);
 
+/* Print to result textview buffer */
+
 void printResultTextview(GtkTextBuffer *textviewbuffer, const char *text, ...);
+
+/* Time variables */
 
 time_t time_begin;
 time_t time_end;
 
+/* Test variables */
+
 int testType = 1;
 int numcards = 0;
+
+/* GTK gui widgets */
 
 GtkWidget *window1;
     GtkWidget *grid1;
@@ -202,6 +230,7 @@ GtkTextIter iter1;
 
 GtkCssProvider *cssprovider1;
 
+/* List of cards */
 card_t cards[] = {
     {"buffer",              "Buffer simulation",    SimBUF,         0,  false, false}, // 0
     {"4B6576696E0001",      "Mifare Classic 1k",    SimMfClas1k,    0,  false, false}, // 1
@@ -225,6 +254,7 @@ card_t cards[] = {
     {NULL, NULL, NULL, 0, false, false}
 };
 
+/* List of configs */
 config_t config[] = {
     {"Generic V2.0", 0x00},
     {"Generic V2.0 full-hex", 0x00},
@@ -235,6 +265,8 @@ config_t config[] = {
     {NULL, 0}
 };
 
+/* Config index */
+
 #define CONFIG_GENERIC_V2_0                0
 #define CONFIG_GENERIC_FULL                1
 #define CONFIG_MIFARE_ONLY                 2
@@ -242,16 +274,25 @@ config_t config[] = {
 #define CONFIG_MIFARE_READ_BLOCK           4
 #define CONFIG_OTHER_CONFIG                5
 
+/* Progressbar arguments */
 struct progressbar_args {
     int cardcount_arg;
     int numcards_args;
 };
 
+/* Result textview arguments */
 struct textview_args {
     GtkTextBuffer *textviewbuffer;
     char text[PRINT_BUFFER_SIZE];
 };
 
+/****************************************************************************/
+/*!
+    @brief Main entry of the GUI, initiates and starts GUI.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void main_gui(void){
     if(pthread_mutex_init(&thread_mutex, NULL) != 0){
         if(g_debugMode) g_print("\n mutex init 'thread_mutex' has failed\n");
@@ -368,6 +409,13 @@ void main_gui(void){
 }
 
 // GUI functions /////////////////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Destroy window, also called when close button on window is pressed
+    @param window pointer to widget that called destroy
+    @return 
+ */
+/****************************************************************************/
 void destroy (GtkWidget *window){
     if(g_debugMode) g_print("Destroy function\n");
     stopSim();
@@ -382,6 +430,13 @@ void destroy (GtkWidget *window){
     gtk_main_quit();
 }
 
+/****************************************************************************/
+/*!
+    @brief Called on radio1 radio button pressed, sets testType to toggled button and disables all other options.
+    @param radio pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
 void on_radio1_toggled (GtkWidget *radio){
     testType = 1;
     gtk_widget_set_sensitive(fixedoptions1, TRUE);
@@ -390,6 +445,13 @@ void on_radio1_toggled (GtkWidget *radio){
     gtk_widget_set_sensitive(fixedoptions4, FALSE);
 }
 
+/****************************************************************************/
+/*!
+    @brief Called on radio2 radio button pressed, sets testType to toggled button and disables all other options.
+    @param radio pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
 void on_radio2_toggled (GtkWidget *radio){
     testType = 2;
     gtk_widget_set_sensitive(fixedoptions2, TRUE);
@@ -398,6 +460,13 @@ void on_radio2_toggled (GtkWidget *radio){
     gtk_widget_set_sensitive(fixedoptions4, FALSE);
 }
 
+/****************************************************************************/
+/*!
+    @brief Called on radio3 radio button pressed, sets testType to toggled button and disables all other options.
+    @param radio pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
 void on_radio3_toggled (GtkWidget *radio){
     testType = 3;
     gtk_widget_set_sensitive(fixedoptions3, TRUE);
@@ -406,6 +475,13 @@ void on_radio3_toggled (GtkWidget *radio){
     gtk_widget_set_sensitive(fixedoptions4, FALSE);
 }
 
+/****************************************************************************/
+/*!
+    @brief Called on radio4 radio button pressed, sets testType to toggled button and disables all other options.
+    @param radio pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
 void on_radio4_toggled (GtkWidget *radio){
     testType = 4;
     gtk_widget_set_sensitive(fixedoptions4, TRUE);
@@ -414,6 +490,13 @@ void on_radio4_toggled (GtkWidget *radio){
     gtk_widget_set_sensitive(fixedoptions3, FALSE);
 }
 
+/****************************************************************************/
+/*!
+    @brief Called on test1_HFcards toggle button pressed, enables or disables all option button under HF cards.
+    @param check pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
 void on_test1_HFcards_toggled (GtkWidget *check){
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card1), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card2), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
@@ -441,6 +524,13 @@ void on_test1_HFcards_toggled (GtkWidget *check){
     }
 }
 
+/****************************************************************************/
+/*!
+    @brief Called on test1_LFcards toggle button pressed, enables or disables all option button under LF cards.
+    @param check pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
 void on_test1_LFcards_toggled (GtkWidget *check){
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card8), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card9), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
@@ -459,6 +549,13 @@ void on_test1_LFcards_toggled (GtkWidget *check){
     }
 }
 
+/****************************************************************************/
+/*!
+    @brief Called when startbutton is pressed and chooses test type and starts it.
+    @param startbutton pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
 void on_startbutton1_clicked (GtkWidget *startbutton){
     gtk_widget_set_sensitive(startbutton1, FALSE);
     if(g_debugMode) g_print("Test started\n");
@@ -599,6 +696,13 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
 
 }
 
+/****************************************************************************/
+/*!
+    @brief Called when resetbutton is pressed and resets all threads, variables and results.
+    @param resetbutton pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
 void on_resetbutton1_clicked(GtkWidget *resetbutton){
     gtk_widget_set_sensitive(resetbutton1, FALSE);
     if(g_debugMode) printf("Reset all tests\n");
@@ -625,29 +729,63 @@ void on_resetbutton1_clicked(GtkWidget *resetbutton){
     gtk_widget_set_sensitive(resetbutton1, TRUE);
 }
 
+/****************************************************************************/
+/*!
+    @brief Called when testresult window (window2) is closed to not destroy it but hide it.
+    @param widget pointer to widget that called function
+    @param event
+    @param data
+    @return gboolean, always TRUE.
+ */
+/****************************************************************************/
 gboolean on_window2_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
     gtk_widget_hide(window2);
     return TRUE;
 }
 
+/****************************************************************************/
+/*!
+    @brief Called when text in textview is bigger than what fits to scroll window to newest text.
+    @param scrolledwindow pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
 void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow){
     gtk_adjustment_set_value(adjustment1, gtk_adjustment_get_upper(adjustment1) - gtk_adjustment_get_page_size(adjustment1));
 }
 // GUI functions /////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Init thread arguments ////////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Initiate thread arguments
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void initThreadArgs(void){
     thread_args.available = false;
     thread_args.stopThread = false;
 }
-// Init thread arguments ////////////////////////////////////////////////////////////////////////////////////////
 
 // Spider communiction thread ////////////////////////////////////////////////////////////////////////////////////
-// Init spider communication thread
+/****************************************************************************/
+/*!
+    @brief Initiate and start spider communication thread.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void initSpidercomms(void){
     pthread_create(&spider_thread, NULL, spiderThread, &thread_args);
 }
 
+/****************************************************************************/
+/*!
+    @brief Thread to receive keyboard input from Spider and check if received input is a known UID
+    @param p pointer to thread arguments passed through from initiation.
+    @return void*
+ */
+/****************************************************************************/
 void* spiderThread(void* p){
     if(g_debugMode) printf("Spider communication thread started\n");
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
@@ -743,14 +881,27 @@ void* spiderThread(void* p){
     pthread_exit(NULL);
     return NULL;
 }
-
 // Spider communiction thread ////////////////////////////////////////////////////////////////////////////////////
 
 // Test thread for card types ///////////////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Initiate and start Card type test thread.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void initCardtypeTestThread(void){
     pthread_create(&cardtype_test_thread, NULL, cardtypeTestThread, &thread_args);
 }
 
+/****************************************************************************/
+/*!
+    @brief Thread to simulate the given cards and show the results if they were recognised by spiderThread.
+    @param p pointer to thread arguments passed through from initiation.
+    @return void*
+ */
+/****************************************************************************/
 void* cardtypeTestThread(void *p){
     if(g_debugMode) printf("Cardtype test thread started\n");
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
@@ -793,10 +944,24 @@ void* cardtypeTestThread(void *p){
 // Test thread for card types ///////////////////////////////////////////////////////////////////////////////////////////////
 
 // Test thread for endurance test ///////////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Initiate and start Endurance test thread.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void initEnduranceTestThread(void){
     pthread_create(&endurance_test_thread, NULL, enduranceTestThead, &thread_args);
 }
 
+/****************************************************************************/
+/*!
+    @brief Thread to simulate one card a given amount of times.
+    @param p pointer to thread arguments passed through from initiation.
+    @return void*
+ */
+/****************************************************************************/
 void* enduranceTestThead(void* p){
     if(g_debugMode) printf("Endurance test thread started\n");
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
@@ -825,10 +990,24 @@ void* enduranceTestThead(void* p){
 // Test thread for endurance test ///////////////////////////////////////////////////////////////////////////////////////////
 
 // Test thread for specific test type ///////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Initiate and start a conifg specific test thread.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void initSpecificTestThread(void){
     pthread_create(&specific_test_thread, NULL, specificTestThread, &thread_args);
 }
 
+/****************************************************************************/
+/*!
+    @brief Thread for a config specific test.
+    @param p pointer to thread arguments passed through from initiation.
+    @return void*
+ */
+/****************************************************************************/
 void* specificTestThread(void* p){
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
     if(g_debugMode) printf("Specific test thread started: %d\n", args->testtype);
@@ -902,10 +1081,24 @@ void* specificTestThread(void* p){
 // Test thread for specific test type ///////////////////////////////////////////////////////////////////////////////////////
 
 // Config programmer thread /////////////////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Initiate and start the Config Program thread.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void initConfigProgramThread(void){
     pthread_create(&config_program_thread, NULL, configProgramThread, &thread_args);
 }
 
+/****************************************************************************/
+/*!
+    @brief Thread to program a Spider with a given config.
+    @param p pointer to thread arguments passed through from initiation.
+    @return void*
+ */
+/****************************************************************************/
 void* configProgramThread(void* p){
     if(g_debugMode) printf("Config program thread started\n");
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
@@ -953,12 +1146,26 @@ exit_config_thread:
 // Config programmer thread /////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Spider availability thread ///////////////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Initiate and start the availability thread.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void initAvailabilityThread(void){
     availability_args.stopThread = false;
     availability_args.available = true;
     pthread_create(&availability_thread, NULL, availabilityThread, &availability_args);
 }
 
+/****************************************************************************/
+/*!
+    @brief Thread to check if a Spider is connected and to check the state of the Spider.
+    @param p pointer to thread arguments passed through from initiation.
+    @return void*
+ */
+/****************************************************************************/
 void* availabilityThread(void* p){
     availability_arg_t *args = (availability_arg_t *)p;
     struct libusb_device_descriptor descriptor = {0};
@@ -1008,6 +1215,13 @@ void* availabilityThread(void* p){
 // Spider availability thread ///////////////////////////////////////////////////////////////////////////////////////////////
 
 // Stop threads /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Stop all threads and wait for each thread to join.
+    @param void
+    @return
+ */
+/****************************************************************************/
 void stopThreads(void){
     if(g_debugMode) printf("Stop threads\n");
     pthread_mutex_lock(&thread_mutex);
@@ -1027,7 +1241,13 @@ void stopThreads(void){
 }
 // Stop threads /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Compare given UID with list of known UID's.
+    @param check_uid char pointer of UID to compare.
+    @return integer with number to index of the known and correctly compared to UID, returns 0 if unknown.
+ */
+/****************************************************************************/
 int checkUID(char *check_uid){
     int i = 0;
     //printf("Check UID: %s\n", check_uid);
@@ -1040,9 +1260,17 @@ int checkUID(char *check_uid){
     }
     return 0;
 }
-// Check the UID ////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Print to textviewbuffer //////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Print text to textview buffer.
+    @param thread To indicate if the call came from a thread or from the gui as they need to be handled differently.
+    @param text char pointer to text that needs be printed.
+    @param ... specifier arguments
+    @return 
+ */
+/****************************************************************************/
 void printTextviewBuffer(int thread, const char *text, ...){
     char buffer[PRINT_BUFFER_SIZE] = {0};
     int num = 0;
@@ -1079,6 +1307,13 @@ void printTextviewBuffer(int thread, const char *text, ...){
 
 }
 
+/****************************************************************************/
+/*!
+    @brief Handler for print to textview buffer if call came from a thread.
+    @param text void pointer to text to print.
+    @return gboolean to indicatie if source needs to be removed after call.
+ */
+/****************************************************************************/
 gboolean printtologscreen(void *text){
     const gchar *buffer = text;
     gtk_text_buffer_get_end_iter(textviewbuf3, &iter1);
@@ -1087,6 +1322,15 @@ gboolean printtologscreen(void *text){
 }
 // Print to textviewbuffer ///////////////////////////////////////////////////////////////////////////////////////
 
+/****************************************************************************/
+/*!
+    @brief Print text to result window textview buffers.
+    @param textviewbuffer textviewbuffer to print text to.
+    @param text char pointer to text that needs be printed.
+    @param ... specifier arguments
+    @return 
+ */
+/****************************************************************************/
 void printResultTextview(GtkTextBuffer *textviewbuffer, const char *text, ...){
     struct textview_args *args = g_slice_alloc(sizeof(*args));
     args->textviewbuffer = textviewbuffer;
@@ -1101,6 +1345,13 @@ void printResultTextview(GtkTextBuffer *textviewbuffer, const char *text, ...){
     g_idle_add(printtoresultwindow, args);
 }
 
+/****************************************************************************/
+/*!
+    @brief Handler for print to textview buffer if call came from a thread.
+    @param p void pointer to text to print.
+    @return gboolean to indicatie if source needs to be removed after call.
+ */
+/****************************************************************************/
 gboolean printtoresultwindow(void *p){
     struct textview_args *args = p;
     GtkTextIter iter;
@@ -1109,8 +1360,15 @@ gboolean printtoresultwindow(void *p){
     return G_SOURCE_REMOVE;
 }
 
-
 // Update progressbar ////////////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Update progressbar with count/number.
+    @param count integer for a certain amount out of number.
+    @param number integer for desired amount.
+    @return
+ */
+/****************************************************************************/
 void updateProgressbar(int count, int number){
     struct progressbar_args *args = g_slice_alloc(sizeof(*args));
     args->cardcount_arg = count;
@@ -1118,6 +1376,13 @@ void updateProgressbar(int count, int number){
     g_idle_add(progressbarUpdate, args);
 }
 
+/****************************************************************************/
+/*!
+    @brief Handler for update of progressbar.
+    @param p void pointer to struct with to count and number.
+    @return gboolean to indicatie if source needs to be removed after call.
+ */
+/****************************************************************************/
 gboolean progressbarUpdate(void *p){
     struct progressbar_args *args = p;
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressbar1), (gdouble)((double)args->cardcount_arg/(double)args->numcards_args));
@@ -1125,21 +1390,38 @@ gboolean progressbarUpdate(void *p){
 }
 // Update progressbar ////////////////////////////////////////////////////////////////////////////////////////////
 
-// Reset tests ///////////////////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Handler to call resetbutton clicked function from threads.
+    @param p void pointer, but not used.
+    @return gboolean to indicatie if source needs to be removed after call.
+ */
+/****************************************************************************/
 gboolean resetTests(void *p){
     on_resetbutton1_clicked(resetbutton1);
     return G_SOURCE_REMOVE;
 }
-// Reset tests ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Show window with results //////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Handler to show window with results from tests.
+    @param p void pointer, but not used.
+    @return gboolean to indicatie if source needs to be removed after call.
+ */
+/****************************************************************************/
 gboolean showResults(void *p){
     printResults();
     gtk_widget_show(window2);
     return G_SOURCE_REMOVE;
 }
-// Show window with results //////////////////////////////////////////////////////////////////////////////////////
 
+/****************************************************************************/
+/*!
+    @brief Handler to update info about Spider if connected and currect config.
+    @param p void pointer to bool if a Spider is connected.
+    @return gboolean to indicatie if source needs to be removed after call.
+ */
+/****************************************************************************/
 gboolean updateSpiderInfo(void *p){
     bool *available = p;
     char *configname = calloc(1, 64);
@@ -1162,12 +1444,26 @@ gboolean updateSpiderInfo(void *p){
 }
 
 // quit program functions ///////////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Call to exit program, it will set quitProgram to true, availabilityThread will call destroy function.
+    @param void
+    @return
+ */
+/****************************************************************************/
 void exitProgram(void){
     pthread_mutex_lock(&gtk_mutex);
     availability_args.quitProgram = true;
     pthread_mutex_unlock(&gtk_mutex);
 }
 
+/****************************************************************************/
+/*!
+    @brief Handler to call destroy function from threads.
+    @param p void pointer, but not used.
+    @return gboolean to indicatie if source needs to be removed after call.
+ */
+/****************************************************************************/
 gboolean callDestroy(void *p){
     printf("Exit program\n");
     destroy(NULL);
@@ -1175,6 +1471,13 @@ gboolean callDestroy(void *p){
 }
 // quit program functions ///////////////////////////////////////////////////////////////////////////////////////////
 
+/****************************************************************************/
+/*!
+    @brief Function will call the simulation function of the specified card, wait for 5 seconds if the card is read from Spider and send a stop sim command.
+    @param sim index to card to simulate in list of cards[]
+    @return 
+ */
+/****************************************************************************/
 void Simulate(int sim){
     cards[sim].simFunction();
     int i = 0;
@@ -1192,12 +1495,26 @@ void Simulate(int sim){
 }
 
 // Simulation functions ////////////////////////////////////////////////////////////////////////////////////////////////////////
+/****************************************************************************/
+/*!
+    @brief Send command to proxmark3 to stop simulation.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void stopSim(void){
     clearCommandBuffer();
     SendCommandNG(CMD_BREAK_LOOP, NULL, 0);
     msleep(500);
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate a buffer card, because the first card to simulate is not fast enough detected by Spider.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimBUF(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -1218,6 +1535,13 @@ void SimBUF(void){
     SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate a Mifare Classic 1k card.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimMfClas1k(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x01};
@@ -1239,6 +1563,13 @@ void SimMfClas1k(void){
     SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate a Mifare Ultralight card.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimMfUltra(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x02};
@@ -1260,6 +1591,13 @@ void SimMfUltra(void){
     SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate a Mifare Mini card.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimMfMini(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x06};
@@ -1281,6 +1619,13 @@ void SimMfMini(void){
     SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate a NTAG card.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimNTAG(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x07};
@@ -1302,6 +1647,13 @@ void SimNTAG(void){
     SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate a Mifare Classic 4k card.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimMfClas4k(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x08};
@@ -1323,6 +1675,13 @@ void SimMfClas4k(void){
     SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate a FM11RF005SH card.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimFM11RF005SH(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x09};
@@ -1344,6 +1703,13 @@ void SimFM11RF005SH(void){
     SendCommandNG(CMD_HF_ISO14443A_SIMULATE, (uint8_t *)&payload, sizeof(payload));
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate a iClass card.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimiClass(void){
     uint8_t csn[8] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0xB9, 0x33, 0x14};
     if(g_debugMode) PrintAndLogEx(INFO, "TESTING iClass sim with UID %s", sprint_hex(csn, 8));
@@ -1351,6 +1717,13 @@ void SimiClass(void){
     SendCommandMIX(CMD_HF_ICLASS_SIMULATE, 0, 0, 1, csn, 8); //Simulate iClass
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate a HID card.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimHID(void){
     lf_hidsim_t payload;
     payload.hi2 = 0;
@@ -1363,6 +1736,13 @@ void SimHID(void){
     SendCommandNG(CMD_LF_HID_SIMULATE, (uint8_t *)&payload,  sizeof(payload));
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate a EM410x card.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimEM410x(void){
     int clock = 64;
     int uid_len = 5;
@@ -1375,6 +1755,13 @@ void SimEM410x(void){
     CmdLFSim("");
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate a Paradox card.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimParadox(void){
     uint8_t raw[] = {0x0f, 0x55, 0x55, 0x56, 0x95, 0x59, 0x6a, 0x6a, 0x99, 0x99, 0xa5, 0x9a}; //0f55555695596a6a9999a59a
 
@@ -1397,6 +1784,13 @@ void SimParadox(void){
     free(payload);
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate a Noralsy card.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimNoralsy(void){
     uint32_t id = 1337;
     uint16_t year = 2000;
@@ -1420,6 +1814,13 @@ void SimNoralsy(void){
     free(payload);
 }
 
+/****************************************************************************/
+/*!
+    @brief Simulate an AWID card.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void SimAwid(void){
     uint8_t bs[] = {0,0,0,0,0,0,0,1,0,0,0,1,1,1,0,1,1,0,0,0,0,1,1,1,1,1,0,1,1,1,0,1,0,0,0,1,0,1,0,0,1,0,0,0,1,1,1,0,0,0,1,0,1,0,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1};
     lf_fsksim_t *payload = calloc(1, sizeof(lf_fsksim_t) + sizeof(bs));
@@ -1437,6 +1838,13 @@ void SimAwid(void){
 }
 // Simulation functions /////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/****************************************************************************/
+/*!
+    @brief Print the results of a card type test.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 void printResults(void){
     if(g_debugMode){
         PrintAndLogEx(INFO, "========================================================");
@@ -1482,6 +1890,13 @@ void printResults(void){
     if(g_debugMode) PrintAndLogEx(INFO, "========================================================");
 }
 
+/****************************************************************************/
+/*!
+    @brief Setup Key Codes for spiderThread to receive input from Spider.
+    @param void
+    @return 
+ */
+/****************************************************************************/
 static void setupKeyCodes(void){
     for (int i = 0; i < COUNTOF(keycodes); i++)
         keycodes[i] = 0;
@@ -1561,6 +1976,14 @@ static void setupKeyCodes(void){
     shiftkeycodes[KEY_DOT] = ">";
 }
 
+/****************************************************************************/
+/*!
+    @brief Convert decimal value to a hexadecimal string.
+    @param Des char pointer to output hexadecimal string to.
+    @param Src unsigned long long integer to convert to hexadecimal string.
+    @return 
+ */
+/****************************************************************************/
 void ulltohexstring(char *Des, unsigned long long int Src){
     int temp, i = 0;
     char hex[40] = {0};
@@ -1584,6 +2007,13 @@ void ulltohexstring(char *Des, unsigned long long int Src){
     }
 }
 
+/****************************************************************************/
+/*!
+    @brief Search through input devices for Spider.
+    @param void
+    @return char of number on which event device the Spider is, default is '0'
+ */
+/****************************************************************************/
 char getDevice(void){
     FILE *fp;
     int searchEvent = 0;
@@ -1613,6 +2043,13 @@ char getDevice(void){
     return '0';
 }
 
+/****************************************************************************/
+/*!
+    @brief Search on which usb port the proxmark3 is located.
+    @param void
+    @return char pointer with "/dev/ttyACMx" with x the port number of the proxmark3, return NULL if not found or failed.
+ */
+/****************************************************************************/
 char *FindProxmark(void){
     FILE *fp;
     char *buf = calloc(1, 64);
@@ -1638,6 +2075,13 @@ char *FindProxmark(void){
     return NULL;
 }
 
+/****************************************************************************/
+/*!
+    @brief Send config file to Spider if in bootloader mode.
+    @param config_num index of config in list of config_t struct.
+    @return error number
+ */
+/****************************************************************************/
 int sendConfig(int config_num){
     int err = 0;
     FILE *file;
@@ -1838,6 +2282,13 @@ int sendConfig(int config_num){
     return 0;
 }
 
+/****************************************************************************/
+/*!
+    @brief Switch mode of Spider.
+    @param desired_mode the desired mode to switch to: 0 for normal mode, 1 for bootloader mode
+    @return error number
+ */
+/****************************************************************************/
 int switchMode(int desired_mode){
 // Mode 0: Normal mode
 // Mode 1: Bootloader mode
@@ -1919,6 +2370,13 @@ int switchMode(int desired_mode){
     return 0;
 }
 
+/****************************************************************************/
+/*!
+    @brief Read config name from Spider from device descriptor.
+    @param void
+    @return char pointer with config name, returns NULL if failed or not connected.
+ */
+/****************************************************************************/
 char* getConfig(void){
     libusb_device_handle *handle = NULL;
     unsigned char *data = calloc(1, 64);
@@ -1941,6 +2399,13 @@ char* getConfig(void){
     return (char*)data;
 }
 
+/****************************************************************************/
+/*!
+    @brief Switch mode, upload config and switch back.
+    @param config_num index of config in list of config_t struct.
+    @return error number
+ */
+/****************************************************************************/
 int uploadConfig(int config_num){
     int err = 0;
     err = switchMode(BOOTLOADER_MODE);

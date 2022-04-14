@@ -26,6 +26,7 @@ typedef struct {
     bool spiderInputReady;
 } availability_arg_t;
 
+/* Cards struct */
 typedef struct {
     const char *UID;
     const char *name;
@@ -35,6 +36,7 @@ typedef struct {
     bool detected;
 } card_t;
 
+/* Config struct */
 typedef struct {
     const char *name;
     unsigned char testtype; // nog geen toepassing voor gevonden
