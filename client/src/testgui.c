@@ -31,7 +31,7 @@
 #define UID_LENGTH 50
 
 #define PRINT_BUFFER_SIZE 2048
-#define MAX_BUFFER_SIZE 66
+#define MAX_BUFFER_SIZE 46
 
 #define COUNTOF(x)  (int) ( ( sizeof(x) / sizeof((x)[0]) ) )
 
@@ -103,6 +103,7 @@ void SimEM410x(void);
 void SimParadox(void);
 void SimNoralsy(void);
 void SimAwid(void);
+void SimMifare1K(void);
 
 /* Threads */
 
@@ -232,19 +233,19 @@ GtkCssProvider *cssprovider1;
 
 /* List of cards */
 card_t cards[] = {
-    {"buffer",              "Buffer simulation",    SimBUF,         0,  false, false}, // 0
-    {"4B6576696E0001",      "Mifare Classic 1k",    SimMfClas1k,    0,  false, false}, // 1
-    {"4B6576696E0002",      "Mifare Ultralight",    SimMfUltra,     0,  false, false}, // 2
-    {"4B6576696E0006",      "Mifrare Mini",         SimMfMini,      0,  false, false}, // 3
-    {"4B6576696E0007",      "NTAG",                 SimNTAG,        0,  false, false}, // 4
-    {"4B6576696E0008",      "Mifare Classic 4k",    SimMfClas4k,    0,  false, false}, // 5
-    {"4B6576696E0009",      "FM11RF005SH",          SimFM11RF005SH, 0,  false, false}, // 6
-    {"4B6576696EB93314",    "iClass",               SimiClass,      0,  false, false}, // 7
-    {"0F0368568B",          "EM410x",               SimEM410x,      0,  false, false}, // 8
-    {"04F60A73",            "AWID",                 SimAwid,        0,  false, false}, // 9
-    {"218277AACB",          "Paradox",              SimParadox,     0,  false, false}, // 10
-    {"1006EC0C86",          "HID",                  SimHID,         0,  false, false}, // 11
-    {NULL, NULL, NULL, 0, false, false},
+    {"buffer",              "Buffer simulation",            SimBUF,         0,  false, false}, // 0
+    {"4B6576696E0001",      "Mifare Classic 1k",            SimMfClas1k,    0,  false, false}, // 1
+    {"4B6576696E0002",      "Mifare Ultralight",            SimMfUltra,     0,  false, false}, // 2
+    {"4B6576696E0006",      "Mifrare Mini",                 SimMfMini,      0,  false, false}, // 3
+    {"4B6576696E0007",      "NTAG",                         SimNTAG,        0,  false, false}, // 4
+    {"4B6576696E0008",      "Mifare Classic 4k",            SimMfClas4k,    0,  false, false}, // 5
+    {"4B6576696E0009",      "FM11RF005SH",                  SimFM11RF005SH, 0,  false, false}, // 6
+    {"4B6576696EB93314",    "iClass",                       SimiClass,      0,  false, false}, // 7
+    {"0F0368568B",          "EM410x",                       SimEM410x,      0,  false, false}, // 8
+    {"04F60A73",            "AWID",                         SimAwid,        0,  false, false}, // 9
+    {"218277AACB",          "Paradox",                      SimParadox,     0,  false, false}, // 10
+    {"1006EC0C86",          "HID",                          SimHID,         0,  false, false}, // 11
+    {"5A65657247656865",    "Mifare Classic Block Read",    SimMifare1K,    0,  false, false}, // read block, not UID but memory read
     {NULL, NULL, NULL, 0, false, false},
     {NULL, NULL, NULL, 0, false, false},
     {NULL, NULL, NULL, 0, false, false},
@@ -670,9 +671,12 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             initEnduranceTestThread();
             break;
         case 3:
-            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(testconfig_radio1))) thread_args.testtype = 1; // Mifare Classic only
-            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(testconfig_radio2))) thread_args.testtype = 2; // Mifare Ultralight only
-            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(testconfig_radio3))) thread_args.testtype = 3; // Mifare Classic block read
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(testconfig_radio1))) thread_args.testtype = 1;    // Mifare Classic only
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(testconfig_radio2))) thread_args.testtype = 2;    // Mifare Ultralight only
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(testconfig_radio3))) {                            // Mifare Classic block read
+                thread_args.testtype = 3;
+                cards[12].simulate = true;
+            } 
 
             initThreadArgs();
             initSpidercomms();
@@ -685,7 +689,7 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio4))) thread_args.required_config = CONFIG_MIFAREULTRALIGHT_ONLY;
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio5))) thread_args.required_config = CONFIG_MIFARE_READ_BLOCK;
 
-            printTextviewBuffer(GUIPRINT, "Coniguring Spider with new config");
+            printTextviewBuffer(GUIPRINT, "Configuring Spider with new config");
 
             initThreadArgs();
             initConfigProgramThread();
@@ -1030,22 +1034,28 @@ void* specificTestThread(void* p){
             }
             break;
         case 3:
-            printTextviewBuffer(THREADPRINT, "Dit is een lange string van langer dan %d bytes om te zien wat de printfunctie dan gaat doen zodat er zorgvuldig getest kan worden met hoe dat naar de textbuffer geprint wordt. Dit is puur een test.", 128);
-            g_idle_add(resetTests, NULL);
-            pthread_exit(NULL);
-            return NULL;
+            while(cards[i].UID){
+                if(cards[i].simulate || i == 0){
+                    if(g_debugMode) printf("Simulating %s\n", cards[i].UID);
+                    cards[i].num_tries++;
+                    if(i != 0) printTextviewBuffer(THREADPRINT, "Simulating %s", cards[i].name);
+                    Simulate(i);
+                }
+                i++;
+                if(args->stopThread) {pthread_exit(NULL); return NULL;}
+            }
             break;
     }
 
+    i = 0;
     if(args->testtype == 1){
-        i = 0;
         while(cards[i].UID){
-            if((strcmp(cards[i].name, "Mifare Classic 1k") != 0) && (strcmp(cards[i].name, "Mifare Classic 4k") != 0)){
-                if(cards[i].detected){
+            if(cards[i].detected){
+                if((strcmp(cards[i].name, "Mifare Classic 1k") != 0) && (strcmp(cards[i].name, "Mifare Classic 4k") != 0)){
                     wrong_cards++;
-                }else{
-                    cards[i].simulate = false;
                 }
+            }else{
+                cards[i].simulate = false;
             }
             i++;
         }
@@ -1055,14 +1065,13 @@ void* specificTestThread(void* p){
             printTextviewBuffer(THREADPRINT, "Mifare Classsic only test succesful");
         }
     }else if(args->testtype == 2){
-        i = 0;
         while(cards[i].UID){
-            if(strcmp(cards[i].name, "Mifare Ultralight") != 0){
-                if(cards[i].detected){
+            if(cards[i].detected){
+                if(strcmp(cards[i].name, "Mifare Ultralight") != 0){
                     wrong_cards++;
-                }else{
-                    cards[i].simulate = false;
                 }
+            }else{
+                cards[i].simulate = false;
             }
             i++;
         }
@@ -1070,6 +1079,20 @@ void* specificTestThread(void* p){
             printTextviewBuffer(THREADPRINT, "Mifare Ultralight only test failed: %d card(s) detected while not supposed to", wrong_cards);
         }else{
             printTextviewBuffer(THREADPRINT, "Mifare Ultralight only test succesful");
+        }
+    }else if(args->testtype == 3){
+        while(cards[i].UID){
+            if(cards[i].detected){
+                if(strcmp(cards[i].name, "Mifare Classic Block Read") == 0){
+                    wrong_cards++;
+                }
+            }
+            i++;
+        }
+        if(wrong_cards == 1){
+            printTextviewBuffer(THREADPRINT, "Mifare Classic read block from memory test succesful");
+        }else{
+            printTextviewBuffer(THREADPRINT, "Mifare Classic read block from memory test failed, memoryblock not received");
         }
     }
 
@@ -1159,6 +1182,8 @@ void initAvailabilityThread(void){
     pthread_create(&availability_thread, NULL, availabilityThread, &availability_args);
 }
 
+#define MAX_TIME_BOOT_MODE 10
+
 /****************************************************************************/
 /*!
     @brief Thread to check if a Spider is connected and to check the state of the Spider.
@@ -1174,6 +1199,8 @@ void* availabilityThread(void* p){
     bool state = false;
     int old_state = -1;
     int new_state = 0;
+    int boot_state = 0;
+    time_t boot_begin = 0;
 
     while(!args->stopThread){
         // check if Spider is connected
@@ -1190,6 +1217,12 @@ void* availabilityThread(void* p){
         if(new_state != old_state){
             old_state = new_state;
             if(old_state){
+                if(descriptor.idProduct == 0x0000){
+                    boot_state = 1;
+                    boot_begin = time(NULL);
+                }else{
+                    boot_state = 0;
+                }
                 state = true;
                 if(g_debugMode) printf("Spider connected!\n");
                 g_idle_add(updateSpiderInfo, &state);
@@ -1200,6 +1233,12 @@ void* availabilityThread(void* p){
             }
         }
         libusb_free_device_list(list, 1);
+
+        if(boot_state == 1 && (time(NULL) - boot_begin >= MAX_TIME_BOOT_MODE)){
+            printTextviewBuffer(THREADPRINT, "Set Spider back to normal mode from bootloader mode");
+            boot_state = 0;
+            switchMode(NORMAL_MODE);
+        }
 
         pthread_mutex_lock(&gtk_mutex);
         if(args->quitProgram){
@@ -1273,6 +1312,20 @@ int checkUID(char *check_uid){
 /****************************************************************************/
 void printTextviewBuffer(int thread, const char *text, ...){
     char buffer[PRINT_BUFFER_SIZE] = {0};
+
+    va_list args;
+    va_start(args, text);
+    vsnprintf(buffer, sizeof(buffer), text, args);
+    va_end(args);
+    strcat(buffer, "\n");
+
+    if(thread){
+        g_idle_add(printtologscreen, buffer);
+    }else{
+        gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)buffer, -1);
+    }
+
+/*
     int num = 0;
     int count = 0;
 
@@ -1284,11 +1337,11 @@ void printTextviewBuffer(int thread, const char *text, ...){
 
     if(num > MAX_BUFFER_SIZE - 2){
         while(count < num){
-            printf("num: %d, count: %d\n", num, count);
+            if(g_debugMode) printf("num: %d, count: %d\n", num, count);
             memmove(&buffer[count + MAX_BUFFER_SIZE], &buffer[count + MAX_BUFFER_SIZE - 2], sizeof(buffer) - (count + MAX_BUFFER_SIZE));
             buffer[count + MAX_BUFFER_SIZE - 2] = '\n';
             buffer[count + MAX_BUFFER_SIZE - 1] = '\0';
-            printf("%s", &buffer[count]);
+            if(g_debugMode) printf("%s", &buffer[count]);
 
             if(thread){
                 g_idle_add(printtologscreen, &buffer[count]);
@@ -1304,7 +1357,7 @@ void printTextviewBuffer(int thread, const char *text, ...){
             gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)buffer, -1);
         }
     }
-
+*/
 }
 
 /****************************************************************************/
@@ -1835,6 +1888,34 @@ void SimAwid(void){
     clearCommandBuffer();
     SendCommandNG(CMD_LF_FSK_SIMULATE, (uint8_t *)payload,  sizeof(lf_fsksim_t) + sizeof(bs));
     free(payload);
+}
+
+/****************************************************************************/
+/*!
+    @brief Simulate a Mifare Classic 1k card that is able to let its memory be read.
+    @param void
+    @return 
+ */
+/****************************************************************************/
+void SimMifare1K(void){
+    uint8_t uid[] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x01};
+
+    struct {
+        uint16_t flags;
+        uint8_t exitAfter;
+        uint8_t uid[10];
+        uint16_t atqa;
+        uint8_t sak;
+    } PACKED payload;
+
+    payload.flags = 0x0104; //for 1k, 0x0404 for 4k
+    payload.exitAfter = 0;
+    memcpy(payload.uid, uid, 7);
+    payload.atqa = 0;
+    payload.sak = 0;
+
+    clearCommandBuffer();
+    SendCommandNG(CMD_HF_MIFARE_SIMULATE, (uint8_t *)&payload, sizeof(payload));
 }
 // Simulation functions /////////////////////////////////////////////////////////////////////////////////////////////////////
 
