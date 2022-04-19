@@ -46,7 +46,7 @@
 UIDthread_arg_t thread_args;
 availability_arg_t availability_args;
 static pthread_t spider_thread;
-static pthread_t cardtype_test_thread;
+pthread_t cardtype_test_thread;
 static pthread_t endurance_test_thread;
 static pthread_t config_program_thread;
 static pthread_t availability_thread;
@@ -237,7 +237,7 @@ card_t cards[] = {
     {"buffer",              "Buffer simulation",            SimBUF,         0,  false, false}, // 0
     {"4B6576696E0001",      "Mifare Classic 1k",            SimMfClas1k,    0,  false, false}, // 1
     {"4B6576696E0002",      "Mifare Ultralight",            SimMfUltra,     0,  false, false}, // 2
-    {"4B6576696E0006",      "Mifrare Mini",                 SimMfMini,      0,  false, false}, // 3
+    {"4B6576696E0006",      "Mifare Mini",                 SimMfMini,      0,  false, false}, // 3
     {"4B6576696E0007",      "NTAG",                         SimNTAG,        0,  false, false}, // 4
     {"4B6576696E0008",      "Mifare Classic 4k",            SimMfClas4k,    0,  false, false}, // 5
     {"4B6576696E0009",      "FM11RF005SH",                  SimFM11RF005SH, 0,  false, false}, // 6
@@ -267,8 +267,16 @@ config_t config[] = {
     {NULL, 0}
 };
 
-
 bool silent_mode = false;
+
+uint8_t running_threads = 0;
+
+#define THREAD_SPIDER           0x01
+#define THREAD_CARDTYPE         0x02
+#define THREAD_ENDURANCE        0x04
+#define THREAD_CONFIG           0x08
+#define THREAD_AVAILABILITY     0x10
+#define THREAD_SPECIFIC         0x20
 
 /* Config index */
 
@@ -426,7 +434,10 @@ void destroy (GtkWidget *window){
     if(g_debugMode) g_print("Destroy function\n");
     stopSim();
     availability_args.stopThread = true;
-    pthread_join(availability_thread, NULL);
+    if(running_threads && THREAD_AVAILABILITY) {
+        pthread_join(availability_thread, NULL);
+        running_threads &= (0xFF - THREAD_AVAILABILITY);
+    }
     stopThreads();
     
     if(g_debugMode) g_print("Mutex destroy\n");
@@ -787,6 +798,7 @@ void initThreadArgs(void){
  */
 /****************************************************************************/
 void initSpidercomms(void){
+    running_threads |= THREAD_SPIDER;
     pthread_create(&spider_thread, NULL, spiderThread, &thread_args);
 }
 
@@ -905,6 +917,7 @@ void* spiderThread(void* p){
  */
 /****************************************************************************/
 void initCardtypeTestThread(void){
+    running_threads |= THREAD_CARDTYPE;
     pthread_create(&cardtype_test_thread, NULL, cardtypeTestThread, &thread_args);
 }
 
@@ -965,6 +978,7 @@ void* cardtypeTestThread(void *p){
  */
 /****************************************************************************/
 void initEnduranceTestThread(void){
+    running_threads |= THREAD_ENDURANCE;
     pthread_create(&endurance_test_thread, NULL, enduranceTestThead, &thread_args);
 }
 
@@ -1011,6 +1025,7 @@ void* enduranceTestThead(void* p){
  */
 /****************************************************************************/
 void initSpecificTestThread(void){
+    running_threads |= THREAD_SPECIFIC;
     pthread_create(&specific_test_thread, NULL, specificTestThread, &thread_args);
 }
 
@@ -1121,6 +1136,7 @@ void* specificTestThread(void* p){
  */
 /****************************************************************************/
 void initConfigProgramThread(void){
+    running_threads |= THREAD_CONFIG;
     pthread_create(&config_program_thread, NULL, configProgramThread, &thread_args);
 }
 
@@ -1186,6 +1202,7 @@ exit_config_thread:
  */
 /****************************************************************************/
 void initAvailabilityThread(void){
+    running_threads |= THREAD_AVAILABILITY;
     availability_args.stopThread = false;
     availability_args.available = true;
     pthread_create(&availability_thread, NULL, availabilityThread, &availability_args);
@@ -1262,7 +1279,6 @@ void* availabilityThread(void* p){
 }
 // Spider availability thread ///////////////////////////////////////////////////////////////////////////////////////////////
 
-// Stop threads /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /****************************************************************************/
 /*!
     @brief Stop all threads and wait for each thread to join.
@@ -1276,18 +1292,39 @@ void stopThreads(void){
     thread_args.stopThread = true;
     pthread_mutex_unlock(&thread_mutex);
     if(g_debugMode) printf("Threads join\n");
-    pthread_join(cardtype_test_thread, NULL);
-    if(g_debugMode) printf("Cardtype test thread stopped\n");
-    pthread_join(endurance_test_thread, NULL);
-    if(g_debugMode) printf("Endurance test thread stopped\n");
-    pthread_join(config_program_thread, NULL);
-    if(g_debugMode) printf("Config program thread stopped\n");
-    pthread_join(specific_test_thread, NULL);
-    if(g_debugMode) printf("Specific test thread stopped\n");
-    pthread_join(spider_thread, NULL);
-    if(g_debugMode) printf("Spider communication thread stopped\n");
+
+    if(g_debugMode) printf("running_threads: %02X\n", running_threads);
+
+    if(running_threads & THREAD_ENDURANCE) {
+        pthread_join(endurance_test_thread, NULL);
+        running_threads &= (0xFF - THREAD_ENDURANCE);
+        if(g_debugMode) printf("Endurance test thread stopped\n");
+    }
+
+    if(running_threads & THREAD_CARDTYPE) {
+        pthread_join(cardtype_test_thread, NULL);
+        running_threads &= (0xFF - THREAD_CARDTYPE);
+        if(g_debugMode) printf("Cardtype test thread stopped\n");
+    }
+
+    if(running_threads & THREAD_CONFIG) {
+        pthread_join(config_program_thread, NULL);
+        running_threads &= (0xFF - THREAD_CONFIG);
+        if(g_debugMode) printf("Config program thread stopped\n");
+    }
+
+    if(running_threads & THREAD_SPECIFIC) {
+        pthread_join(specific_test_thread, NULL);
+        running_threads &= (0xFF - THREAD_SPECIFIC);
+        if(g_debugMode) printf("Specific test thread stopped\n");
+    }
+
+    if(running_threads & THREAD_SPIDER) {
+        pthread_join(spider_thread, NULL);
+        running_threads &= (0xFF - THREAD_SPIDER);
+        if(g_debugMode) printf("Spider communication thread stopped\n");
+    }
 }
-// Stop threads /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /****************************************************************************/
 /*!
@@ -2270,13 +2307,21 @@ int sendConfig(int config_num){
     size = count;
     count = 0;
 
-
     fclose(file);
 
     if(g_debugMode) printf("Size of config file: %d bytes\n", size);
 
     // Beeper volume is the 8th byte in the config file
-    if(silent_mode) mem[8] = 0;
+    if(silent_mode) {
+        for(int i = 0; i < 512 ; i++){
+            if(mem[i] == 0x8F){
+                if(mem[i+1] == 0x01){
+                    mem[i+2] = 0;
+                    break;
+                }
+            }
+        }
+    }
 
     if(g_debugMode) {
         int j = 0;

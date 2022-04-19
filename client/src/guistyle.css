@@ -27,6 +27,11 @@ progressbar progress {
     background-color: rgb(100, 197, 100);
 }
 
+label#spider_info_label {
+    color: black;
+    background-color: rgb(193, 255, 174);
+}
+
 label#spider_info_label:disabled {
     color: black;
     background-color: rgb(255, 174, 174);
