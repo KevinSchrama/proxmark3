@@ -192,6 +192,7 @@ GtkWidget *window1;
                 GtkWidget *testconfig_radio3;
             GtkWidget *radio4;
             GtkWidget *fixedoptions4;
+                GtkWidget *config_silentmode;
                 GtkWidget *config_radio1;
                 GtkWidget *config_radio2;
                 GtkWidget *config_radio3;
@@ -265,6 +266,9 @@ config_t config[] = {
     {"test-config", 0x00},
     {NULL, 0}
 };
+
+
+bool silent_mode = false;
 
 /* Config index */
 
@@ -358,6 +362,7 @@ void main_gui(void){
     testconfig_radio3 = GTK_WIDGET(gtk_builder_get_object(builder, "testconfig_radio3"));
     radio4 = GTK_WIDGET(gtk_builder_get_object(builder, "radio4"));
     fixedoptions4 = GTK_WIDGET(gtk_builder_get_object(builder, "fixedoptions4"));
+    config_silentmode = GTK_WIDGET(gtk_builder_get_object(builder, "config_silentmode"));
     config_radio1 = GTK_WIDGET(gtk_builder_get_object(builder, "config_radio1"));
     config_radio2 = GTK_WIDGET(gtk_builder_get_object(builder, "config_radio2"));
     config_radio3 = GTK_WIDGET(gtk_builder_get_object(builder, "config_radio3"));
@@ -689,7 +694,9 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio4))) thread_args.required_config = CONFIG_MIFAREULTRALIGHT_ONLY;
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio5))) thread_args.required_config = CONFIG_MIFARE_READ_BLOCK;
 
-            printTextviewBuffer(GUIPRINT, "Configuring Spider with new config");
+            silent_mode = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_silentmode));
+
+            printTextviewBuffer(GUIPRINT, silent_mode ? "Configuring Spider with new config in silent mode" : "Configuring Spider with new config");
 
             initThreadArgs();
             initConfigProgramThread();
@@ -840,30 +847,32 @@ void* spiderThread(void* p){
                 static int count;
                 num = 0;
                 count = 0;
-                for(; num < strlen(buf); num++){
-                     if(buf[num] == ','){
-                         count++;
-                         if(count == 2){
-                             break;
+                if(buf[0] != '<'){
+                    for(; num < strlen(buf); num++){
+                         if(buf[num] == ','){
+                             count++;
+                             if(count == 2){
+                                 break;
+                             }
                          }
-                     }
-                }
-                num++;
-                if(num >= UID_LENGTH || count == 0) {
-                    num = 0;
-                    bufint = strtoull(buf,NULL,10);
-                    ulltohexstring(buf, bufint);
-                }
-                detected_card = checkUID(&buf[num]);
-                if(detected_card){
-                    pthread_mutex_lock(&thread_mutex);
-                    printTextviewBuffer(THREADPRINT, "UID detected: %s from %s", &buf[num], cards[detected_card].name);
-                    cardcount++;
-                    updateProgressbar(cardcount, numcards);
-                    args->available = true;
-                    pthread_mutex_unlock(&thread_mutex);
-                }else{
-                    printTextviewBuffer(THREADPRINT, "Unknown card detected: %s", &buf[num]);
+                    }
+                    num++;
+                    if(num >= UID_LENGTH || count == 0) {
+                        num = 0;
+                        bufint = strtoull(buf,NULL,10);
+                        ulltohexstring(buf, bufint);
+                    }
+                    detected_card = checkUID(&buf[num]);
+                    if(detected_card){
+                        pthread_mutex_lock(&thread_mutex);
+                        printTextviewBuffer(THREADPRINT, "UID detected: %s from %s", &buf[num], cards[detected_card].name);
+                        cardcount++;
+                        updateProgressbar(cardcount, numcards);
+                        args->available = true;
+                        pthread_mutex_unlock(&thread_mutex);
+                    }else{
+                        printTextviewBuffer(THREADPRINT, "Unknown card detected: %s", &buf[num]);
+                    }
                 }
                 memset(buf, '\0', UID_LENGTH);
             }
@@ -1092,7 +1101,7 @@ void* specificTestThread(void* p){
         if(wrong_cards == 1){
             printTextviewBuffer(THREADPRINT, "Mifare Classic read block from memory test succesful");
         }else{
-            printTextviewBuffer(THREADPRINT, "Mifare Classic read block from memory test failed, memoryblock not received");
+            printTextviewBuffer(THREADPRINT, "Mifare Classic read block from memory test failed, block from memory not received");
         }
     }
 
@@ -2266,11 +2275,14 @@ int sendConfig(int config_num){
 
     if(g_debugMode) printf("Size of config file: %d bytes\n", size);
 
+    // Beeper volume is the 8th byte in the config file
+    if(silent_mode) mem[8] = 0;
+
     if(g_debugMode) {
         int j = 0;
         while(j < size){
             if(j%16 == 0) printf("\n");
-            printf("%02X ", mem[j]);
+            printf("%4d: %02X ", j, mem[j]);
             j++;
         }
         printf("\n");
