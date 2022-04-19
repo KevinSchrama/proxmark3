@@ -11,7 +11,9 @@
   <object class="GtkTextBuffer" id="textviewbuf2"/>
   <object class="GtkWindow" id="window2">
     <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Testresults</property>
     <property name="resizable">False</property>
+    <property name="window-position">center</property>
     <signal name="delete-event" handler="on_window2_delete_event" swapped="no"/>
     <child>
       <!-- n-columns=11 n-rows=13 -->
@@ -310,9 +312,10 @@
   <object class="GtkTextBuffer" id="textviewbuf3"/>
   <object class="GtkWindow" id="window1">
     <property name="can-focus">False</property>
-    <property name="resizable">False</property>
-    <property name="default-width">700</property>
-    <property name="default-height">500</property>
+    <property name="title" translatable="yes">Spider testing program with Proxmark3</property>
+    <property name="window-position">center</property>
+    <property name="default-width">1920</property>
+    <property name="default-height">1080</property>
     <child>
       <!-- n-columns=13 n-rows=12 -->
       <object class="GtkGrid" id="grid1">
@@ -769,7 +772,7 @@
               </object>
               <packing>
                 <property name="x">10</property>
-                <property name="y">204</property>
+                <property name="y">184</property>
               </packing>
             </child>
             <child>
@@ -853,12 +856,12 @@ only</property>
               </object>
               <packing>
                 <property name="x">25</property>
-                <property name="y">234</property>
+                <property name="y">214</property>
               </packing>
             </child>
             <child>
               <object class="GtkRadioButton" id="radio3">
-                <property name="label" translatable="yes">Congif specific test</property>
+                <property name="label" translatable="yes">Config specific test</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">False</property>
@@ -882,7 +885,7 @@ only</property>
                   <object class="GtkRadioButton" id="testconfig_radio1">
                     <property name="label" translatable="yes">Mifare Classic 
 only</property>
-                    <property name="height-request">26</property>
+                    <property name="height-request">48</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
@@ -894,19 +897,6 @@ only</property>
                   <object class="GtkRadioButton" id="testconfig_radio2">
                     <property name="label" translatable="yes">Mifare Ultralight
 only</property>
-                    <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">False</property>
-                    <property name="draw-indicator">True</property>
-                    <property name="group">testconfig_radio1</property>
-                  </object>
-                  <packing>
-                    <property name="y">30</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkRadioButton" id="testconfig_radio3">
-                    <property name="label" translatable="yes">Mifare read block</property>
                     <property name="height-request">48</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -915,7 +905,20 @@ only</property>
                     <property name="group">testconfig_radio1</property>
                   </object>
                   <packing>
-                    <property name="y">82</property>
+                    <property name="y">52</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="testconfig_radio3">
+                    <property name="label" translatable="yes">Mifare read block</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">testconfig_radio1</property>
+                  </object>
+                  <packing>
+                    <property name="y">104</property>
                   </packing>
                 </child>
               </object>
@@ -1044,17 +1047,20 @@ only</property>
             <signal name="size-allocate" handler="on_scrolledwindow1_size_allocate" swapped="no"/>
             <child>
               <object class="GtkTextView" id="textview3">
-                <property name="width-request">450</property>
-                <property name="height-request">400</property>
+                <property name="height-request">900</property>
                 <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
+                <property name="hexpand">True</property>
+                <property name="vexpand">True</property>
                 <property name="editable">False</property>
+                <property name="wrap-mode">word</property>
                 <property name="indent">5</property>
                 <property name="cursor-visible">False</property>
                 <property name="buffer">textviewbuf3</property>
                 <property name="accepts-tab">False</property>
                 <property name="input-purpose">terminal</property>
+                <property name="monospace">True</property>
               </object>
             </child>
           </object>
