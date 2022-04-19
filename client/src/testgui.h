@@ -56,7 +56,7 @@ extern UIDthread_arg_t thread_args;
 extern availability_arg_t availability_args;
 
 void main_gui(void);
-void Simulate(int sim);
+int Simulate(int sim);
 void stopThreads(void);
 void printResults(void);
 char *FindProxmark(void);

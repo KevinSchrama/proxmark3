@@ -39,7 +39,7 @@
             <property name="height-request">40</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Missing cards</property>
+            <property name="label" translatable="yes">Cards not detected</property>
           </object>
           <packing>
             <property name="left-attach">6</property>
@@ -736,6 +736,19 @@
                     <property name="max-length">8</property>
                     <property name="placeholder-text" translatable="yes">Default: 10</property>
                     <property name="input-purpose">phone</property>
+                  </object>
+                  <packing>
+                    <property name="y">360</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card12">
+                    <property name="label" translatable="yes">Mifare read block</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
                   </object>
                   <packing>
                     <property name="y">330</property>

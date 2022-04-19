@@ -94,7 +94,7 @@ void SimBUF(void);
 void SimMfClas1k(void);
 void SimMfUltra(void);
 void SimMfMini(void);
-void SimNTAG(void);
+void SimNTAG215(void);
 void SimMfClas4k(void);
 void SimFM11RF005SH(void);
 void SimiClass(void);
@@ -183,6 +183,7 @@ GtkWidget *window1;
                 GtkWidget *endtest_card9;
                 GtkWidget *endtest_card10;
                 GtkWidget *endtest_card11;
+                GtkWidget *endtest_card12;
                 GtkWidget *endtest_entry1;
         GtkWidget *fixed3;
             GtkWidget *radio3;
@@ -237,8 +238,8 @@ card_t cards[] = {
     {"buffer",              "Buffer simulation",            SimBUF,         0,  false, false}, // 0
     {"4B6576696E0001",      "Mifare Classic 1k",            SimMfClas1k,    0,  false, false}, // 1
     {"4B6576696E0002",      "Mifare Ultralight",            SimMfUltra,     0,  false, false}, // 2
-    {"4B6576696E0006",      "Mifare Mini",                 SimMfMini,      0,  false, false}, // 3
-    {"4B6576696E0007",      "NTAG",                         SimNTAG,        0,  false, false}, // 4
+    {"4B6576696E0006",      "Mifare Mini",                  SimMfMini,      0,  false, false}, // 3
+    {"4B6576696E0007",      "NTAG 215",                     SimNTAG215,     0,  false, false}, // 4
     {"4B6576696E0008",      "Mifare Classic 4k",            SimMfClas4k,    0,  false, false}, // 5
     {"4B6576696E0009",      "FM11RF005SH",                  SimFM11RF005SH, 0,  false, false}, // 6
     {"4B6576696EB93314",    "iClass",                       SimiClass,      0,  false, false}, // 7
@@ -261,7 +262,7 @@ config_t config[] = {
     {"Generic V2.0", 0x00},
     {"Generic V2.0 full-hex", 0x00},
     {"mifare-only", 0x00},
-    {"mifareultralight-only", 0x00},
+    {"mifare-ultralight-ntag-only", 0x00},
     {"mifare-read-block", 0x00},
     {"test-config", 0x00},
     {NULL, 0}
@@ -283,7 +284,7 @@ uint8_t running_threads = 0;
 #define CONFIG_GENERIC_V2_0                0
 #define CONFIG_GENERIC_FULL                1
 #define CONFIG_MIFARE_ONLY                 2
-#define CONFIG_MIFAREULTRALIGHT_ONLY       3
+#define CONFIG_MIFARE_ULTRALIGHT_NTAG_ONLY 3
 #define CONFIG_MIFARE_READ_BLOCK           4
 #define CONFIG_OTHER_CONFIG                5
 
@@ -361,6 +362,7 @@ void main_gui(void){
     endtest_card9 = GTK_WIDGET(gtk_builder_get_object(builder, "endtest_card9"));
     endtest_card10 = GTK_WIDGET(gtk_builder_get_object(builder, "endtest_card10"));
     endtest_card11 = GTK_WIDGET(gtk_builder_get_object(builder, "endtest_card11"));
+    endtest_card12 = GTK_WIDGET(gtk_builder_get_object(builder, "endtest_card12"));
     endtest_entry1 = GTK_WIDGET(gtk_builder_get_object(builder, "endtest_entry1"));
     fixed3 = GTK_WIDGET(gtk_builder_get_object(builder, "fixed3"));
     radio3 = GTK_WIDGET(gtk_builder_get_object(builder, "radio3"));
@@ -584,7 +586,9 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
     char *configname = NULL;
     int i;
 
-    //int rc = 0;
+    gtk_text_buffer_set_text(textviewbuf1, "", -1);
+    gtk_text_buffer_set_text(textviewbuf2, "", -1);
+
     switch(testType){
         case 1:
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_HFcards))){
@@ -650,6 +654,7 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card9))) thread_args.testtype = 9;
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card10))) thread_args.testtype = 10;
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card11))) thread_args.testtype = 11;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card12))) thread_args.testtype = 12;
 
             const char *testsize = gtk_entry_get_text(GTK_ENTRY(endtest_entry1));
 
@@ -702,7 +707,7 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio1))) thread_args.required_config = CONFIG_GENERIC_V2_0;
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio2))) thread_args.required_config = CONFIG_GENERIC_FULL;
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio3))) thread_args.required_config = CONFIG_MIFARE_ONLY;
-            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio4))) thread_args.required_config = CONFIG_MIFAREULTRALIGHT_ONLY;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio4))) thread_args.required_config = CONFIG_MIFARE_ULTRALIGHT_NTAG_ONLY;
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio5))) thread_args.required_config = CONFIG_MIFARE_READ_BLOCK;
 
             silent_mode = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_silentmode));
@@ -993,6 +998,8 @@ void* enduranceTestThead(void* p){
     if(g_debugMode) printf("Endurance test thread started\n");
     UIDthread_arg_t *args = (UIDthread_arg_t *)p;
 
+    int cardcount = 0;
+
     while(!availability_args.spiderInputReady){
         msleep(10);
     }
@@ -1002,12 +1009,13 @@ void* enduranceTestThead(void* p){
     int i = 1;
     while(i <= args->endurance_test_size){
         printTextviewBuffer(THREADPRINT, "Simulation %d of %s", i, cards[args->testtype].name);
-        Simulate(args->testtype);
+        if(Simulate(args->testtype)) cardcount++;
         i++;
         if(args->stopThread) break;
     }
     time_end = time(NULL);
-    printTextviewBuffer(THREADPRINT, "End of test, test took %d seconds...", time_end-time_begin);
+    
+    printTextviewBuffer(THREADPRINT, "Card was detected %d out of %d simulations\nEnd of test, test took %d seconds...", cardcount, args->endurance_test_size, time_end-time_begin);
 
     g_idle_add(resetTests, NULL);
 
@@ -1042,13 +1050,14 @@ void* specificTestThread(void* p){
 
     int i = 0;
     int wrong_cards = 0;
-    numcards = 1;
+    int correct_cards = 0;
+    numcards = 2;
 
     switch(args->testtype){
         case 1:
-            numcards = 2;
         case 2:
             while(cards[i].UID){
+                cards[i].simulate = true;
                 if(g_debugMode) printf("Simulating %s\n", cards[i].UID);
                 cards[i].num_tries++;
                 if(i != 0) printTextviewBuffer(THREADPRINT, "Simulating %s", cards[i].name);
@@ -1077,43 +1086,55 @@ void* specificTestThread(void* p){
             if(cards[i].detected){
                 if((strcmp(cards[i].name, "Mifare Classic 1k") != 0) && (strcmp(cards[i].name, "Mifare Classic 4k") != 0)){
                     wrong_cards++;
+                }else{
+                    correct_cards++;
                 }
-            }else{
-                cards[i].simulate = false;
             }
             i++;
         }
-        if(wrong_cards) {
-            printTextviewBuffer(THREADPRINT, "Mifare Classsic only test failed: %d card(s) detected while not supposed to", wrong_cards);
+        if(wrong_cards == 0 && correct_cards > 0) {
+            printTextviewBuffer(THREADPRINT, "Mifare Classic only test succesful");
         }else{
-            printTextviewBuffer(THREADPRINT, "Mifare Classsic only test succesful");
+            if(correct_cards == 0){
+                printTextviewBuffer(THREADPRINT, "Mifare Classic only test failed: no correct cards detected");
+            }else{
+                printTextviewBuffer(THREADPRINT, "Mifare Classic only test failed: %d card(s) detected while not supposed to", wrong_cards);
+            }
         }
+        g_idle_add(showResults, NULL);
     }else if(args->testtype == 2){
         while(cards[i].UID){
             if(cards[i].detected){
-                if(strcmp(cards[i].name, "Mifare Ultralight") != 0){
+                if((strcmp(cards[i].name, "Mifare Ultralight") != 0) && (strcmp(cards[i].name, "NTAG 215") != 0)){
                     wrong_cards++;
+                }else{
+                    correct_cards++;
                 }
-            }else{
-                cards[i].simulate = false;
             }
             i++;
         }
-        if(wrong_cards) {
-            printTextviewBuffer(THREADPRINT, "Mifare Ultralight only test failed: %d card(s) detected while not supposed to", wrong_cards);
+        if(wrong_cards == 0 && correct_cards > 0) {
+            printTextviewBuffer(THREADPRINT, "Mifare Ultralight and NTAG 215 only test succesful");
         }else{
-            printTextviewBuffer(THREADPRINT, "Mifare Ultralight only test succesful");
+            if(correct_cards == 0){
+                printTextviewBuffer(THREADPRINT, "Mifare Ultralight and NTAG 215 only test failed: no correct cards detected");
+            }else{
+                printTextviewBuffer(THREADPRINT, "Mifare Ultralight and NTAG 215 only test failed: %d card(s) detected while not supposed to", wrong_cards);
+            }
         }
+        g_idle_add(showResults, NULL);
     }else if(args->testtype == 3){
         while(cards[i].UID){
             if(cards[i].detected){
                 if(strcmp(cards[i].name, "Mifare Classic Block Read") == 0){
+                    correct_cards++;
+                }else{
                     wrong_cards++;
                 }
             }
             i++;
         }
-        if(wrong_cards == 1){
+        if(correct_cards == 1){
             printTextviewBuffer(THREADPRINT, "Mifare Classic read block from memory test succesful");
         }else{
             printTextviewBuffer(THREADPRINT, "Mifare Classic read block from memory test failed, block from memory not received");
@@ -1338,7 +1359,7 @@ int checkUID(char *check_uid){
     //printf("Check UID: %s\n", check_uid);
     while(cards[i].UID){
         if(strcmp(cards[i].UID, check_uid) == 0){
-            cards[i].detected = 1;
+            cards[i].detected = true;
             return i;
         }
         i++;
@@ -1577,7 +1598,8 @@ gboolean callDestroy(void *p){
     @return 
  */
 /****************************************************************************/
-void Simulate(int sim){
+int Simulate(int sim){
+    int ret = 0;
     cards[sim].simFunction();
     int i = 0;
     if(sim != 0){
@@ -1587,10 +1609,12 @@ void Simulate(int sim){
             if(thread_args.stopThread) break;
         }
     }
+    if(thread_args.available) ret = 1;
     stopSim();
     pthread_mutex_lock(&thread_mutex);
     thread_args.available = false;
     pthread_mutex_unlock(&thread_mutex);
+    return ret;
 }
 
 // Simulation functions ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1725,10 +1749,10 @@ void SimMfMini(void){
     @return 
  */
 /****************************************************************************/
-void SimNTAG(void){
+void SimNTAG215(void){
     int uid_len = 7;
     uint8_t uid[10] = {0x4B, 0x65, 0x76, 0x69, 0x6E, 0x00, 0x07};
-    if(g_debugMode) PrintAndLogEx(INFO, "TESTING ISO 14443A (NTAG) sim with UID %s", sprint_hex(uid, uid_len));
+    if(g_debugMode) PrintAndLogEx(INFO, "TESTING ISO 14443A (NTAG 215) sim with UID %s", sprint_hex(uid, uid_len));
 
     struct {
         uint8_t tagtype;
@@ -2011,8 +2035,8 @@ void printResults(void){
             i++;
         }
     }else{
-        if(g_debugMode) PrintAndLogEx(SUCCESS, _GREEN_("Nothing missed, test succeeded!"));
-        printResultTextview(textviewbuf2, "Nothing missed, test succeeded!");
+        if(g_debugMode) PrintAndLogEx(SUCCESS, _GREEN_("No cards not detected"));
+        printResultTextview(textviewbuf2, "No cards not detected");
     }
     if(g_debugMode) PrintAndLogEx(INFO, "========================================================");
 }

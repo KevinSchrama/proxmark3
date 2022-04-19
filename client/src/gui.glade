@@ -39,7 +39,7 @@
             <property name="height-request">40</property>
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Missing cards</property>
+            <property name="label" translatable="yes">Cards not detected</property>
           </object>
           <packing>
             <property name="left-attach">6</property>
@@ -402,7 +402,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="test1_card4">
-                    <property name="label" translatable="yes">NTAG</property>
+                    <property name="label" translatable="yes">NTAG 215</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
@@ -610,7 +610,7 @@
                 </child>
                 <child>
                   <object class="GtkRadioButton" id="endtest_card4">
-                    <property name="label" translatable="yes">NTAG</property>
+                    <property name="label" translatable="yes">NTAG 215</property>
                     <property name="height-request">26</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -738,6 +738,19 @@
                     <property name="input-purpose">phone</property>
                   </object>
                   <packing>
+                    <property name="y">360</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card12">
+                    <property name="label" translatable="yes">Mifare read block</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
+                  </object>
+                  <packing>
                     <property name="y">330</property>
                   </packing>
                 </child>
@@ -829,7 +842,7 @@ and hex output</property>
                 <child>
                   <object class="GtkRadioButton" id="config_radio4">
                     <property name="label" translatable="yes">Mifare Ultralight 
-only</property>
+and NTAG 215 only</property>
                     <property name="height-request">48</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -908,7 +921,7 @@ only</property>
                 <child>
                   <object class="GtkRadioButton" id="testconfig_radio2">
                     <property name="label" translatable="yes">Mifare Ultralight
-only</property>
+and NTAG 215 only</property>
                     <property name="height-request">48</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -949,7 +962,7 @@ only</property>
         </child>
         <child>
           <object class="GtkButton" id="startbutton1">
-            <property name="label" translatable="yes">Start test</property>
+            <property name="label" translatable="yes">Start</property>
             <property name="name">startbutton</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
