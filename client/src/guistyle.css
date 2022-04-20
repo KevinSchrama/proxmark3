@@ -25,6 +25,10 @@ button#startbutton:disabled {
     background-color: rgb(255, 184, 152);
 }
 
+button#startbutton,button#resetbutton {
+    font-size: 25px;
+}
+
 button#scrolllocked {
     background-color: rgb(200, 200, 200);
 }
