@@ -317,7 +317,7 @@
     <property name="default-width">1920</property>
     <property name="default-height">1080</property>
     <child>
-      <!-- n-columns=20 n-rows=12 -->
+      <!-- n-columns=21 n-rows=12 -->
       <object class="GtkGrid" id="grid1">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -1019,7 +1019,7 @@ and NTAG 215 only</property>
             <property name="can-focus">False</property>
           </object>
           <packing>
-            <property name="left-attach">19</property>
+            <property name="left-attach">20</property>
             <property name="top-attach">11</property>
           </packing>
         </child>
@@ -1092,7 +1092,7 @@ and NTAG 215 only</property>
           <packing>
             <property name="left-attach">10</property>
             <property name="top-attach">1</property>
-            <property name="width">9</property>
+            <property name="width">10</property>
             <property name="height">10</property>
           </packing>
         </child>
@@ -1118,9 +1118,26 @@ and NTAG 215 only</property>
             <signal name="clicked" handler="on_clearbutton1_clicked" swapped="no"/>
           </object>
           <packing>
+            <property name="left-attach">15</property>
+            <property name="top-attach">11</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="scrollbutton1">
+            <property name="label" translatable="yes">Scroll lock</property>
+            <property name="name">scrolllocked</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <signal name="clicked" handler="on_scrollbutton1_clicked" swapped="no"/>
+          </object>
+          <packing>
             <property name="left-attach">14</property>
             <property name="top-attach">11</property>
           </packing>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

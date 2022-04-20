@@ -126,6 +126,7 @@ void on_test1_LFcards_toggled(GtkWidget *check);
 void on_startbutton1_clicked(GtkWidget *startbutton);
 void on_resetbutton1_clicked(GtkWidget *resetbutton);
 void on_clearbutton1_clicked(GtkWidget *clearbutton);
+void on_scrollbutton1_clicked(GtkWidget *scrollbutton);
 void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow);
 gboolean on_window2_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data);
 gboolean printtologscreen(void *text);
@@ -205,6 +206,7 @@ GtkWidget *window1;
         GtkWidget *textview3;
         GtkWidget *scrolledwindow1;
         GtkWidget *clearbutton1;
+        GtkWidget *scrollbutton1;
         GtkWidget *progressbar1;
         GtkWidget *fill1;
         GtkWidget *fill2;
@@ -271,6 +273,8 @@ config_t config[] = {
 };
 
 bool silent_mode = false;
+
+bool scroll_lock = true;
 
 uint8_t running_threads = 0;
 
@@ -386,6 +390,7 @@ void main_gui(void){
     textview3 = GTK_WIDGET(gtk_builder_get_object(builder, "textview3"));
     scrolledwindow1 = GTK_WIDGET(gtk_builder_get_object(builder, "scrolledwindow1"));
     clearbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "clearbutton1"));
+    scrollbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "scrollbutton1"));
     fill1 = GTK_WIDGET(gtk_builder_get_object(builder, "fill1"));
     fill2 = GTK_WIDGET(gtk_builder_get_object(builder, "fill2"));
     fill3 = GTK_WIDGET(gtk_builder_get_object(builder, "fill3"));
@@ -770,8 +775,30 @@ void on_clearbutton1_clicked(GtkWidget *clearbutton){
     gtk_widget_set_sensitive(clearbutton, FALSE);
 
     gtk_text_buffer_set_text(textviewbuf3, "", -1);
+    gtk_text_buffer_get_end_iter(textviewbuf3, &iter1);
     
     gtk_widget_set_sensitive(clearbutton, TRUE);
+}
+
+/****************************************************************************/
+/*!
+    @brief Called when scrollbutton is pressed to lock scrolling and start auto scroll of log window.
+    @param scrollbutton pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
+void on_scrollbutton1_clicked(GtkWidget *scrollbutton){
+    gtk_widget_set_sensitive(scrollbutton, FALSE);
+
+    scroll_lock = !scroll_lock;
+
+    if(scroll_lock){
+        gtk_widget_set_name(scrollbutton, "scrolllocked");
+    }else{
+        gtk_widget_set_name(scrollbutton, "scrollunlocked");
+    }
+    
+    gtk_widget_set_sensitive(scrollbutton, TRUE);
 }
 
 /****************************************************************************/
@@ -796,7 +823,9 @@ gboolean on_window2_delete_event(GtkWidget *widget, GdkEvent *event, gpointer da
  */
 /****************************************************************************/
 void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow){
-    gtk_adjustment_set_value(adjustment1, gtk_adjustment_get_upper(adjustment1) - gtk_adjustment_get_page_size(adjustment1));
+    if(scroll_lock){
+        gtk_adjustment_set_value(adjustment1, gtk_adjustment_get_upper(adjustment1) - gtk_adjustment_get_page_size(adjustment1));
+    }
 }
 // GUI functions /////////////////////////////////////////////////////////////////////////////////////////////////
 

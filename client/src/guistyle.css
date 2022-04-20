@@ -3,6 +3,16 @@ textview text {
     color: black;
 }
 
+button {
+    background-color: rgb(225, 225, 225);
+    color: black;
+}
+
+button:hover {
+    background-color: rgb(210, 210, 210);
+    color: black;
+}
+
 button#startbutton {
     background-color: rgb(172, 253, 125);
 }
@@ -13,6 +23,22 @@ button#startbutton:hover {
 
 button#startbutton:disabled {
     background-color: rgb(255, 184, 152);
+}
+
+button#scrolllocked {
+    background-color: rgb(200, 200, 200);
+}
+
+button#scrollunlocked {
+    background-color: rgb(225, 225, 225);
+}
+
+button#scrolllocked:hover {
+    background-color: rgb(185, 185, 185);
+}
+
+button#scrollunlocked:hover {
+    background-color: rgb(210, 210, 210);
 }
 
 checkbutton:hover {
