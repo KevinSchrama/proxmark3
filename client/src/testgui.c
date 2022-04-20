@@ -125,6 +125,7 @@ void on_test1_HFcards_toggled(GtkWidget *check);
 void on_test1_LFcards_toggled(GtkWidget *check);
 void on_startbutton1_clicked(GtkWidget *startbutton);
 void on_resetbutton1_clicked(GtkWidget *resetbutton);
+void on_clearbutton1_clicked(GtkWidget *clearbutton);
 void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow);
 gboolean on_window2_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data);
 gboolean printtologscreen(void *text);
@@ -203,6 +204,7 @@ GtkWidget *window1;
         GtkWidget *resetbutton1;
         GtkWidget *textview3;
         GtkWidget *scrolledwindow1;
+        GtkWidget *clearbutton1;
         GtkWidget *progressbar1;
         GtkWidget *fill1;
         GtkWidget *fill2;
@@ -383,6 +385,7 @@ void main_gui(void){
     progressbar1 = GTK_WIDGET(gtk_builder_get_object(builder, "progressbar1"));
     textview3 = GTK_WIDGET(gtk_builder_get_object(builder, "textview3"));
     scrolledwindow1 = GTK_WIDGET(gtk_builder_get_object(builder, "scrolledwindow1"));
+    clearbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "clearbutton1"));
     fill1 = GTK_WIDGET(gtk_builder_get_object(builder, "fill1"));
     fill2 = GTK_WIDGET(gtk_builder_get_object(builder, "fill2"));
     fill3 = GTK_WIDGET(gtk_builder_get_object(builder, "fill3"));
@@ -758,6 +761,21 @@ void on_resetbutton1_clicked(GtkWidget *resetbutton){
 
 /****************************************************************************/
 /*!
+    @brief Called when clearbutton is pressed and clear the log screen.
+    @param clearbutton pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
+void on_clearbutton1_clicked(GtkWidget *clearbutton){
+    gtk_widget_set_sensitive(clearbutton, FALSE);
+
+    gtk_text_buffer_set_text(textviewbuf3, "", -1);
+    
+    gtk_widget_set_sensitive(clearbutton, TRUE);
+}
+
+/****************************************************************************/
+/*!
     @brief Called when testresult window (window2) is closed to not destroy it but hide it.
     @param widget pointer to widget that called function
     @param event
@@ -1015,7 +1033,7 @@ void* enduranceTestThead(void* p){
     }
     time_end = time(NULL);
     
-    printTextviewBuffer(THREADPRINT, "Card was detected %d out of %d simulations\nEnd of test, test took %d seconds...", cardcount, args->endurance_test_size, time_end-time_begin);
+    printTextviewBuffer(THREADPRINT, "Card was detected %d times out of %d simulations\nEnd of test, test took %d seconds...", cardcount, args->endurance_test_size, time_end-time_begin);
 
     g_idle_add(resetTests, NULL);
 

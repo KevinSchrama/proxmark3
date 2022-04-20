@@ -317,7 +317,7 @@
     <property name="default-width">1920</property>
     <property name="default-height">1080</property>
     <child>
-      <!-- n-columns=13 n-rows=12 -->
+      <!-- n-columns=20 n-rows=12 -->
       <object class="GtkGrid" id="grid1">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -402,7 +402,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckButton" id="test1_card4">
-                    <property name="label" translatable="yes">NTAG</property>
+                    <property name="label" translatable="yes">NTAG 215</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
                     <property name="receives-default">False</property>
@@ -610,7 +610,7 @@
                 </child>
                 <child>
                   <object class="GtkRadioButton" id="endtest_card4">
-                    <property name="label" translatable="yes">NTAG</property>
+                    <property name="label" translatable="yes">NTAG 215</property>
                     <property name="height-request">26</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -842,7 +842,7 @@ and hex output</property>
                 <child>
                   <object class="GtkRadioButton" id="config_radio4">
                     <property name="label" translatable="yes">Mifare Ultralight 
-only</property>
+and NTAG 215 only</property>
                     <property name="height-request">48</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -921,7 +921,7 @@ only</property>
                 <child>
                   <object class="GtkRadioButton" id="testconfig_radio2">
                     <property name="label" translatable="yes">Mifare Ultralight
-only</property>
+and NTAG 215 only</property>
                     <property name="height-request">48</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
@@ -962,7 +962,7 @@ only</property>
         </child>
         <child>
           <object class="GtkButton" id="startbutton1">
-            <property name="label" translatable="yes">Start test</property>
+            <property name="label" translatable="yes">Start</property>
             <property name="name">startbutton</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
@@ -1019,7 +1019,7 @@ only</property>
             <property name="can-focus">False</property>
           </object>
           <packing>
-            <property name="left-attach">12</property>
+            <property name="left-attach">19</property>
             <property name="top-attach">11</property>
           </packing>
         </child>
@@ -1092,7 +1092,7 @@ only</property>
           <packing>
             <property name="left-attach">10</property>
             <property name="top-attach">1</property>
-            <property name="width">2</property>
+            <property name="width">9</property>
             <property name="height">10</property>
           </packing>
         </child>
@@ -1108,6 +1108,58 @@ only</property>
             <property name="top-attach">11</property>
             <property name="width">4</property>
           </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="clearbutton1">
+            <property name="label" translatable="yes">Clear log</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <signal name="clicked" handler="on_clearbutton1_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left-attach">14</property>
+            <property name="top-attach">11</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>
