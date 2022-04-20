@@ -13,13 +13,15 @@
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Testresults</property>
     <property name="resizable">False</property>
-    <property name="window-position">center</property>
+    <property name="default-width">700</property>
+    <property name="default-height">500</property>
     <signal name="delete-event" handler="on_window2_delete_event" swapped="no"/>
     <child>
-      <!-- n-columns=11 n-rows=13 -->
+      <!-- n-columns=15 n-rows=13 -->
       <object class="GtkGrid" id="grid2">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <property name="column-homogeneous">True</property>
         <child>
           <object class="GtkLabel" id="label1">
             <property name="height-request">40</property>
@@ -30,7 +32,7 @@
           <packing>
             <property name="left-attach">1</property>
             <property name="top-attach">1</property>
-            <property name="width">4</property>
+            <property name="width">6</property>
             <property name="height">2</property>
           </packing>
         </child>
@@ -42,9 +44,9 @@
             <property name="label" translatable="yes">Cards not detected</property>
           </object>
           <packing>
-            <property name="left-attach">6</property>
+            <property name="left-attach">8</property>
             <property name="top-attach">1</property>
-            <property name="width">4</property>
+            <property name="width">6</property>
             <property name="height">2</property>
           </packing>
         </child>
@@ -55,6 +57,8 @@
             <property name="visible">True</property>
             <property name="sensitive">False</property>
             <property name="can-focus">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
             <property name="border-width">2</property>
             <property name="editable">False</property>
             <property name="cursor-visible">False</property>
@@ -65,7 +69,7 @@
           <packing>
             <property name="left-attach">1</property>
             <property name="top-attach">4</property>
-            <property name="width">4</property>
+            <property name="width">6</property>
             <property name="height">8</property>
           </packing>
         </child>
@@ -76,6 +80,8 @@
             <property name="visible">True</property>
             <property name="sensitive">False</property>
             <property name="can-focus">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
             <property name="border-width">2</property>
             <property name="editable">False</property>
             <property name="cursor-visible">False</property>
@@ -84,9 +90,9 @@
             <property name="input-purpose">terminal</property>
           </object>
           <packing>
-            <property name="left-attach">6</property>
+            <property name="left-attach">8</property>
             <property name="top-attach">4</property>
-            <property name="width">4</property>
+            <property name="width">6</property>
             <property name="height">8</property>
           </packing>
         </child>
@@ -110,7 +116,7 @@
             <property name="can-focus">False</property>
           </object>
           <packing>
-            <property name="left-attach">10</property>
+            <property name="left-attach">14</property>
             <property name="top-attach">12</property>
           </packing>
         </child>
@@ -122,9 +128,45 @@
             <property name="can-focus">False</property>
           </object>
           <packing>
-            <property name="left-attach">5</property>
+            <property name="left-attach">7</property>
             <property name="top-attach">3</property>
           </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

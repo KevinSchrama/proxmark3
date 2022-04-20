@@ -597,6 +597,8 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
     gtk_text_buffer_set_text(textviewbuf1, "", -1);
     gtk_text_buffer_set_text(textviewbuf2, "", -1);
 
+    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressbar1), 0);
+
     switch(testType){
         case 1:
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_HFcards))){
@@ -705,7 +707,21 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(testconfig_radio3))) {                            // Mifare Classic block read
                 thread_args.testtype = 3;
                 cards[12].simulate = true;
-            } 
+                numcards = 1;
+            }else{
+                cards[1].simulate = true;
+                cards[2].simulate = true;
+                cards[3].simulate = true;
+                cards[4].simulate = true;
+                cards[5].simulate = true;
+                cards[6].simulate = true;
+                cards[7].simulate = true;
+                cards[8].simulate = true;
+                cards[9].simulate = true;
+                cards[10].simulate = true;
+                cards[11].simulate = true;
+                numcards = 2;
+            }
 
             initThreadArgs();
             initSpidercomms();
@@ -757,8 +773,6 @@ void on_resetbutton1_clicked(GtkWidget *resetbutton){
     pthread_mutex_lock(&gtk_mutex);
     availability_args.available = true;
     pthread_mutex_unlock(&gtk_mutex);
-
-    gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressbar1), 0);
 
     gtk_widget_set_sensitive(startbutton1, TRUE);
     gtk_widget_set_sensitive(resetbutton1, TRUE);
@@ -1098,94 +1112,84 @@ void* specificTestThread(void* p){
     int i = 0;
     int wrong_cards = 0;
     int correct_cards = 0;
-    numcards = 2;
 
-    switch(args->testtype){
-        case 1:
-        case 2:
-            while(cards[i].UID){
-                cards[i].simulate = true;
-                if(g_debugMode) printf("Simulating %s\n", cards[i].UID);
-                cards[i].num_tries++;
-                if(i != 0) printTextviewBuffer(THREADPRINT, "Simulating %s", cards[i].name);
-                Simulate(i);
-                i++;
-                if(args->stopThread) {pthread_exit(NULL); return NULL;}
-            }
-            break;
-        case 3:
-            while(cards[i].UID){
-                if(cards[i].simulate || i == 0){
-                    if(g_debugMode) printf("Simulating %s\n", cards[i].UID);
-                    cards[i].num_tries++;
-                    if(i != 0) printTextviewBuffer(THREADPRINT, "Simulating %s", cards[i].name);
-                    Simulate(i);
-                }
-                i++;
-                if(args->stopThread) {pthread_exit(NULL); return NULL;}
-            }
-            break;
+    while(cards[i].UID){
+        if(cards[i].simulate || i == 0){
+            if(g_debugMode) printf("Simulating %s, %s\n", cards[i].name, cards[i].UID);
+            cards[i].num_tries++;
+            if(i != 0) printTextviewBuffer(THREADPRINT, "Simulating %s", cards[i].name);
+            Simulate(i);
+        }
+        i++;
+        if(args->stopThread) {
+            pthread_exit(NULL); 
+            return NULL;
+        }
     }
 
     i = 0;
-    if(args->testtype == 1){
-        while(cards[i].UID){
-            if(cards[i].detected){
-                if((strcmp(cards[i].name, "Mifare Classic 1k") != 0) && (strcmp(cards[i].name, "Mifare Classic 4k") != 0)){
-                    wrong_cards++;
-                }else{
-                    correct_cards++;
+    switch(args->testtype){
+        case 1:
+            while(cards[i].UID){
+                if(cards[i].detected){
+                    if((strcmp(cards[i].name, "Mifare Classic 1k") != 0) && (strcmp(cards[i].name, "Mifare Classic 4k") != 0)){
+                        wrong_cards++;
+                    }else{
+                        correct_cards++;
+                    }
                 }
+                i++;
             }
-            i++;
-        }
-        if(wrong_cards == 0 && correct_cards > 0) {
-            printTextviewBuffer(THREADPRINT, "Mifare Classic only test succesful");
-        }else{
-            if(correct_cards == 0){
-                printTextviewBuffer(THREADPRINT, "Mifare Classic only test failed: no correct cards detected");
+            if(wrong_cards == 0 && correct_cards > 0) {
+                printTextviewBuffer(THREADPRINT, "Mifare Classic only test succesful");
             }else{
-                printTextviewBuffer(THREADPRINT, "Mifare Classic only test failed: %d card(s) detected while not supposed to", wrong_cards);
-            }
-        }
-        g_idle_add(showResults, NULL);
-    }else if(args->testtype == 2){
-        while(cards[i].UID){
-            if(cards[i].detected){
-                if((strcmp(cards[i].name, "Mifare Ultralight") != 0) && (strcmp(cards[i].name, "NTAG 215") != 0)){
-                    wrong_cards++;
+                if(correct_cards == 0){
+                    printTextviewBuffer(THREADPRINT, "Mifare Classic only test failed: no correct cards detected");
                 }else{
-                    correct_cards++;
+                    printTextviewBuffer(THREADPRINT, "Mifare Classic only test failed: %d card(s) detected while not supposed to", wrong_cards);
                 }
             }
-            i++;
-        }
-        if(wrong_cards == 0 && correct_cards > 0) {
-            printTextviewBuffer(THREADPRINT, "Mifare Ultralight and NTAG 215 only test succesful");
-        }else{
-            if(correct_cards == 0){
-                printTextviewBuffer(THREADPRINT, "Mifare Ultralight and NTAG 215 only test failed: no correct cards detected");
+            g_idle_add(showResults, NULL);
+            break;
+        case 2:
+            while(cards[i].UID){
+                if(cards[i].detected){
+                    if((strcmp(cards[i].name, "Mifare Ultralight") != 0) && (strcmp(cards[i].name, "NTAG 215") != 0)){
+                        wrong_cards++;
+                    }else{
+                        correct_cards++;
+                    }
+                }
+                i++;
+            }
+            if(wrong_cards == 0 && correct_cards > 0) {
+                printTextviewBuffer(THREADPRINT, "Mifare Ultralight and NTAG 215 only test succesful");
             }else{
-                printTextviewBuffer(THREADPRINT, "Mifare Ultralight and NTAG 215 only test failed: %d card(s) detected while not supposed to", wrong_cards);
-            }
-        }
-        g_idle_add(showResults, NULL);
-    }else if(args->testtype == 3){
-        while(cards[i].UID){
-            if(cards[i].detected){
-                if(strcmp(cards[i].name, "Mifare Classic Block Read") == 0){
-                    correct_cards++;
+                if(correct_cards == 0){
+                    printTextviewBuffer(THREADPRINT, "Mifare Ultralight and NTAG 215 only test failed: no correct cards detected");
                 }else{
-                    wrong_cards++;
+                    printTextviewBuffer(THREADPRINT, "Mifare Ultralight and NTAG 215 only test failed: %d card(s) detected while not supposed to", wrong_cards);
                 }
             }
-            i++;
-        }
-        if(correct_cards == 1){
-            printTextviewBuffer(THREADPRINT, "Mifare Classic read block from memory test succesful");
-        }else{
-            printTextviewBuffer(THREADPRINT, "Mifare Classic read block from memory test failed, block from memory not received");
-        }
+            g_idle_add(showResults, NULL);
+            break;
+        case 3:
+            while(cards[i].UID){
+                if(cards[i].detected){
+                    if(strcmp(cards[i].name, "Mifare Classic Block Read") == 0){
+                        correct_cards++;
+                    }else{
+                        wrong_cards++;
+                    }
+                }
+                i++;
+            }
+            if(correct_cards == 1){
+                printTextviewBuffer(THREADPRINT, "Mifare Classic read block from memory test succesful");
+            }else{
+                printTextviewBuffer(THREADPRINT, "Mifare Classic read block from memory test failed, block from memory not received");
+            }
+            break;
     }
 
     g_idle_add(resetTests, NULL);
@@ -1579,6 +1583,7 @@ gboolean resetTests(void *p){
 gboolean showResults(void *p){
     printResults();
     gtk_widget_show(window2);
+    gtk_window_move(GTK_WINDOW(window2), 100, 150);
     return G_SOURCE_REMOVE;
 }
 
