@@ -278,12 +278,12 @@ bool scroll_lock = true;
 
 uint8_t running_threads = 0;
 
-#define THREAD_SPIDER           0x01
-#define THREAD_CARDTYPE         0x02
-#define THREAD_ENDURANCE        0x04
-#define THREAD_CONFIG           0x08
-#define THREAD_AVAILABILITY     0x10
-#define THREAD_SPECIFIC         0x20
+#define THREAD_SPIDER           (1<<0)
+#define THREAD_CARDTYPE         (1<<1)
+#define THREAD_ENDURANCE        (1<<2)
+#define THREAD_CONFIG           (1<<3)
+#define THREAD_AVAILABILITY     (1<<4)
+#define THREAD_SPECIFIC         (1<<5)
 
 /* Config index */
 
@@ -1076,7 +1076,7 @@ void* enduranceTestThead(void* p){
     }
     time_end = time(NULL);
     
-    printTextviewBuffer(THREADPRINT, "Card was detected %d times out of %d simulations\nEnd of test, test took %d seconds...", cardcount, args->endurance_test_size, time_end-time_begin);
+    printTextviewBuffer(THREADPRINT, "End of test, test took %d seconds...\nCard was detected %d times out of %d simulations", time_end-time_begin, cardcount, args->endurance_test_size);
 
     g_idle_add(resetTests, NULL);
 
