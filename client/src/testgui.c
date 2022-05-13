@@ -126,6 +126,8 @@ void on_test1_LFcards_toggled(GtkWidget *check);
 void on_startbutton1_clicked(GtkWidget *startbutton);
 void on_resetbutton1_clicked(GtkWidget *resetbutton);
 void on_clearbutton1_clicked(GtkWidget *clearbutton);
+void on_closebutton1_clicked(GtkWidget *closebutton);
+void on_closebutton2_clicked(GtkWidget *closebutton);
 void on_scrollbutton1_clicked(GtkWidget *scrollbutton);
 void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow);
 gboolean on_window2_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data);
@@ -207,12 +209,8 @@ GtkWidget *window1;
         GtkWidget *scrolledwindow1;
         GtkWidget *clearbutton1;
         GtkWidget *scrollbutton1;
+        GtkWidget *closebutton1;
         GtkWidget *progressbar1;
-        GtkWidget *fill1;
-        GtkWidget *fill2;
-        GtkWidget *fill3;
-        GtkWidget *fill4;
-        GtkWidget *fill5;
         GtkWidget *spider_info_label;
 
 GtkBuilder *builder;
@@ -226,6 +224,7 @@ GtkWidget *window2;
         GtkWidget *fill6;
         GtkWidget *fill7;
         GtkWidget *fill8;
+        GtkWidget *closebutton2;
 
 GtkTextBuffer *textviewbuf1;
 GtkTextBuffer *textviewbuf2;
@@ -391,12 +390,8 @@ void main_gui(void){
     scrolledwindow1 = GTK_WIDGET(gtk_builder_get_object(builder, "scrolledwindow1"));
     clearbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "clearbutton1"));
     scrollbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "scrollbutton1"));
-    fill1 = GTK_WIDGET(gtk_builder_get_object(builder, "fill1"));
-    fill2 = GTK_WIDGET(gtk_builder_get_object(builder, "fill2"));
-    fill3 = GTK_WIDGET(gtk_builder_get_object(builder, "fill3"));
-    fill4 = GTK_WIDGET(gtk_builder_get_object(builder, "fill4"));
-    fill5 = GTK_WIDGET(gtk_builder_get_object(builder, "fill5"));
     spider_info_label = GTK_WIDGET(gtk_builder_get_object(builder, "spider_info_label"));
+    closebutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "closebutton1"));
 
     window2 = GTK_WIDGET(gtk_builder_get_object(builder, "window2"));
 
@@ -405,6 +400,7 @@ void main_gui(void){
     label2 = GTK_WIDGET(gtk_builder_get_object(builder, "label2"));
     textview1 = GTK_WIDGET(gtk_builder_get_object(builder, "textview1"));
     textview2 = GTK_WIDGET(gtk_builder_get_object(builder, "textview2"));
+    closebutton2 = GTK_WIDGET(gtk_builder_get_object(builder, "closebutton2"));
     fill6 = GTK_WIDGET(gtk_builder_get_object(builder, "fill6"));
     fill7 = GTK_WIDGET(gtk_builder_get_object(builder, "fill7"));
     fill8 = GTK_WIDGET(gtk_builder_get_object(builder, "fill8"));
@@ -423,6 +419,7 @@ void main_gui(void){
 
     if(g_debugMode) g_print("Debug mode: %d\n", g_debugMode);
 
+    gtk_window_fullscreen(GTK_WINDOW(window1));
     gtk_widget_show(window1);
 
     gtk_main();
@@ -792,6 +789,36 @@ void on_clearbutton1_clicked(GtkWidget *clearbutton){
     gtk_text_buffer_get_end_iter(textviewbuf3, &iter1);
     
     gtk_widget_set_sensitive(clearbutton, TRUE);
+}
+
+/****************************************************************************/
+/*!
+    @brief Called when closebutton of window 1 is pressed and close screen.
+    @param closebutton pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
+void on_closebutton1_clicked(GtkWidget *closebutton){
+    gtk_widget_set_sensitive(closebutton, FALSE);
+
+    destroy(window1);
+    
+    gtk_widget_set_sensitive(closebutton, TRUE);
+}
+
+/****************************************************************************/
+/*!
+    @brief Called when closebutton of window 2 is pressed and close the result screen.
+    @param closebutton pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
+void on_closebutton2_clicked(GtkWidget *closebutton){
+    gtk_widget_set_sensitive(closebutton, FALSE);
+
+    gtk_widget_hide(window2);
+    
+    gtk_widget_set_sensitive(closebutton, TRUE);
 }
 
 /****************************************************************************/
@@ -1583,7 +1610,7 @@ gboolean resetTests(void *p){
 gboolean showResults(void *p){
     printResults();
     gtk_widget_show(window2);
-    gtk_window_move(GTK_WINDOW(window2), 100, 150);
+    gtk_window_move(GTK_WINDOW(window2), 50, 50);
     return G_SOURCE_REMOVE;
 }
 

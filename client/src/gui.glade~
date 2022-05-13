@@ -134,13 +134,18 @@
           </packing>
         </child>
         <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
+          <object class="GtkButton" id="closebutton2">
+            <property name="label" translatable="yes">Close</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <signal name="clicked" handler="on_closebutton1_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left-attach">6</property>
+            <property name="top-attach">12</property>
+            <property name="width">3</property>
+          </packing>
         </child>
         <child>
           <placeholder/>
@@ -357,10 +362,10 @@
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Spider testing program with Proxmark3</property>
     <property name="window-position">center</property>
-    <property name="default-width">1920</property>
-    <property name="default-height">1080</property>
+    <property name="default-width">1024</property>
+    <property name="default-height">600</property>
     <child>
-      <!-- n-columns=21 n-rows=12 -->
+      <!-- n-columns=21 n-rows=10 -->
       <object class="GtkGrid" id="grid1">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
@@ -1007,6 +1012,7 @@ and NTAG 215 only</property>
           <object class="GtkButton" id="startbutton1">
             <property name="label" translatable="yes">Start</property>
             <property name="name">startbutton</property>
+            <property name="height-request">50</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
@@ -1014,56 +1020,8 @@ and NTAG 215 only</property>
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">8</property>
-            <property name="width">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="fill1">
-            <property name="width-request">35</property>
-            <property name="height-request">35</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="fill2">
-            <property name="width-request">70</property>
-            <property name="height-request">35</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">3</property>
             <property name="top-attach">7</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="fill3">
-            <property name="width-request">70</property>
-            <property name="height-request">35</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">6</property>
-            <property name="top-attach">9</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="fill4">
-            <property name="width-request">35</property>
-            <property name="height-request">35</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">20</property>
-            <property name="top-attach">11</property>
+            <property name="width">2</property>
           </packing>
         </child>
         <child>
@@ -1073,20 +1031,8 @@ and NTAG 215 only</property>
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">10</property>
+            <property name="top-attach">8</property>
             <property name="width">8</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="fill5">
-            <property name="width-request">35</property>
-            <property name="height-request">35</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">9</property>
-            <property name="top-attach">11</property>
           </packing>
         </child>
         <child>
@@ -1100,14 +1046,13 @@ and NTAG 215 only</property>
           </object>
           <packing>
             <property name="left-attach">6</property>
-            <property name="top-attach">8</property>
+            <property name="top-attach">7</property>
             <property name="width">2</property>
           </packing>
         </child>
         <child>
           <object class="GtkScrolledWindow" id="scrolledwindow1">
-            <property name="width-request">450</property>
-            <property name="height-request">400</property>
+            <property name="width-request">300</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="vadjustment">adjustment1</property>
@@ -1115,7 +1060,6 @@ and NTAG 215 only</property>
             <signal name="size-allocate" handler="on_scrolledwindow1_size_allocate" swapped="no"/>
             <child>
               <object class="GtkTextView" id="textview3">
-                <property name="height-request">900</property>
                 <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
@@ -1136,7 +1080,7 @@ and NTAG 215 only</property>
             <property name="left-attach">10</property>
             <property name="top-attach">1</property>
             <property name="width">10</property>
-            <property name="height">10</property>
+            <property name="height">8</property>
           </packing>
         </child>
         <child>
@@ -1147,9 +1091,9 @@ and NTAG 215 only</property>
             <property name="label" translatable="yes">label</property>
           </object>
           <packing>
-            <property name="left-attach">3</property>
-            <property name="top-attach">11</property>
-            <property name="width">4</property>
+            <property name="left-attach">2</property>
+            <property name="top-attach">9</property>
+            <property name="width">6</property>
           </packing>
         </child>
         <child>
@@ -1162,7 +1106,7 @@ and NTAG 215 only</property>
           </object>
           <packing>
             <property name="left-attach">15</property>
-            <property name="top-attach">11</property>
+            <property name="top-attach">9</property>
           </packing>
         </child>
         <child>
@@ -1176,68 +1120,20 @@ and NTAG 215 only</property>
           </object>
           <packing>
             <property name="left-attach">14</property>
-            <property name="top-attach">11</property>
+            <property name="top-attach">9</property>
           </packing>
         </child>
         <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
+          <object class="GtkButton" id="closebutton1">
+            <property name="label" translatable="yes">x</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+          </object>
+          <packing>
+            <property name="left-attach">19</property>
+            <property name="top-attach">0</property>
+          </packing>
         </child>
         <child>
           <placeholder/>
