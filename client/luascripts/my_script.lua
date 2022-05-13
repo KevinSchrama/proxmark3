@@ -2,7 +2,7 @@ local getopt = require('getopt')
 local ansicolors  = require('ansicolors')
 
 local function main(args)
-    local simwaittime = 5
+    local simwaittime = 3
     local waittime = 1
 ---[[
     print('Start simulation of HF cards\n')
@@ -47,11 +47,11 @@ local function main(args)
     
     os.execute('sleep '..waittime)
 
-    core.console('lf io sim --vn 1 --fc 101 --cn 1338')
-    os.execute('sleep '..simwaittime)
-    core.console('lf simstop')
-
-    os.execute('sleep '..waittime)
+    --core.console('lf io sim --vn 1 --fc 101 --cn 1338')
+    --os.execute('sleep '..simwaittime)
+    --core.console('lf simstop')
+--
+    --os.execute('sleep '..waittime)
 
     core.console('lf noralsy sim --cn 1338')                    --fefe
     os.execute('sleep '..simwaittime)
