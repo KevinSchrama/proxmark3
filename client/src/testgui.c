@@ -130,6 +130,8 @@ void on_closebutton1_clicked(GtkWidget *closebutton);
 void on_closebutton2_clicked(GtkWidget *closebutton);
 void on_scrollbutton1_clicked(GtkWidget *scrollbutton);
 void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow);
+void on_endtest_entry1_focus_in_event(GtkWidget* entry);
+void on_numpadbutton_clicked(GtkWidget* button);
 gboolean on_window2_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data);
 gboolean printtologscreen(void *text);
 gboolean progressbarUpdate(void *p);
@@ -206,7 +208,21 @@ GtkWidget *window1;
         GtkWidget *startbutton1;
         GtkWidget *resetbutton1;
         GtkWidget *textview3;
-        GtkWidget *scrolledwindow1;
+        GtkWidget *stack1;
+            GtkWidget *scrolledwindow1;
+            GtkWidget *grid3;
+                GtkWidget *numpadbutton1;
+                GtkWidget *numpadbutton2;
+                GtkWidget *numpadbutton3;
+                GtkWidget *numpadbutton4;
+                GtkWidget *numpadbutton5;
+                GtkWidget *numpadbutton6;
+                GtkWidget *numpadbutton7;
+                GtkWidget *numpadbutton8;
+                GtkWidget *numpadbutton9;
+                GtkWidget *numpadbutton0;
+                GtkWidget *numpadbutton10;
+                GtkWidget *numpadbutton11;
         GtkWidget *clearbutton1;
         GtkWidget *scrollbutton1;
         GtkWidget *closebutton1;
@@ -387,7 +403,21 @@ void main_gui(void){
     resetbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "resetbutton1"));
     progressbar1 = GTK_WIDGET(gtk_builder_get_object(builder, "progressbar1"));
     textview3 = GTK_WIDGET(gtk_builder_get_object(builder, "textview3"));
+    stack1 = GTK_WIDGET(gtk_builder_get_object(builder, "stack1"));
     scrolledwindow1 = GTK_WIDGET(gtk_builder_get_object(builder, "scrolledwindow1"));
+    grid3 = GTK_WIDGET(gtk_builder_get_object(builder, "grid3"));
+    numpadbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "numpadbutton1"));
+    numpadbutton2 = GTK_WIDGET(gtk_builder_get_object(builder, "numpadbutton2"));
+    numpadbutton3 = GTK_WIDGET(gtk_builder_get_object(builder, "numpadbutton3"));
+    numpadbutton4 = GTK_WIDGET(gtk_builder_get_object(builder, "numpadbutton4"));
+    numpadbutton5 = GTK_WIDGET(gtk_builder_get_object(builder, "numpadbutton5"));
+    numpadbutton6 = GTK_WIDGET(gtk_builder_get_object(builder, "numpadbutton6"));
+    numpadbutton7 = GTK_WIDGET(gtk_builder_get_object(builder, "numpadbutton7"));
+    numpadbutton8 = GTK_WIDGET(gtk_builder_get_object(builder, "numpadbutton8"));
+    numpadbutton9 = GTK_WIDGET(gtk_builder_get_object(builder, "numpadbutton9"));
+    numpadbutton0 = GTK_WIDGET(gtk_builder_get_object(builder, "numpadbutton0"));
+    numpadbutton10 = GTK_WIDGET(gtk_builder_get_object(builder, "numpadbutton10"));
+    numpadbutton11 = GTK_WIDGET(gtk_builder_get_object(builder, "numpadbutton11"));
     clearbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "clearbutton1"));
     scrollbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "scrollbutton1"));
     spider_info_label = GTK_WIDGET(gtk_builder_get_object(builder, "spider_info_label"));
@@ -867,6 +897,59 @@ void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow){
     if(scroll_lock){
         gtk_adjustment_set_value(adjustment1, gtk_adjustment_get_upper(adjustment1) - gtk_adjustment_get_page_size(adjustment1));
     }
+}
+
+void on_endtest_entry1_focus_in_event(GtkWidget* entry){
+
+    gtk_stack_set_visible_child(GTK_STACK(stack1), grid3);
+}
+
+void on_numpadbutton_clicked(GtkWidget* button){
+    gtk_widget_set_sensitive(button, FALSE);
+    const char *entrybuf = gtk_entry_get_text(GTK_ENTRY(endtest_entry1));
+    char *buffer = calloc(1, 10);
+
+    if(button == numpadbutton1){
+        if(g_debugMode) g_print("numpadbutton1 pressed\n");
+        sprintf(buffer, "%s1", entrybuf);
+    }else if(button == numpadbutton2){
+        if(g_debugMode) g_print("numpadbutton2 pressed\n");
+        sprintf(buffer, "%s2", entrybuf);
+    }else if(button == numpadbutton3){
+        if(g_debugMode) g_print("numpadbutton3 pressed\n");
+        sprintf(buffer, "%s3", entrybuf);
+    }else if(button == numpadbutton4){
+        if(g_debugMode) g_print("numpadbutton4 pressed\n");
+        sprintf(buffer, "%s4", entrybuf);
+    }else if(button == numpadbutton5){
+        if(g_debugMode) g_print("numpadbutton5 pressed\n");
+        sprintf(buffer, "%s5", entrybuf);
+    }else if(button == numpadbutton6){
+        if(g_debugMode) g_print("numpadbutton6 pressed\n");
+        sprintf(buffer, "%s6", entrybuf);
+    }else if(button == numpadbutton7){
+        if(g_debugMode) g_print("numpadbutton7 pressed\n");
+        sprintf(buffer, "%s7", entrybuf);
+    }else if(button == numpadbutton8){
+        if(g_debugMode) g_print("numpadbutton8 pressed\n");
+        sprintf(buffer, "%s8", entrybuf);
+    }else if(button == numpadbutton9){
+        if(g_debugMode) g_print("numpadbutton9 pressed\n");
+        sprintf(buffer, "%s9", entrybuf);
+    }else if(button == numpadbutton0){
+        if(g_debugMode) g_print("numpadbutton0 pressed\n");
+        sprintf(buffer, "%s0", entrybuf);
+    }else if(button == numpadbutton10){
+        if(g_debugMode) g_print("numpadbutton10 pressed\n");
+        sprintf(buffer, "%s", entrybuf);
+        gtk_stack_set_visible_child(GTK_STACK(stack1), scrolledwindow1);
+    }else if(button == numpadbutton11){
+        if(g_debugMode) g_print("numpadbutton11 pressed\n");
+    }
+
+    gtk_entry_set_text(GTK_ENTRY(endtest_entry1), buffer);
+
+    gtk_widget_set_sensitive(button, TRUE);
 }
 // GUI functions /////////////////////////////////////////////////////////////////////////////////////////////////
 
