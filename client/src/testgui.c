@@ -770,6 +770,7 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
             break;
 
     }
+    gtk_stack_set_visible_child(GTK_STACK(stack1), scrolledwindow1);
     free(configname);
 
 }
