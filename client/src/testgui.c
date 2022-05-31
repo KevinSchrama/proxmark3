@@ -1,3 +1,4 @@
+/*! \file testgui.c */
 #include "testgui.h"
 
 #include <string.h>
@@ -257,8 +258,8 @@ card_t cards[] = {
     {NULL, NULL, NULL, 0, false, false},
     {NULL, NULL, NULL, 0, false, false},
     {NULL, NULL, NULL, 0, false, false},
-    {NULL, NULL, NULL, 0, false, false}
-};
+    {NULL, NULL, NULL, 0, false, false}// Must end with NULL as this ends the search loop
+}; 
 
 /* List of configs */
 config_t config[] = {
@@ -268,8 +269,8 @@ config_t config[] = {
     {"mifare-ultralight-ntag-only", 0x00},
     {"mifare-read-block", 0x00},
     {"test-config", 0x00},
-    {NULL, 0}
-};
+    {NULL, 0}// Must end with NULL as this ends the search loop
+}; 
 
 bool silent_mode = false;
 
