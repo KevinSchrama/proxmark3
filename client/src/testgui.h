@@ -11,6 +11,16 @@
 #define THREADPRINT     1
 #define GUIPRINT        0
 
+/****************************************************************************/
+/*!
+    @brief Data structure for the data arguments of threads and the control of threads.
+    @param available boolean to indicate available UID from Spider.
+    @param stopThread boolean to indicate if threads need to stop.
+    @param endurance_test_size integer to indicate number of cards for endurance test.
+    @param testtype integer to indicate the type of test: 1 card type test, 2 endurance test, 3 configuration specific test, 4 change config.
+    @param required_config integer to the required config, related to search table of the config structure.
+ */
+/****************************************************************************/
 typedef struct {
     bool available;
     bool stopThread;
@@ -19,6 +29,15 @@ typedef struct {
     int required_config;
 } UIDthread_arg_t;
 
+/****************************************************************************/
+/*!
+    @brief Data structure for the Spider availabilty check thread.
+    @param available bool to indicate if a usable Spider is connected for use.
+    @param stopThread bool to indicate to stop the availability thread.
+    @param quitProgram bool to indicate to quit the program for the availability thread to stop.
+    @param spiderInputReady bool to indicate if the spiderThread is ready to receive input from Spider.
+ */
+/****************************************************************************/
 typedef struct {
     bool available;
     bool stopThread;
@@ -27,6 +46,17 @@ typedef struct {
 } availability_arg_t;
 
 /* Cards struct */
+/****************************************************************************/
+/*!
+    @brief Data structure for the cards.
+    @param UID Character array of the UID of the card.
+    @param name Character array of the name of the card.
+    @param simFunction Function to call for simulating the card.
+    @param num_tries Integer to keep count of number of times card was tested during test.
+    @param simulate bool to indicate if cards needs to be simulated during test.
+    @param detected bool to indicate if card is read during test.
+ */
+/****************************************************************************/
 typedef struct {
     const char *UID;
     const char *name;
@@ -37,9 +67,16 @@ typedef struct {
 } card_t;
 
 /* Config struct */
+/****************************************************************************/
+/*!
+    @brief Data structure for the cards.
+    @param name Character array of the name of the config.
+    @param testtype type of test the specific config can be used for.
+ */
+/****************************************************************************/
 typedef struct {
     const char *name;
-    unsigned char testtype; // nog geen toepassing voor gevonden
+    unsigned char testtype; // nog geen toepassing voor geïmplementeerd
 } config_t;
 
 // testtype:
