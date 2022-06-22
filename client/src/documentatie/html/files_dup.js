@@ -1,4 +1,5 @@
 var files_dup =
 [
-    [ "proxmark", "dir_624c8953a1e80e5d0d01d5348be71409.html", "dir_624c8953a1e80e5d0d01d5348be71409" ]
+    [ "testgui.c", "testgui_8c.html", "testgui_8c" ],
+    [ "testgui.h", "testgui_8h_source.html", null ]
 ];
