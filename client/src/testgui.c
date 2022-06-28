@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <time.h>
 #include <stdarg.h>
+#include <sys/mount.h>
 
 #include "comms.h" //SendCommand
 #include "util.h" //sprint_hex
@@ -55,6 +56,7 @@ static pthread_t availability_thread;
 static pthread_t specific_test_thread;
 pthread_mutex_t thread_mutex;
 pthread_mutex_t gtk_mutex;
+pthread_mutex_t log_mutex;
 
 /* Spider input variables and functions */
 
@@ -79,6 +81,13 @@ char* getConfig(void);
 int sendConfig(int config_num);
 int switchMode(int desired_mode);
 int uploadConfig(int config_num);
+
+/* Log file on USB drive */
+
+int mount_usb(void);
+int createLogFile(void);
+int writeLogFile(const char* text, ...);
+char logFile[128] = {0};
 
 /* Initiate thread functions */
 
@@ -306,6 +315,10 @@ void main_gui(void){
         if(g_debugMode) g_print("\n mutex init 'gtk_mutex' has failed\n");
         return;
     }
+    if(pthread_mutex_init(&log_mutex, NULL) != 0){
+        if(g_debugMode) g_print("\n mutex init 'log_mutex' has failed\n");
+        return;
+    }
 
     int err = libusb_init(NULL);
     if(err) return;
@@ -412,6 +425,7 @@ void destroy (GtkWidget *window){
     if(g_debugMode) g_print("Mutex destroy\n");
     pthread_mutex_destroy(&thread_mutex);
     pthread_mutex_destroy(&gtk_mutex);
+    pthread_mutex_destroy(&log_mutex);
     
     gtk_main_quit();
 }
@@ -674,6 +688,7 @@ void* spiderThread(void* p){
 /****************************************************************************/
 void initTestThread(void){
     running_threads |= THREAD_TEST;
+    if(createLogFile()) return;
     pthread_create(&test_thread, NULL, testThread, &thread_args);
 }
 
@@ -721,8 +736,20 @@ void* timerThread(void* p){
     time_begin = time(NULL);
     time_last_card = time(NULL);
 
+    int time_update_timer = 0;
+    int time_update_log = 0;
+
     while(!args->stopThread){
-        g_idle_add(updateTimer, NULL);
+        if(time_update_timer > 2){
+            time_update_timer = 0;
+            g_idle_add(updateTimer, NULL);
+        }
+        if(time_update_log > 600){
+            time_update_log = 0;
+            writeLogFile() // misschien eigen thread
+        }
+        time_update_timer++;
+        time_update_log++;
         msleep(100);
     }
 
@@ -2493,4 +2520,122 @@ void updateTestTimers(GtkWidget *label){
     }
     gtk_label_set_text(GTK_LABEL(time_label2), data);
 
+}
+
+int mount_usb(void){
+    char *buf = calloc(1, 16);
+    if(umount(USB_MOUNT_POINT)){
+        printf("Unmount error: %s\n", strerror(errno));
+    }
+    for(char c = 'a'; c <= 'z'; c++){
+        for(int i = 1; i < 10; i++){
+            sprintf(buf, "/dev/sd%c%d", c, i);
+            printf("Test %s\n", buf);
+            if(mount(buf, USB_MOUNT_POINT, "vfat", 0, NULL)){
+                if(errno == EBUSY){
+                    printf("Mount point busy\n");
+                    free(buf);
+                    return errno;
+                }else{
+                    printf("Mount error: %s\n", strerror(errno));
+                }
+            }else{
+                printf("Succes on %s\n", buf); //return 0;
+                free(buf);
+                return 0;
+            }
+        }
+    }
+    return errno;
+}
+
+int createLogFile(void){
+    FILE *f;
+
+    time_t time_current = time(NULL);
+    struct tm *time_start = localtime(&time_current);
+
+    libusb_device_handle *handle = NULL;
+
+    int ret = mount_usb();
+    if(ret){
+        printf("Mount USB error: %s\n", strerror(ret));
+        return ret;
+    }
+
+    ret = libusb_init(NULL);
+    if(ret) return ret;
+
+    sprintf(logFile, "%s/logfile_%04d-%02d-%02d_%02d-%02d.log", USB_MOUNT_POINT, time_start->tm_year+1900, time_start->tm_mon+1, time_start->tm_mday, time_start->tm_hour, time_start->tm_min);
+
+    f = fopen(logFile, "w");
+    if(f == NULL){
+        printf("Couldn't create logfile\n");
+        return EIO;
+    }
+
+    fprintf(f, "Test started on %02d-%02d-%04d at %02d:%02d\n", time_start->tm_mday, time_start->tm_mon+1, time_start->tm_year+1900, time_start->tm_hour, time_start->tm_min);
+
+    unsigned char *data = calloc(1, 64);
+
+    handle = libusb_open_device_with_vid_pid(NULL, 0x1da6, 0x0110);
+    if(handle != NULL){
+        fprintf(f, "Spider information:\n");
+        for(int i = 0; i < 17; i++){
+            libusb_get_string_descriptor_ascii(handle, i, data, 64);
+            fprintf(f, "%d : %s\n", i, data);
+        }
+    }else{
+        fprintf(f, "Error: No Spider connected, information not available\n");
+        ret = ENXIO;
+    }
+    
+    printf("Voor close handle\n");
+    libusb_close(handle);
+
+    printf("Voor libusb exit\n");
+    libusb_exit(NULL);
+    
+    printf("Voor close file\n");
+    fclose(f);
+
+    free(data);
+
+    printf("Voor return\n");
+
+    return ret;
+}
+
+int writeLogFile(const char* text, ...){
+    char buffer[PRINT_BUFFER_SIZE] = {0};
+    char *prefix = calloc(1, 32);
+    FILE *f;
+
+    time_t time_current = time(NULL);
+    struct tm *tm_current = localtime(&time_current);
+
+    strftime(prefix, 32, "[%d/%m/%Y %H:%M:%S %z]", tm_current);
+
+    va_list args;
+    va_start(args, text);
+    vsnprintf(buffer, sizeof(buffer), text, args);
+    va_end(args);
+    strcat(buffer, "\n");
+    
+    pthread_mutex_lock(&log_mutex);
+
+    f = fopen(logFile, "a");
+    if(f == NULL){
+        printf("Couldn't open logfile\n");
+        free(prefix);
+        pthread_mutex_unlock(&log_mutex);
+        return 2;
+    }
+    fprintf(f, "%s --- %s", prefix, buffer);
+
+    fclose(f);
+
+    pthread_mutex_unlock(&log_mutex);
+    
+    return 0;
 }

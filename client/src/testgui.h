@@ -11,6 +11,8 @@
 #define THREADPRINT     1
 #define GUIPRINT        0
 
+#define USB_MOUNT_POINT "/media/usb-drive" 
+
 /****************************************************************************/
 /*!
     @brief Data structure for the data arguments of threads and the control of threads.
