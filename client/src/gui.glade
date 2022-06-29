@@ -142,7 +142,6 @@
             <property name="visible">True</property>
             <property name="can-focus">False</property>
             <property name="label" translatable="yes">Tijd sinds laatst gelezen kaart</property>
-            <property name="wrap">True</property>
           </object>
           <packing>
             <property name="left-attach">5</property>
@@ -254,7 +253,7 @@
               <object class="GtkLabel" id="card_label8">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">EM410x</property>
+                <property name="label" translatable="yes">ioProx</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -266,7 +265,7 @@
               <object class="GtkLabel" id="card_label9">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">AWID</property>
+                <property name="label" translatable="yes">EM410x</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -278,7 +277,7 @@
               <object class="GtkLabel" id="card_label10">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Paradox</property>
+                <property name="label" translatable="yes">AWID</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -290,7 +289,7 @@
               <object class="GtkLabel" id="card_label11">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">HID</property>
+                <property name="label" translatable="yes">Paradox</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -302,7 +301,7 @@
               <object class="GtkLabel" id="card_label12">
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
-                <property name="label" translatable="yes">ioProx</property>
+                <property name="label" translatable="yes">HID</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -508,50 +507,22 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="separator1">
-            <property name="width-request">30</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">1</property>
-            <property name="width">2</property>
-          </packing>
+          <placeholder/>
         </child>
         <child>
-          <object class="GtkLabel" id="separator2">
-            <property name="width-request">30</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">4</property>
-            <property name="top-attach">1</property>
-          </packing>
+          <placeholder/>
         </child>
         <child>
-          <object class="GtkLabel" id="separator4">
-            <property name="width-request">30</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">8</property>
-            <property name="top-attach">1</property>
-            <property name="width">2</property>
-          </packing>
+          <placeholder/>
         </child>
         <child>
-          <object class="GtkLabel" id="separator3">
-            <property name="width-request">30</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">6</property>
-            <property name="top-attach">1</property>
-          </packing>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
         </child>
         <child>
           <placeholder/>

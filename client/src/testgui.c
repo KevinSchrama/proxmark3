@@ -46,9 +46,7 @@
 UIDthread_arg_t thread_args;
 availability_arg_t availability_args;
 static pthread_t spider_thread;
-static pthread_t test_thread;
-static pthread_t timer_thread;
-static pthread_t cardtype_test_thread;
+pthread_t cardtype_test_thread;
 static pthread_t endurance_test_thread;
 static pthread_t config_program_thread;
 static pthread_t availability_thread;
@@ -89,8 +87,6 @@ void initEnduranceTestThread(void);
 void initConfigProgramThread(void);
 void initAvailabilityThread(void);
 void initSpecificTestThread(void);
-void initTestThread(void);
-void initTimerThread(void);
 
 /* Simulation functions */
 
@@ -107,7 +103,6 @@ void SimEM410x(void);
 void SimParadox(void);
 void SimNoralsy(void);
 void SimAwid(void);
-void SimioProx(void);
 void SimMifare1K(void);
 
 /* Threads */
@@ -118,20 +113,26 @@ void* enduranceTestThead(void* p);
 void* configProgramThread(void* p);
 void* availabilityThread(void* p);
 void* specificTestThread(void* p);
-void* testThread(void* p);
-void* timerThread(void* p);
 
 /* GUI functions */
 
 void destroy(GtkWidget *window);
+void on_radio1_toggled(GtkWidget *radio);
+void on_radio2_toggled(GtkWidget *radio);
+void on_radio3_toggled(GtkWidget *radio);
+void on_radio4_toggled(GtkWidget *radio);
+void on_test1_HFcards_toggled(GtkWidget *check);
+void on_test1_LFcards_toggled(GtkWidget *check);
 void on_startbutton1_clicked(GtkWidget *startbutton);
 void on_resetbutton1_clicked(GtkWidget *resetbutton);
 void on_clearbutton1_clicked(GtkWidget *clearbutton);
 void on_closebutton1_clicked(GtkWidget *closebutton);
+void on_closebutton2_clicked(GtkWidget *closebutton);
 void on_scrollbutton1_clicked(GtkWidget *scrollbutton);
 void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow);
-void updateNumbers(GtkWidget *label);
-void updateTestTimers(GtkWidget *label);
+void on_endtest_entry1_focus_in_event(GtkWidget* entry);
+void on_numpadbutton_clicked(GtkWidget* button);
+gboolean on_window2_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data);
 gboolean printtologscreen(void *text);
 gboolean progressbarUpdate(void *p);
 gboolean resetTests(void *p);
@@ -139,8 +140,6 @@ gboolean printtoresultwindow(void *p);
 gboolean showResults(void *p);
 gboolean updateSpiderInfo(void *p);
 gboolean callDestroy(void *p);
-gboolean updateNum(void *p);
-gboolean updateTimer(void *p);
 
 /* Print to result textview buffer */
 
@@ -150,7 +149,6 @@ void printResultTextview(GtkTextBuffer *textviewbuffer, const char *text, ...);
 
 time_t time_begin;
 time_t time_end;
-time_t time_last_card;
 
 /* Test variables */
 
@@ -165,11 +163,13 @@ GtkWidget *window1;
         GtkWidget *progressbar1;
         GtkWidget *resetbutton1;
         GtkWidget *scrolledwindow1;
-            GtkWidget *textview1;
+            GtkWidget *textview3;
         GtkWidget *clearbutton1;
         GtkWidget *scrollbutton1;
         GtkWidget *closebutton1;
         GtkWidget *spider_info_label;
+        GtkWidget *box1;
+        GtkWidget *box2;
         GtkWidget *text1;
         GtkWidget *text2;
         GtkWidget *time_label1;
@@ -200,18 +200,10 @@ GtkWidget *window1;
             GtkWidget *count_label10;
             GtkWidget *count_label11;
             GtkWidget *count_label12;
-        GtkWidget *separator1;
-        GtkWidget *separator2;
-        GtkWidget *separator3;
-        GtkWidget *separator4;
 
 GtkBuilder *builder;
 
 GtkTextBuffer *textviewbuf1;
-
-GtkWidget *window2;
-GtkTextBuffer *textviewbuf2;
-GtkTextBuffer *textviewbuf3;
 
 GtkAdjustment *adjustment1;
 
@@ -233,14 +225,14 @@ card_t cards[] = {
     {"04F60A73",            "AWID",                         SimAwid,        0,  false, false}, // 9
     {"218277AACB",          "Paradox",                      SimParadox,     0,  false, false}, // 10
     {"1006EC0C86",          "HID",                          SimHID,         0,  false, false}, // 11
-    {"0539",                "ioProx",                       SimioProx,      0,  false, false}, // 12
-    {NULL, NULL, NULL, 0, false, false},
     {"5A65657247656865",    "Mifare Classic Block Read",    SimMifare1K,    0,  false, false}, // read block, not UID but memory read
     {NULL, NULL, NULL, 0, false, false},
     {NULL, NULL, NULL, 0, false, false},
     {NULL, NULL, NULL, 0, false, false},
     {NULL, NULL, NULL, 0, false, false},
-    {NULL, NULL, NULL, 0, false, false}// Must end with NULL as this ends the search loop
+    {NULL, NULL, NULL, 0, false, false},
+    {NULL, NULL, NULL, 0, false, false},
+    {NULL, NULL, NULL, 0, false, false}
 };
 
 /* List of configs */
@@ -251,7 +243,7 @@ config_t config[] = {
     {"mifare-ultralight-ntag-only", 0x00},
     {"mifare-read-block", 0x00},
     {"test-config", 0x00},
-    {NULL, 0}// Must end with NULL as this ends the search loop
+    {NULL, 0}
 };
 
 bool silent_mode = false;
@@ -266,8 +258,6 @@ uint8_t running_threads = 0;
 #define THREAD_CONFIG           (1<<3)
 #define THREAD_AVAILABILITY     (1<<4)
 #define THREAD_SPECIFIC         (1<<5)
-#define THREAD_TEST             (1<<6)
-#define THREAD_TIMER            (1<<7)
 
 /* Config index */
 
@@ -314,7 +304,7 @@ void main_gui(void){
 
     gtk_init(NULL, NULL);
 
-    builder = gtk_builder_new_from_file("/home/pi/spidertest/client/src/gui.glade");
+    builder = gtk_builder_new_from_file("/home/pi/proxmark3/client/src/gui.glade");
 
     window1 = GTK_WIDGET(gtk_builder_get_object(builder, "window1"));
     g_signal_connect(window1, "destroy", G_CALLBACK(destroy), NULL);
@@ -326,7 +316,7 @@ void main_gui(void){
     resetbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "resetbutton1"));
     progressbar1 = GTK_WIDGET(gtk_builder_get_object(builder, "progressbar1"));
     scrolledwindow1 = GTK_WIDGET(gtk_builder_get_object(builder, "scrolledwindow1"));
-    textview1 = GTK_WIDGET(gtk_builder_get_object(builder, "textview1"));
+    textview3 = GTK_WIDGET(gtk_builder_get_object(builder, "textview3"));
     clearbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "clearbutton1"));
     scrollbutton1 = GTK_WIDGET(gtk_builder_get_object(builder, "scrollbutton1"));
     spider_info_label = GTK_WIDGET(gtk_builder_get_object(builder, "spider_info_label"));
@@ -361,17 +351,12 @@ void main_gui(void){
     count_label10 = GTK_WIDGET(gtk_builder_get_object(builder, "count_label10"));
     count_label11 = GTK_WIDGET(gtk_builder_get_object(builder, "count_label11"));
     count_label12 = GTK_WIDGET(gtk_builder_get_object(builder, "count_label12"));
-    
-    separator1 = GTK_WIDGET(gtk_builder_get_object(builder, "separator1"));
-    separator2 = GTK_WIDGET(gtk_builder_get_object(builder, "separator2"));
-    separator3 = GTK_WIDGET(gtk_builder_get_object(builder, "separator3"));
-    separator4 = GTK_WIDGET(gtk_builder_get_object(builder, "separator4"));
 
     textviewbuf1 = GTK_TEXT_BUFFER(gtk_builder_get_object(builder, "textviewbuf1"));
 
     adjustment1 = GTK_ADJUSTMENT(gtk_builder_get_object(builder, "adjustment1"));
     
-    gtk_text_buffer_get_end_iter(textviewbuf1, &iter1);
+    gtk_text_buffer_get_end_iter(textviewbuf3, &iter1);
 
     cssprovider1 = gtk_css_provider_new();
     gtk_css_provider_load_from_path(cssprovider1, "/home/pi/proxmark3/client/src/guistyle.css", NULL);
@@ -381,8 +366,6 @@ void main_gui(void){
 
     gtk_window_fullscreen(GTK_WINDOW(window1));
     gtk_widget_show(window1);
-
-    updateNumbers(NULL);
 
     gtk_main();
     
@@ -418,6 +401,125 @@ void destroy (GtkWidget *window){
 
 /****************************************************************************/
 /*!
+    @brief Called on radio1 radio button pressed, sets testType to toggled button and disables all other options.
+    @param radio pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
+void on_radio1_toggled (GtkWidget *radio){
+    testType = 1;
+    gtk_widget_set_sensitive(fixedoptions1, TRUE);
+    gtk_widget_set_sensitive(fixedoptions2, FALSE);
+    gtk_widget_set_sensitive(fixedoptions3, FALSE);
+    gtk_widget_set_sensitive(fixedoptions4, FALSE);
+}
+
+/****************************************************************************/
+/*!
+    @brief Called on radio2 radio button pressed, sets testType to toggled button and disables all other options.
+    @param radio pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
+void on_radio2_toggled (GtkWidget *radio){
+    testType = 2;
+    gtk_widget_set_sensitive(fixedoptions2, TRUE);
+    gtk_widget_set_sensitive(fixedoptions1, FALSE);
+    gtk_widget_set_sensitive(fixedoptions3, FALSE);
+    gtk_widget_set_sensitive(fixedoptions4, FALSE);
+}
+
+/****************************************************************************/
+/*!
+    @brief Called on radio3 radio button pressed, sets testType to toggled button and disables all other options.
+    @param radio pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
+void on_radio3_toggled (GtkWidget *radio){
+    testType = 3;
+    gtk_widget_set_sensitive(fixedoptions3, TRUE);
+    gtk_widget_set_sensitive(fixedoptions1, FALSE);
+    gtk_widget_set_sensitive(fixedoptions2, FALSE);
+    gtk_widget_set_sensitive(fixedoptions4, FALSE);
+}
+
+/****************************************************************************/
+/*!
+    @brief Called on radio4 radio button pressed, sets testType to toggled button and disables all other options.
+    @param radio pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
+void on_radio4_toggled (GtkWidget *radio){
+    testType = 4;
+    gtk_widget_set_sensitive(fixedoptions4, TRUE);
+    gtk_widget_set_sensitive(fixedoptions1, FALSE);
+    gtk_widget_set_sensitive(fixedoptions2, FALSE);
+    gtk_widget_set_sensitive(fixedoptions3, FALSE);
+}
+
+/****************************************************************************/
+/*!
+    @brief Called on test1_HFcards toggle button pressed, enables or disables all option button under HF cards.
+    @param check pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
+void on_test1_HFcards_toggled (GtkWidget *check){
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card1), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card2), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card3), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card4), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card5), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card6), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card7), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check))){
+        gtk_widget_set_sensitive(test1_card1, TRUE);
+        gtk_widget_set_sensitive(test1_card2, TRUE);
+        gtk_widget_set_sensitive(test1_card3, TRUE);
+        gtk_widget_set_sensitive(test1_card4, TRUE);
+        gtk_widget_set_sensitive(test1_card5, TRUE);
+        gtk_widget_set_sensitive(test1_card6, TRUE);
+        gtk_widget_set_sensitive(test1_card7, TRUE);
+    }else{
+        gtk_widget_set_sensitive(test1_card1, FALSE);
+        gtk_widget_set_sensitive(test1_card2, FALSE);
+        gtk_widget_set_sensitive(test1_card3, FALSE);
+        gtk_widget_set_sensitive(test1_card4, FALSE);
+        gtk_widget_set_sensitive(test1_card5, FALSE);
+        gtk_widget_set_sensitive(test1_card6, FALSE);
+        gtk_widget_set_sensitive(test1_card7, FALSE);
+    }
+}
+
+/****************************************************************************/
+/*!
+    @brief Called on test1_LFcards toggle button pressed, enables or disables all option button under LF cards.
+    @param check pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
+void on_test1_LFcards_toggled (GtkWidget *check){
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card8), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card9), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card10), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(test1_card11), gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check)));
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(check))){
+        gtk_widget_set_sensitive(test1_card8, TRUE);
+        gtk_widget_set_sensitive(test1_card9, TRUE);
+        gtk_widget_set_sensitive(test1_card10, TRUE);
+        gtk_widget_set_sensitive(test1_card11, TRUE);
+    }else{
+        gtk_widget_set_sensitive(test1_card8, FALSE);
+        gtk_widget_set_sensitive(test1_card9, FALSE);
+        gtk_widget_set_sensitive(test1_card10, FALSE);
+        gtk_widget_set_sensitive(test1_card11, FALSE);
+    }
+}
+
+/****************************************************************************/
+/*!
     @brief Called when startbutton is pressed and chooses test type and starts it.
     @param startbutton pointer to widget that called function
     @return 
@@ -427,23 +529,164 @@ void on_startbutton1_clicked (GtkWidget *startbutton){
     gtk_widget_set_sensitive(startbutton1, FALSE);
     if(g_debugMode) g_print("Test started\n");
 
+    pthread_mutex_lock(&gtk_mutex);
+    availability_args.available = false;
+    pthread_mutex_unlock(&gtk_mutex);
+
+    char *configname = NULL;
+    int i;
+
+    gtk_text_buffer_set_text(textviewbuf1, "", -1);
+    gtk_text_buffer_set_text(textviewbuf2, "", -1);
+
     gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(progressbar1), 0);
 
-    int i = 0;
-    while(cards[i].UID){
-        cards[i].num_tries = 0;
-        cards[i].detected = false;
-        cards[i].simulate = false;
-        i++;
+    switch(testType){
+        case 1:
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_HFcards))){
+                cards[1].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card1));   //MF Classic 1k
+                cards[2].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card2));   //MF_ULTRALIGHT
+                cards[3].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card3));   //MF_MINI
+                cards[4].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card4));   //NTAG
+                cards[5].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card5));   //MF_CLASSIC_4K
+                cards[6].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card6));   //FM11RF005SH
+                cards[7].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card7));   //ICLASS
+            }
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_LFcards))){
+                cards[8].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card8));   //EM410X
+                cards[9].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card9));   //AWID
+                cards[10].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card10)); //PARADOX
+                cards[11].simulate = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(test1_card11)); //HID
+            }
+            i = 0;
+            numcards = 0;
+            while(cards[i].UID){
+                if(strcmp(cards[i].UID, "buffer") != 0){
+                    if(cards[i].simulate)
+                        numcards++;
+                }
+                i++;
+            }
+            if(numcards == 0){
+                on_resetbutton1_clicked(resetbutton1);
+                printTextviewBuffer(GUIPRINT, "Can't run test without cards...");
+                break;
+            }
+            printTextviewBuffer(GUIPRINT, "Simulating %d different cards", numcards);
+
+            gtk_text_buffer_set_text(textviewbuf1, "", -1);
+            gtk_text_buffer_set_text(textviewbuf2, "", -1);
+
+            i = 0;
+            configname = getConfig();
+            while(config[i].name){
+                if(strcmp(configname, config[i].name) == 0){
+                    break;
+                }
+                i++;
+            }
+            if(config[i].name == NULL){
+                printTextviewBuffer(GUIPRINT, "Config not recognized, programming usable config");
+                while(uploadConfig(CONFIG_GENERIC_FULL) && !thread_args.stopThread);
+            }
+            
+            initThreadArgs();
+            initCardtypeTestThread();
+            initSpidercomms();
+            break;
+        case 2:
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card1))) thread_args.testtype = 1;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card2))) thread_args.testtype = 2;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card3))) thread_args.testtype = 3;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card4))) thread_args.testtype = 4;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card5))) thread_args.testtype = 5;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card6))) thread_args.testtype = 6;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card7))) thread_args.testtype = 7;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card8))) thread_args.testtype = 8;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card9))) thread_args.testtype = 9;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card10))) thread_args.testtype = 10;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card11))) thread_args.testtype = 11;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(endtest_card12))) thread_args.testtype = 12;
+
+            const char *testsize = gtk_entry_get_text(GTK_ENTRY(endtest_entry1));
+
+            if(strlen(testsize) != 0){
+                thread_args.endurance_test_size = atoi(testsize);
+                if(g_debugMode) printf("%d, %d\n", thread_args.endurance_test_size, strlen(testsize));
+            }else{
+                thread_args.endurance_test_size = 10;
+            }
+            
+            if(thread_args.endurance_test_size == 0){
+                printTextviewBuffer(GUIPRINT, "No valid test size received, try again...");
+                gtk_entry_set_text (GTK_ENTRY(endtest_entry1), "");
+                on_resetbutton1_clicked(resetbutton1);
+            }else{
+                numcards = thread_args.endurance_test_size;
+                printTextviewBuffer(GUIPRINT, "Simulating %s for %d times", cards[thread_args.testtype].name, thread_args.endurance_test_size);
+            }
+
+            i = 0;
+            configname = getConfig();
+            while(config[i].name){
+                if(strcmp(configname, config[i].name) == 0){
+                    break;
+                }
+                i++;
+            }
+            if(config[i].name == NULL){
+                printTextviewBuffer(GUIPRINT, "Config not recognized, programming usable config");
+                while(uploadConfig(CONFIG_GENERIC_FULL) && !thread_args.stopThread);
+            }
+            
+            initThreadArgs();
+            initSpidercomms();
+            initEnduranceTestThread();
+            break;
+        case 3:
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(testconfig_radio1))) thread_args.testtype = 1;    // Mifare Classic only
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(testconfig_radio2))) thread_args.testtype = 2;    // Mifare Ultralight only
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(testconfig_radio3))) {                            // Mifare Classic block read
+                thread_args.testtype = 3;
+                cards[12].simulate = true;
+                numcards = 1;
+            }else{
+                cards[1].simulate = true;
+                cards[2].simulate = true;
+                cards[3].simulate = true;
+                cards[4].simulate = true;
+                cards[5].simulate = true;
+                cards[6].simulate = true;
+                cards[7].simulate = true;
+                cards[8].simulate = true;
+                cards[9].simulate = true;
+                cards[10].simulate = true;
+                cards[11].simulate = true;
+                numcards = 2;
+            }
+
+            initThreadArgs();
+            initSpidercomms();
+            initSpecificTestThread();
+            break;
+        case 4:
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio1))) thread_args.required_config = CONFIG_GENERIC_V2_0;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio2))) thread_args.required_config = CONFIG_GENERIC_FULL;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio3))) thread_args.required_config = CONFIG_MIFARE_ONLY;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio4))) thread_args.required_config = CONFIG_MIFARE_ULTRALIGHT_NTAG_ONLY;
+            if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_radio5))) thread_args.required_config = CONFIG_MIFARE_READ_BLOCK;
+
+            silent_mode = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(config_silentmode));
+
+            printTextviewBuffer(GUIPRINT, silent_mode ? "Configuring Spider with new config in silent mode" : "Configuring Spider with new config");
+
+            initThreadArgs();
+            initConfigProgramThread();
+            break;
+
     }
-
-    time_begin = 0;
-    time_last_card = 0;
-
-    initThreadArgs();
-    initTestThread();
-    initSpidercomms();
-    initTimerThread();
+    gtk_stack_set_visible_child(GTK_STACK(stack1), scrolledwindow1);
+    free(configname);
 
 }
 
@@ -461,10 +704,37 @@ void on_resetbutton1_clicked(GtkWidget *resetbutton){
     stopThreads();
     stopSim();
 
-    thread_args.stopThread = false;
+    int i = 0;
+    while(cards[i].UID){
+        cards[i].num_tries = 0;
+        cards[i].detected = false;
+        cards[i].simulate = false;
+        i++;
+    }
 
-    if(availability_args.available) gtk_widget_set_sensitive(startbutton1, TRUE);
+    thread_args.stopThread = false;
+    pthread_mutex_lock(&gtk_mutex);
+    availability_args.available = true;
+    pthread_mutex_unlock(&gtk_mutex);
+
+    gtk_widget_set_sensitive(startbutton1, TRUE);
     gtk_widget_set_sensitive(resetbutton1, TRUE);
+}
+
+/****************************************************************************/
+/*!
+    @brief Called when clearbutton is pressed and clear the log screen.
+    @param clearbutton pointer to widget that called function
+    @return 
+ */
+/****************************************************************************/
+void on_clearbutton1_clicked(GtkWidget *clearbutton){
+    gtk_widget_set_sensitive(clearbutton, FALSE);
+
+    gtk_text_buffer_set_text(textviewbuf3, "", -1);
+    gtk_text_buffer_get_end_iter(textviewbuf3, &iter1);
+    
+    gtk_widget_set_sensitive(clearbutton, TRUE);
 }
 
 /****************************************************************************/
@@ -484,18 +754,17 @@ void on_closebutton1_clicked(GtkWidget *closebutton){
 
 /****************************************************************************/
 /*!
-    @brief Called when clearbutton is pressed and clear the log screen.
-    @param clearbutton pointer to widget that called function
+    @brief Called when closebutton of window 2 is pressed and close the result screen.
+    @param closebutton pointer to widget that called function
     @return 
  */
 /****************************************************************************/
-void on_clearbutton1_clicked(GtkWidget *clearbutton){
-    gtk_widget_set_sensitive(clearbutton, FALSE);
+void on_closebutton2_clicked(GtkWidget *closebutton){
+    gtk_widget_set_sensitive(closebutton, FALSE);
 
-    gtk_text_buffer_set_text(textviewbuf1, "", -1);
-    gtk_text_buffer_get_end_iter(textviewbuf1, &iter1);
+    gtk_widget_hide(window2);
     
-    gtk_widget_set_sensitive(clearbutton, TRUE);
+    gtk_widget_set_sensitive(closebutton, TRUE);
 }
 
 /****************************************************************************/
@@ -521,7 +790,21 @@ void on_scrollbutton1_clicked(GtkWidget *scrollbutton){
 
 /****************************************************************************/
 /*!
-    @brief Called when text in textview is bigger than what fits, to scroll window to bottom.
+    @brief Called when testresult window (window2) is closed to not destroy it but hide it.
+    @param widget pointer to widget that called function
+    @param event
+    @param data
+    @return gboolean, always TRUE.
+ */
+/****************************************************************************/
+gboolean on_window2_delete_event(GtkWidget *widget, GdkEvent *event, gpointer data){
+    gtk_widget_hide(window2);
+    return TRUE;
+}
+
+/****************************************************************************/
+/*!
+    @brief Called when text in textview is bigger than what fits to scroll window to newest text.
     @param scrolledwindow pointer to widget that called function
     @return 
  */
@@ -530,6 +813,59 @@ void on_scrolledwindow1_size_allocate(GtkWidget* scrolledwindow){
     if(scroll_lock){
         gtk_adjustment_set_value(adjustment1, gtk_adjustment_get_upper(adjustment1) - gtk_adjustment_get_page_size(adjustment1));
     }
+}
+
+void on_endtest_entry1_focus_in_event(GtkWidget* entry){
+
+    gtk_stack_set_visible_child(GTK_STACK(stack1), grid3);
+}
+
+void on_numpadbutton_clicked(GtkWidget* button){
+    gtk_widget_set_sensitive(button, FALSE);
+    const char *entrybuf = gtk_entry_get_text(GTK_ENTRY(endtest_entry1));
+    char *buffer = calloc(1, 10);
+
+    if(button == numpadbutton1){
+        if(g_debugMode) g_print("numpadbutton1 pressed\n");
+        sprintf(buffer, "%s1", entrybuf);
+    }else if(button == numpadbutton2){
+        if(g_debugMode) g_print("numpadbutton2 pressed\n");
+        sprintf(buffer, "%s2", entrybuf);
+    }else if(button == numpadbutton3){
+        if(g_debugMode) g_print("numpadbutton3 pressed\n");
+        sprintf(buffer, "%s3", entrybuf);
+    }else if(button == numpadbutton4){
+        if(g_debugMode) g_print("numpadbutton4 pressed\n");
+        sprintf(buffer, "%s4", entrybuf);
+    }else if(button == numpadbutton5){
+        if(g_debugMode) g_print("numpadbutton5 pressed\n");
+        sprintf(buffer, "%s5", entrybuf);
+    }else if(button == numpadbutton6){
+        if(g_debugMode) g_print("numpadbutton6 pressed\n");
+        sprintf(buffer, "%s6", entrybuf);
+    }else if(button == numpadbutton7){
+        if(g_debugMode) g_print("numpadbutton7 pressed\n");
+        sprintf(buffer, "%s7", entrybuf);
+    }else if(button == numpadbutton8){
+        if(g_debugMode) g_print("numpadbutton8 pressed\n");
+        sprintf(buffer, "%s8", entrybuf);
+    }else if(button == numpadbutton9){
+        if(g_debugMode) g_print("numpadbutton9 pressed\n");
+        sprintf(buffer, "%s9", entrybuf);
+    }else if(button == numpadbutton0){
+        if(g_debugMode) g_print("numpadbutton0 pressed\n");
+        sprintf(buffer, "%s0", entrybuf);
+    }else if(button == numpadbutton10){
+        if(g_debugMode) g_print("numpadbutton10 pressed\n");
+        sprintf(buffer, "%s", entrybuf);
+        gtk_stack_set_visible_child(GTK_STACK(stack1), scrolledwindow1);
+    }else if(button == numpadbutton11){
+        if(g_debugMode) g_print("numpadbutton11 pressed\n");
+    }
+
+    gtk_entry_set_text(GTK_ENTRY(endtest_entry1), buffer);
+
+    gtk_widget_set_sensitive(button, TRUE);
 }
 // GUI functions /////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -548,7 +884,7 @@ void initThreadArgs(void){
 // Spider communiction thread ////////////////////////////////////////////////////////////////////////////////////
 /****************************************************************************/
 /*!
-    @brief Initiate and start Spider communication thread.
+    @brief Initiate and start spider communication thread.
     @param void
     @return 
  */
@@ -663,73 +999,6 @@ void* spiderThread(void* p){
     return NULL;
 }
 // Spider communiction thread ////////////////////////////////////////////////////////////////////////////////////
-
-// Test thread //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/****************************************************************************/
-/*!
-    @brief Initiate and start test thread.
-    @param void
-    @return 
- */
-/****************************************************************************/
-void initTestThread(void){
-    running_threads |= THREAD_TEST;
-    pthread_create(&test_thread, NULL, testThread, &thread_args);
-}
-
-void* testThread(void* p){
-    if(g_debugMode) printf("Test thread started\n");
-    UIDthread_arg_t *args = (UIDthread_arg_t *)p;
-
-    while(!availability_args.spiderInputReady){
-        msleep(10);
-    }
-
-    g_idle_add(updateNum, NULL);
-
-    int i;
-    while(!args->stopThread){
-        i = 0;
-        while(cards[i].UID){
-            if(Simulate(i)){
-                cards[i].num_tries++;
-                g_idle_add(updateNum, NULL); // update number of times a card is read correctly
-                time_last_card = time(NULL);
-            }
-
-            i++;
-            if(args->stopThread) break;
-        }
-        msleep(10);
-    }
-
-    pthread_exit(NULL);
-    return NULL;
-}
-// Test thread //////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// Timer thread /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void initTimerThread(void){
-    running_threads |= THREAD_TIMER;
-    pthread_create(&timer_thread, NULL, timerThread, &thread_args);
-}
-
-void* timerThread(void* p){
-    if(g_debugMode) printf("Timer thread started\n");
-    UIDthread_arg_t *args = (UIDthread_arg_t *)p;
-
-    time_begin = time(NULL);
-    time_last_card = time(NULL);
-
-    while(!args->stopThread){
-        g_idle_add(updateTimer, NULL);
-        msleep(100);
-    }
-
-    pthread_exit(NULL);
-    return NULL;
-}
-// Timer thread /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Test thread for card types ///////////////////////////////////////////////////////////////////////////////////////////////
 /****************************************************************************/
@@ -1033,7 +1302,7 @@ exit_config_thread:
 void initAvailabilityThread(void){
     running_threads |= THREAD_AVAILABILITY;
     availability_args.stopThread = false;
-    availability_args.available = false;
+    availability_args.available = true;
     pthread_create(&availability_thread, NULL, availabilityThread, &availability_args);
 }
 
@@ -1069,8 +1338,6 @@ void* availabilityThread(void* p){
             }
             new_state = 0;
         }
-        libusb_free_device_list(list, 1);
-
         if(new_state != old_state){
             old_state = new_state;
             if(old_state){
@@ -1086,11 +1353,10 @@ void* availabilityThread(void* p){
             }else{
                 state = false;
                 if(g_debugMode) printf("Spider not connected!\n");
-                g_idle_add(resetTests, NULL);
                 g_idle_add(updateSpiderInfo, &state);
             }
         }
-
+        libusb_free_device_list(list, 1);
 
         if(boot_state == 1 && (time(NULL) - boot_begin >= MAX_TIME_BOOT_MODE)){
             printTextviewBuffer(THREADPRINT, "Set Spider back to normal mode from bootloader mode");
@@ -1151,18 +1417,6 @@ void stopThreads(void){
         if(g_debugMode) printf("Specific test thread stopped\n");
     }
 
-    if(running_threads & THREAD_TEST) {
-        pthread_join(test_thread, NULL);
-        running_threads &= (0xFF - THREAD_TEST);
-        if(g_debugMode) printf("Test thread stopped\n");
-    }
-
-    if(running_threads & THREAD_TIMER) {
-        pthread_join(timer_thread, NULL);
-        running_threads &= (0xFF - THREAD_TIMER);
-        if(g_debugMode) printf("Test thread stopped\n");
-    }
-
     if(running_threads & THREAD_SPIDER) {
         pthread_join(spider_thread, NULL);
         running_threads &= (0xFF - THREAD_SPIDER);
@@ -1212,7 +1466,7 @@ void printTextviewBuffer(int thread, const char *text, ...){
     if(thread){
         g_idle_add(printtologscreen, buffer);
     }else{
-        gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)buffer, -1);
+        gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)buffer, -1);
     }
 
 /*
@@ -1236,7 +1490,7 @@ void printTextviewBuffer(int thread, const char *text, ...){
             if(thread){
                 g_idle_add(printtologscreen, &buffer[count]);
             }else{
-                gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)&buffer[count], -1);
+                gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)&buffer[count], -1);
             }
             count += MAX_BUFFER_SIZE;
         }
@@ -1244,7 +1498,7 @@ void printTextviewBuffer(int thread, const char *text, ...){
         if(thread){
             g_idle_add(printtologscreen, buffer);
         }else{
-            gtk_text_buffer_insert(textviewbuf1, &iter1, (const gchar*)buffer, -1);
+            gtk_text_buffer_insert(textviewbuf3, &iter1, (const gchar*)buffer, -1);
         }
     }
 */
@@ -1259,8 +1513,8 @@ void printTextviewBuffer(int thread, const char *text, ...){
 /****************************************************************************/
 gboolean printtologscreen(void *text){
     const gchar *buffer = text;
-    gtk_text_buffer_get_end_iter(textviewbuf1, &iter1);
-    gtk_text_buffer_insert(textviewbuf1, &iter1, buffer, -1);
+    gtk_text_buffer_get_end_iter(textviewbuf3, &iter1);
+    gtk_text_buffer_insert(textviewbuf3, &iter1, buffer, -1);
     return G_SOURCE_REMOVE;
 }
 // Print to textviewbuffer ///////////////////////////////////////////////////////////////////////////////////////
@@ -1373,13 +1627,13 @@ gboolean updateSpiderInfo(void *p){
         sprintf(configname, "Spider connected: [%s]", getConfig());
         gtk_label_set_text(GTK_LABEL(spider_info_label), configname);
         pthread_mutex_lock(&gtk_mutex);
-        availability_args.available = true;
-        gtk_widget_set_sensitive(startbutton1, TRUE);
+        if(availability_args.available){
+            gtk_widget_set_sensitive(startbutton1, TRUE);
+        }
         pthread_mutex_unlock(&gtk_mutex);
         gtk_widget_set_sensitive(spider_info_label, TRUE);
     }else{
         gtk_label_set_text(GTK_LABEL(spider_info_label), "No Spider connected");
-        availability_args.available = false;
         gtk_widget_set_sensitive(startbutton1, FALSE);
         gtk_widget_set_sensitive(spider_info_label, FALSE);
     }
@@ -1784,20 +2038,6 @@ void SimAwid(void){
     free(payload);
 }
 
-void SimioProx(void){
-    uint8_t bs[] = {0,0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0,1,0,1,1,0,0,1,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,1,1,0,0,1,1,1,0,0,1,1,0,1,1,0,1,0,1,1,1,1};
-    lf_fsksim_t *payload = calloc(1, sizeof(lf_fsksim_t) + sizeof(bs));
-    payload->fchigh = 10;
-    payload->fclow = 8;
-    payload->separator = 1;
-    payload->clock = 64;
-    memcpy(payload->data, bs, sizeof(bs));
-
-    clearCommandBuffer();
-    SendCommandNG(CMD_LF_FSK_SIMULATE, (uint8_t *)payload,  sizeof(lf_fsksim_t) + sizeof(bs));
-    free(payload);
-}
-
 /****************************************************************************/
 /*!
     @brief Simulate a Mifare Classic 1k card that is able to let its memory be read.
@@ -1848,7 +2088,7 @@ void printResults(void){
     while(cards[i].UID){
         if(cards[i].detected){
             if(g_debugMode) PrintAndLogEx(SUCCESS, "%-2i | %-16s | %-17s | %i", i, cards[i].UID, cards[i].name, cards[i].num_tries);
-            printResultTextview(textviewbuf2, "%s: %s", cards[i].name, cards[i].UID);
+            printResultTextview(textviewbuf1, "%s: %s", cards[i].name, cards[i].UID);
             detect_count++;
         }else if(cards[i].simulate){
             not_detect_count++;
@@ -1868,13 +2108,13 @@ void printResults(void){
         while(cards[i].UID){
             if(!cards[i].detected && cards[i].simulate){
                 if(g_debugMode) PrintAndLogEx(INFO, _RED_("%-2i") " | " _RED_("%-16s") " | " _RED_("%s"), i, cards[i].UID, cards[i].name);
-                printResultTextview(textviewbuf3, "%s: %s", cards[i].name, cards[i].UID);
+                printResultTextview(textviewbuf2, "%s: %s", cards[i].name, cards[i].UID);
             }
             i++;
         }
     }else{
         if(g_debugMode) PrintAndLogEx(SUCCESS, _GREEN_("No cards not detected"));
-        printResultTextview(textviewbuf3, "No cards not detected");
+        printResultTextview(textviewbuf2, "No cards not detected");
     }
     if(g_debugMode) PrintAndLogEx(INFO, "========================================================");
 }
@@ -2414,83 +2654,4 @@ int uploadConfig(int config_num){
     if(err) return err;
     err = switchMode(NORMAL_MODE);
     return err;
-}
-
-gboolean updateNum(void *p){
-    updateNumbers(NULL);
-    return G_SOURCE_REMOVE;
-}
-
-void updateNumbers(GtkWidget *label){
-    char *data = calloc(1, 32);
-
-    sprintf(data, "%d", cards[1].num_tries);
-    gtk_label_set_text(GTK_LABEL(count_label1), data);
-
-    sprintf(data, "%d", cards[2].num_tries);
-    gtk_label_set_text(GTK_LABEL(count_label2), data);
-
-    sprintf(data, "%d", cards[3].num_tries);
-    gtk_label_set_text(GTK_LABEL(count_label3), data);
-
-    sprintf(data, "%d", cards[4].num_tries);
-    gtk_label_set_text(GTK_LABEL(count_label4), data);
-
-    sprintf(data, "%d", cards[5].num_tries);
-    gtk_label_set_text(GTK_LABEL(count_label5), data);
-
-    sprintf(data, "%d", cards[6].num_tries);
-    gtk_label_set_text(GTK_LABEL(count_label6), data);
-
-    sprintf(data, "%d", cards[7].num_tries);
-    gtk_label_set_text(GTK_LABEL(count_label7), data);
-
-    sprintf(data, "%d", cards[8].num_tries);
-    gtk_label_set_text(GTK_LABEL(count_label8), data);
-
-    sprintf(data, "%d", cards[9].num_tries);
-    gtk_label_set_text(GTK_LABEL(count_label9), data);
-
-    sprintf(data, "%d", cards[10].num_tries);
-    gtk_label_set_text(GTK_LABEL(count_label10), data);
-
-    sprintf(data, "%d", cards[11].num_tries);
-    gtk_label_set_text(GTK_LABEL(count_label11), data);
-
-    sprintf(data, "%d", cards[12].num_tries);
-    gtk_label_set_text(GTK_LABEL(count_label12), data);
-}
-
-gboolean updateTimer(void *p){
-    updateTestTimers(NULL);
-    return G_SOURCE_REMOVE;
-}
-
-void updateTestTimers(GtkWidget *label){
-    char *data = calloc(1, 32);
-
-    if(time_begin == 0 || time_last_card == 0){
-        gtk_label_set_text(GTK_LABEL(time_label1), "00:00");
-        gtk_label_set_text(GTK_LABEL(time_label2), "00:00");
-        return;
-    }
-
-// timer vanaf begin
-    time_t time_passed = time(NULL) - time_begin;
-    if(time_passed < 3600){
-        sprintf(data, "%02ld:%02ld", time_passed/60, time_passed%60);
-    }else{
-        sprintf(data, "%02ld:%02ld:%02ld", time_passed/3600, (time_passed%3600)/60, time_passed%60);
-    }
-    gtk_label_set_text(GTK_LABEL(time_label1), data);
-
-// timer sinds laatst gelezen kaart
-    time_passed = time(NULL) - time_last_card;
-    if(time_passed < 3600){
-        sprintf(data, "%02ld:%02ld", time_passed/60, time_passed%60);
-    }else{
-        sprintf(data, "%02ld:%02ld:%02ld", time_passed/3600, (time_passed%3600)/60, time_passed%60);
-    }
-    gtk_label_set_text(GTK_LABEL(time_label2), data);
-
 }

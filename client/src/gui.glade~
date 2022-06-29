@@ -8,6 +8,356 @@
     <property name="page-increment">10</property>
   </object>
   <object class="GtkTextBuffer" id="textviewbuf1"/>
+  <object class="GtkTextBuffer" id="textviewbuf2"/>
+  <object class="GtkWindow" id="window2">
+    <property name="can-focus">False</property>
+    <property name="title" translatable="yes">Testresults</property>
+    <property name="resizable">False</property>
+    <property name="window-position">center</property>
+    <property name="default-width">700</property>
+    <property name="default-height">500</property>
+    <signal name="delete-event" handler="on_window2_delete_event" swapped="no"/>
+    <child>
+      <!-- n-columns=15 n-rows=13 -->
+      <object class="GtkGrid" id="grid2">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="column-homogeneous">True</property>
+        <child>
+          <object class="GtkLabel" id="label1">
+            <property name="height-request">40</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Detected cards</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+            <property name="width">6</property>
+            <property name="height">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="label2">
+            <property name="height-request">40</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="label" translatable="yes">Cards not detected</property>
+          </object>
+          <packing>
+            <property name="left-attach">8</property>
+            <property name="top-attach">1</property>
+            <property name="width">6</property>
+            <property name="height">2</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTextView" id="textview1">
+            <property name="width-request">200</property>
+            <property name="height-request">300</property>
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can-focus">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="border-width">2</property>
+            <property name="editable">False</property>
+            <property name="cursor-visible">False</property>
+            <property name="buffer">textviewbuf1</property>
+            <property name="accepts-tab">False</property>
+            <property name="input-purpose">terminal</property>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">4</property>
+            <property name="width">6</property>
+            <property name="height">8</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkTextView" id="textview2">
+            <property name="width-request">200</property>
+            <property name="height-request">300</property>
+            <property name="visible">True</property>
+            <property name="sensitive">False</property>
+            <property name="can-focus">True</property>
+            <property name="hexpand">True</property>
+            <property name="vexpand">True</property>
+            <property name="border-width">2</property>
+            <property name="editable">False</property>
+            <property name="cursor-visible">False</property>
+            <property name="buffer">textviewbuf2</property>
+            <property name="accepts-tab">False</property>
+            <property name="input-purpose">terminal</property>
+          </object>
+          <packing>
+            <property name="left-attach">8</property>
+            <property name="top-attach">4</property>
+            <property name="width">6</property>
+            <property name="height">8</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="fill8">
+            <property name="width-request">30</property>
+            <property name="height-request">25</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="left-attach">0</property>
+            <property name="top-attach">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="fill6">
+            <property name="width-request">30</property>
+            <property name="height-request">25</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="left-attach">14</property>
+            <property name="top-attach">12</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="fill7">
+            <property name="width-request">30</property>
+            <property name="height-request">22</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+          </object>
+          <packing>
+            <property name="left-attach">7</property>
+            <property name="top-attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButton" id="closebutton2">
+            <property name="label" translatable="yes">Close</property>
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <signal name="clicked" handler="on_closebutton2_clicked" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left-attach">6</property>
+            <property name="top-attach">12</property>
+            <property name="width">3</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+  </object>
+  <object class="GtkTextBuffer" id="textviewbuf3"/>
   <object class="GtkWindow" id="window1">
     <property name="can-focus">False</property>
     <property name="title" translatable="yes">Spider testing program with Proxmark3</property>
@@ -15,10 +365,651 @@
     <property name="default-width">1024</property>
     <property name="default-height">600</property>
     <child>
-      <!-- n-columns=21 n-rows=11 -->
+      <!-- n-columns=21 n-rows=10 -->
       <object class="GtkGrid" id="grid1">
         <property name="visible">True</property>
         <property name="can-focus">False</property>
+        <child>
+          <object class="GtkFixed" id="fixed1">
+            <property name="width-request">180</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkRadioButton" id="radio1">
+                <property name="label" translatable="yes">Card Type Test</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="active">True</property>
+                <property name="draw-indicator">True</property>
+                <signal name="toggled" handler="on_radio1_toggled" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">10</property>
+                <property name="y">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFixed" id="fixedoptions1">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkCheckButton" id="test1_HFcards">
+                    <property name="label" translatable="yes">HF Cards</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <signal name="toggled" handler="on_test1_HFcards_toggled" swapped="no"/>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card1">
+                    <property name="label" translatable="yes">Mifare Classic 1k</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">30</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card2">
+                    <property name="label" translatable="yes">Mifare Ultralight</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">60</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card3">
+                    <property name="label" translatable="yes">Mifare Mini</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">90</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card4">
+                    <property name="label" translatable="yes">NTAG 215</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">120</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card5">
+                    <property name="label" translatable="yes">Mifare Classic 4k</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">150</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card6">
+                    <property name="label" translatable="yes">FM11RF005SH</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">180</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card7">
+                    <property name="label" translatable="yes">iClass</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">210</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_LFcards">
+                    <property name="label" translatable="yes">LF Cards</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <signal name="toggled" handler="on_test1_LFcards_toggled" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="y">240</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card8">
+                    <property name="label" translatable="yes">EM410x</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">270</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card9">
+                    <property name="label" translatable="yes">AWID</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">300</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card10">
+                    <property name="label" translatable="yes">Paradox</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">330</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="test1_card11">
+                    <property name="label" translatable="yes">HID</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="x">25</property>
+                    <property name="y">360</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="x">25</property>
+                <property name="y">40</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">1</property>
+            <property name="top-attach">1</property>
+            <property name="width">2</property>
+            <property name="height">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFixed" id="fixed2">
+            <property name="width-request">180</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkRadioButton" id="radio2">
+                <property name="label" translatable="yes">Endurance test</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="draw-indicator">True</property>
+                <property name="group">radio1</property>
+                <signal name="toggled" handler="on_radio2_toggled" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">10</property>
+                <property name="y">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFixed" id="fixedoptions2">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card1">
+                    <property name="label" translatable="yes">Mifare Classic 1k</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card2">
+                    <property name="label" translatable="yes">Mifare Ultralight</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
+                  </object>
+                  <packing>
+                    <property name="y">30</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card3">
+                    <property name="label" translatable="yes">Mifare Mini</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
+                  </object>
+                  <packing>
+                    <property name="y">60</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card4">
+                    <property name="label" translatable="yes">NTAG 215</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
+                  </object>
+                  <packing>
+                    <property name="y">90</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card5">
+                    <property name="label" translatable="yes">Mifare Classic 4k</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
+                  </object>
+                  <packing>
+                    <property name="y">120</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card6">
+                    <property name="label" translatable="yes">FM11RF005SH</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
+                  </object>
+                  <packing>
+                    <property name="y">150</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card7">
+                    <property name="label" translatable="yes">iClass</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
+                  </object>
+                  <packing>
+                    <property name="y">180</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card8">
+                    <property name="label" translatable="yes">EM410x</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
+                  </object>
+                  <packing>
+                    <property name="y">210</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card9">
+                    <property name="label" translatable="yes">AWID</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
+                  </object>
+                  <packing>
+                    <property name="y">240</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card10">
+                    <property name="label" translatable="yes">Paradox</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
+                  </object>
+                  <packing>
+                    <property name="y">270</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card11">
+                    <property name="label" translatable="yes">HID</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
+                  </object>
+                  <packing>
+                    <property name="y">300</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="endtest_entry1">
+                    <property name="height-request">32</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="max-length">8</property>
+                    <property name="placeholder-text" translatable="yes">Default: 10</property>
+                    <property name="input-purpose">phone</property>
+                    <signal name="focus-in-event" handler="on_endtest_entry1_focus_in_event" swapped="no"/>
+                    <signal name="focus-out-event" handler="on_endtest_entry1_focus_out_event" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="y">360</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="endtest_card12">
+                    <property name="label" translatable="yes">Mifare read block</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">endtest_card1</property>
+                  </object>
+                  <packing>
+                    <property name="y">330</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="x">25</property>
+                <property name="y">40</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">4</property>
+            <property name="top-attach">1</property>
+            <property name="width">2</property>
+            <property name="height">6</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkFixed" id="fixed3">
+            <property name="width-request">180</property>
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <child>
+              <object class="GtkRadioButton" id="radio4">
+                <property name="label" translatable="yes">Upload config</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="draw-indicator">True</property>
+                <property name="group">radio1</property>
+                <signal name="toggled" handler="on_radio4_toggled" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">10</property>
+                <property name="y">184</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFixed" id="fixedoptions4">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkRadioButton" id="config_radio1">
+                    <property name="label" translatable="yes">Generic V2.0</property>
+                    <property name="height-request">26</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="y">30</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="config_radio2">
+                    <property name="label" translatable="yes">Generic with full 
+and hex output</property>
+                    <property name="height-request">48</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">config_radio1</property>
+                  </object>
+                  <packing>
+                    <property name="y">60</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="config_radio3">
+                    <property name="label" translatable="yes">Mifare Classic only</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">config_radio1</property>
+                  </object>
+                  <packing>
+                    <property name="y">112</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="config_radio4">
+                    <property name="label" translatable="yes">Mifare Ultralight 
+and NTAG 215 only</property>
+                    <property name="height-request">48</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">config_radio1</property>
+                  </object>
+                  <packing>
+                    <property name="y">142</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="config_radio5">
+                    <property name="label" translatable="yes">Mifare read block</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">config_radio1</property>
+                  </object>
+                  <packing>
+                    <property name="y">194</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="config_silentmode">
+                    <property name="label" translatable="yes">Turn off sound Spider</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="x">25</property>
+                <property name="y">214</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkRadioButton" id="radio3">
+                <property name="label" translatable="yes">Config specific test</property>
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="receives-default">False</property>
+                <property name="draw-indicator">True</property>
+                <property name="group">radio1</property>
+                <signal name="toggled" handler="on_radio3_toggled" swapped="no"/>
+              </object>
+              <packing>
+                <property name="x">10</property>
+                <property name="y">10</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkFixed" id="fixedoptions3">
+                <property name="width-request">100</property>
+                <property name="height-request">80</property>
+                <property name="visible">True</property>
+                <property name="sensitive">False</property>
+                <property name="can-focus">False</property>
+                <child>
+                  <object class="GtkRadioButton" id="testconfig_radio1">
+                    <property name="label" translatable="yes">Mifare Classic 
+only</property>
+                    <property name="height-request">48</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="active">True</property>
+                    <property name="draw-indicator">True</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="testconfig_radio2">
+                    <property name="label" translatable="yes">Mifare Ultralight
+and NTAG 215 only</property>
+                    <property name="height-request">48</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">testconfig_radio1</property>
+                  </object>
+                  <packing>
+                    <property name="y">52</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkRadioButton" id="testconfig_radio3">
+                    <property name="label" translatable="yes">Mifare read block</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">False</property>
+                    <property name="draw-indicator">True</property>
+                    <property name="group">testconfig_radio1</property>
+                  </object>
+                  <packing>
+                    <property name="y">104</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="x">25</property>
+                <property name="y">40</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="left-attach">7</property>
+            <property name="top-attach">1</property>
+            <property name="width">2</property>
+            <property name="height">6</property>
+          </packing>
+        </child>
         <child>
           <object class="GtkButton" id="startbutton1">
             <property name="label" translatable="yes">Start</property>
@@ -31,7 +1022,7 @@
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">3</property>
+            <property name="top-attach">7</property>
             <property name="width">2</property>
           </packing>
         </child>
@@ -42,23 +1033,22 @@
           </object>
           <packing>
             <property name="left-attach">1</property>
-            <property name="top-attach">9</property>
+            <property name="top-attach">8</property>
             <property name="width">8</property>
           </packing>
         </child>
         <child>
           <object class="GtkButton" id="resetbutton1">
-            <property name="label" translatable="yes">Stop/Reset</property>
+            <property name="label" translatable="yes">Reset</property>
             <property name="name">resetbutton</property>
-            <property name="height-request">50</property>
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="receives-default">True</property>
             <signal name="clicked" handler="on_resetbutton1_clicked" swapped="no"/>
           </object>
           <packing>
-            <property name="left-attach">2</property>
-            <property name="top-attach">5</property>
+            <property name="left-attach">6</property>
+            <property name="top-attach">7</property>
             <property name="width">2</property>
           </packing>
         </child>
@@ -71,7 +1061,7 @@
           </object>
           <packing>
             <property name="left-attach">2</property>
-            <property name="top-attach">10</property>
+            <property name="top-attach">9</property>
             <property name="width">6</property>
           </packing>
         </child>
@@ -85,7 +1075,7 @@
           </object>
           <packing>
             <property name="left-attach">15</property>
-            <property name="top-attach">10</property>
+            <property name="top-attach">9</property>
           </packing>
         </child>
         <child>
@@ -99,7 +1089,7 @@
           </object>
           <packing>
             <property name="left-attach">14</property>
-            <property name="top-attach">10</property>
+            <property name="top-attach">9</property>
           </packing>
         </child>
         <child>
@@ -116,522 +1106,217 @@
           </packing>
         </child>
         <child>
-          <object class="GtkLabel" id="text1">
+          <object class="GtkStack" id="stack1">
             <property name="visible">True</property>
             <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Tijd sinds start test</property>
-          </object>
-          <packing>
-            <property name="left-attach">5</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="time_label1">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label" translatable="yes">tijd</property>
-          </object>
-          <packing>
-            <property name="left-attach">7</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="text2">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label" translatable="yes">Tijd sinds laatst gelezen kaart</property>
-          </object>
-          <packing>
-            <property name="left-attach">5</property>
-            <property name="top-attach">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="time_label2">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="label" translatable="yes">tijd</property>
-          </object>
-          <packing>
-            <property name="left-attach">7</property>
-            <property name="top-attach">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="box1">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
             <child>
-              <object class="GtkLabel" id="card_label1">
+              <object class="GtkScrolledWindow" id="scrolledwindow1">
+                <property name="width-request">300</property>
                 <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Mifare Classic 1k</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="card_label2">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Mifare Ultralight</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="card_label3">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Mifare Mini</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="card_label4">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">NTAG 215</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="card_label5">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Mifare Classic 4k</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="card_label6">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">FM11RF005SH</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">5</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="card_label7">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">iClass</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">6</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="card_label8">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">EM410x</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">7</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="card_label9">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">AWID</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">8</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="card_label10">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">Paradox</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">9</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="card_label11">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">HID</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">10</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="card_label12">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">ioProx</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">11</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="left-attach">5</property>
-            <property name="top-attach">3</property>
-            <property name="height">5</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="box2">
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-            <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
-            <child>
-              <object class="GtkLabel" id="count_label1">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">1</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="count_label2">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">2</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="count_label3">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">3</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="count_label4">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">4</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">3</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="count_label5">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">5</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">4</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="count_label6">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">6</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">5</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="count_label7">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">7</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">6</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="count_label8">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">8</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">7</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="count_label9">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">9</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">8</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="count_label10">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">10</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">9</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="count_label11">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">11</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">10</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="count_label12">
-                <property name="visible">True</property>
-                <property name="can-focus">False</property>
-                <property name="label" translatable="yes">12</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">11</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="left-attach">7</property>
-            <property name="top-attach">3</property>
-            <property name="height">5</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkScrolledWindow" id="scrolledwindow1">
-            <property name="width-request">300</property>
-            <property name="visible">True</property>
-            <property name="can-focus">True</property>
-            <property name="vadjustment">adjustment1</property>
-            <property name="shadow-type">in</property>
-            <signal name="size-allocate" handler="on_scrolledwindow1_size_allocate" swapped="no"/>
-            <child>
-              <object class="GtkTextView" id="textview1">
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
                 <property name="can-focus">True</property>
-                <property name="hexpand">True</property>
-                <property name="vexpand">True</property>
-                <property name="editable">False</property>
-                <property name="wrap-mode">word</property>
-                <property name="indent">5</property>
-                <property name="cursor-visible">False</property>
-                <property name="buffer">textviewbuf1</property>
-                <property name="accepts-tab">False</property>
-                <property name="input-purpose">terminal</property>
-                <property name="monospace">True</property>
+                <property name="vadjustment">adjustment1</property>
+                <property name="shadow-type">in</property>
+                <signal name="size-allocate" handler="on_scrolledwindow1_size_allocate" swapped="no"/>
+                <child>
+                  <object class="GtkTextView" id="textview3">
+                    <property name="visible">True</property>
+                    <property name="sensitive">False</property>
+                    <property name="can-focus">True</property>
+                    <property name="hexpand">True</property>
+                    <property name="vexpand">True</property>
+                    <property name="editable">False</property>
+                    <property name="wrap-mode">word</property>
+                    <property name="indent">5</property>
+                    <property name="cursor-visible">False</property>
+                    <property name="buffer">textviewbuf3</property>
+                    <property name="accepts-tab">False</property>
+                    <property name="input-purpose">terminal</property>
+                    <property name="monospace">True</property>
+                  </object>
+                </child>
               </object>
+              <packing>
+                <property name="name">page0</property>
+                <property name="title" translatable="yes">page0</property>
+              </packing>
+            </child>
+            <child>
+              <!-- n-columns=3 n-rows=4 -->
+              <object class="GtkGrid" id="grid3">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="row-homogeneous">True</property>
+                <property name="column-homogeneous">True</property>
+                <child>
+                  <object class="GtkButton" id="numpadbutton1">
+                    <property name="label" translatable="yes">1</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_numpadbutton_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="numpadbutton2">
+                    <property name="label" translatable="yes">2</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_numpadbutton_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="numpadbutton3">
+                    <property name="label" translatable="yes">3</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_numpadbutton_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="numpadbutton4">
+                    <property name="label" translatable="yes">4</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_numpadbutton_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="numpadbutton5">
+                    <property name="label" translatable="yes">5</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_numpadbutton_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="numpadbutton6">
+                    <property name="label" translatable="yes">6</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_numpadbutton_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="numpadbutton7">
+                    <property name="label" translatable="yes">7</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_numpadbutton_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="numpadbutton8">
+                    <property name="label" translatable="yes">8</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_numpadbutton_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="numpadbutton9">
+                    <property name="label" translatable="yes">9</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_numpadbutton_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">2</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="numpadbutton0">
+                    <property name="label" translatable="yes">0</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_numpadbutton_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="numpadbutton10">
+                    <property name="label" translatable="yes">Close</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_numpadbutton_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">0</property>
+                    <property name="top-attach">3</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="numpadbutton11">
+                    <property name="label" translatable="yes">Delete</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="receives-default">True</property>
+                    <signal name="clicked" handler="on_numpadbutton_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="left-attach">2</property>
+                    <property name="top-attach">3</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">page1</property>
+                <property name="title" translatable="yes">page1</property>
+                <property name="position">1</property>
+              </packing>
             </child>
           </object>
           <packing>
             <property name="left-attach">10</property>
             <property name="top-attach">1</property>
             <property name="width">10</property>
-            <property name="height">9</property>
+            <property name="height">8</property>
           </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="separator1">
-            <property name="width-request">30</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">0</property>
-            <property name="top-attach">1</property>
-            <property name="width">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="separator2">
-            <property name="width-request">30</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">4</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="separator4">
-            <property name="width-request">30</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">8</property>
-            <property name="top-attach">1</property>
-            <property name="width">2</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="separator3">
-            <property name="width-request">30</property>
-            <property name="visible">True</property>
-            <property name="can-focus">False</property>
-          </object>
-          <packing>
-            <property name="left-attach">6</property>
-            <property name="top-attach">1</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
         </child>
         <child>
           <placeholder/>
